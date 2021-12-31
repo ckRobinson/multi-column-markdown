@@ -1,4 +1,4 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, MarkdownRenderChild, MarkdownPostProcessorContext, MarkdownPreviewView, MarkdownRenderer, Setting, TFile, FileSystemAdapter } from 'obsidian';
+import { App, Plugin, MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 
 export default class MyPlugin extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
@@ -9,12 +9,13 @@ export default class MyPlugin extends Plugin {
     START_REGEX_STR = `=== start-split-column:[a-zA-Z0-9]*(\\s[\\s\\S]+)?`
     END_REGEX_STR = `=== end-split-column(\\s[\\s\\S]+)?`
     COL_REGEX_STR = "=== column-end ===";
+    COL_SETTINGS_REGEX_STR = "```column-settings(\\s[\\s\\S]+)?";
 
     splitColumnParser: splitColumnParser = undefined;
 
 	async onload() {
 
-        this.splitColumnParser = createSplitColumnParser(this.START_REGEX_STR, this.END_REGEX_STR, this.COL_REGEX_STR);
+        this.splitColumnParser = createSplitColumnParser(this.START_REGEX_STR, this.END_REGEX_STR, this.COL_REGEX_STR, this.COL_SETTINGS_REGEX_STR);
         this.enableMarkdownProcessor();
 	}
 
@@ -57,7 +58,7 @@ export default class MyPlugin extends Plugin {
          */
         function createSplitColContainer(key: string, el: HTMLElement, lineStart: number, sourcePath: string, renderErrorRegion: HTMLDivElement, app: App, splitColumnParser: splitColumnParser,
             hideColumnDivs: (linesToHide: string[], divMap: Map<string, {text: string, el: HTMLElement}>, parseDivText: (lines: string[]) => {keys: divKey[], originals: string[]}, indexOffset?: number) => void,
-            setUpColumnMarkdown: (parentElement: HTMLElement, textFromStart: string, sourcePath: string, splitColumnParser: splitColumnParser) => void,
+            setUpColumnMarkdown: (parentElement: HTMLElement, textFromStart: string, sourcePath: string, splitColumnParser: splitColumnParser, settings: splitColumnSettings) => void,
             parseDivText: (lines: string[]) => {keys: divKey[], originals: string[]}): splitColumnParent {
 
             /**
@@ -95,18 +96,20 @@ export default class MyPlugin extends Plugin {
             function childRemoved(divMapID: string) {
 
                 renderErrorRegion.innerText = "Encountered error rendering split column markdown. Refresh the preview window or make another change to the file."
-
             }
 
             return {key: key, el: el, sourcePath:sourcePath, childRemoved: childRemoved, rendererUpdated: rendererUpdated }
         }
 
-        const columnContainerMap: Map<string, splitColumnParent> = new Map();
 
+        const columnContainerMap: Map<string, splitColumnParent> = new Map();
         const divMap: Map<string, {text: string, el: HTMLElement}> = new Map();
 
+        // Used to determine if a div was updated in the last draw call or not. 
+        // if we reach the elementUnloaded callback below and redererUpdated is
+        // false then we know we have to handle the re-rendering of the preview
+        // window ourselves.
         let renderUpdated = false;
-
         function elementUnloaded(divMapID: string, onUnload?: ()=>void) {
             if(renderUpdated === false) {
                 if(onUnload) {
@@ -138,6 +141,11 @@ export default class MyPlugin extends Plugin {
                     this.app.workspace.getActiveFile()?.path ??
                     "";    
 
+            // Whenever there is an update to the document window we
+            // want to capture the div being rendered so we can use it ourselves
+            // this currently is mostly used to render an error when the div is
+            // removed but not updated. Working on re-rendering the data to the
+            // screen if the data has been updated.
             if(info){
 
                 let index = 0;
@@ -169,6 +177,8 @@ export default class MyPlugin extends Plugin {
                 };
                 ctx.addChild(elementMarkdownRenderer);
 
+                // We want to check here if there is a start tag in the documnet
+                // and if not we can immediatly exit the function.
                 if(this.splitColumnParser.containsStartTag(info.text) === false) {
                     return;
                 }
@@ -204,19 +214,29 @@ export default class MyPlugin extends Plugin {
 
                 columnContainerMap.set(key, createSplitColContainer(key, renderColumnRegion, info.lineStart, sourcePath, renderErrorRegion, this.app, this.splitColumnParser, this.hideColumnDivs, this.setUpColumnMarkdown, this.splitColumnParser.parseDivText));
 
+                // Take the entire document and get the data starting from our start tag.
                 let linesBelowArray = info.text.split("\n").splice(info.lineStart + 1);
-                let linesBelowArrayIncEnd = this.splitColumnParser.getEndBlockBelowLine(linesBelowArray, true);
-                linesBelowArray = linesBelowArray.slice(0, linesBelowArray.length - 1);
 
+                // Now pass to a parser to find our end tag, another start tag (no recursion), or the end of the file.
+                // We want it to include the end tag so we can hide any divs below us if needed.
+                let linesBelowArrayIncEnd = this.splitColumnParser.getEndBlockBelowLine(linesBelowArray, true);
                 this.hideColumnDivs(linesBelowArrayIncEnd, divMap, this.splitColumnParser.parseDivText, info.lineStart + 1);
 
+                // Now slice off the end tag so we have an array of just the text to be displayed to the screen.
+                linesBelowArray = linesBelowArray.slice(0, linesBelowArray.length - 1);
                 linesBelowArray = this.splitColumnParser.getEndBlockBelowLine(linesBelowArray);
 
+                // Reduce the text back to a single string.
                 let textFromStart = linesBelowArray.reduce((prev, current) => {
                     return prev + "\n"  + current;
                 }, "");
 
-                this.setUpColumnMarkdown(renderColumnRegion, textFromStart, sourcePath, this.splitColumnParser);
+                // Parse out a settings block if one exists.
+                let settingsData = this.splitColumnParser.parseColumnSettings(textFromStart);
+                textFromStart = settingsData.text;
+
+                // Pass all necessary data to the renderer.
+                this.setUpColumnMarkdown(renderColumnRegion, textFromStart, sourcePath, this.splitColumnParser, settingsData.settings);
 
                 renderUpdated = true;
                 return;
@@ -236,7 +256,6 @@ export default class MyPlugin extends Plugin {
                     parent = columnContainerMap.get(startBlockKey);
                 }
                 else {
-                    console.log("Error finding parent container for end block.")
                     return;
                 }
                 
@@ -253,15 +272,12 @@ export default class MyPlugin extends Plugin {
                     return prev + "\n"  + current;
                 }, "");
 
-                const sourcePath =
-                typeof ctx == "string"
-                    ? ctx
-                    : ctx?.sourcePath ??
-                        this.app.workspace.getActiveFile()?.path ??
-                        "";
                 el.children[0].detach()
 
-                this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.splitColumnParser);
+                let settingsData = this.splitColumnParser.parseColumnSettings(textFromStart);
+                textFromStart = settingsData.text;
+
+                this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.splitColumnParser, settingsData.settings);
 
                 renderUpdated = true;
                 parent.rendererUpdated();
@@ -269,65 +285,55 @@ export default class MyPlugin extends Plugin {
                 return;
             }
 
-            if(info){
-                // else if the line we are parsing does not contain a start tag
-                // but there is at least one start tag on the page we want to 
-                // then check if the line we are parsing is within a column
-                // block.
-                //
-                // Take the entire document text and split it by new lines.
-                // Then we get the set of lines above our start line.
-                // Then we reduce back down to a single string of all lines above.
-                let initialLinesAboveArray = info.text.split("\n").splice(0, info.lineStart);
-                let { startBlockKey, linesAboveArray } = this.splitColumnParser.getStartBlockAboveLine(initialLinesAboveArray);
-                
-                if(startBlockKey === "") {
-                    console.log("Error finding start block key for normal text.")
-                    return;
-                }
-
-                // Attempt to get parent from the map, if it doesnt exist
-                // something went wrong so we want to return immediatly.
-                let parent: splitColumnParent = null;
-                if(columnContainerMap.has(startBlockKey)) {
-                    parent = columnContainerMap.get(startBlockKey);
-                }
-                else {
-                    console.log("Error finding parent container for content block.")
-                    return;
-                }
-                elementMarkdownRenderer.onunload = () => {
-                    elementUnloaded(divMapID, ()=>{
-                        parent.childRemoved(divMapID)
-                    });
-                };
-
-                let linesBelowArray = info.text.split("\n").splice(info.lineStart);
-                linesBelowArray = this.splitColumnParser.getEndBlockBelowLine(linesBelowArray);
-
-                // Concat and filter down all of the lines we want to display.
-                let textFromStart = linesAboveArray.concat(linesBelowArray).reduce((prev, current) => {
-                    return prev + "\n"  + current;
-                }, "");
-
-                // Not sure if this is needed.
-                const sourcePath =
-                typeof ctx == "string"
-                    ? ctx
-                    : ctx?.sourcePath ??
-                        this.app.workspace.getActiveFile()?.path ??
-                        "";
-                el.children[0].detach()
-
-                console.log("Rendering markdown")
-
-                this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.splitColumnParser);
-
-                renderUpdated = true;
-                parent.rendererUpdated();
-                // TODO: Find a way to remove the element from the DOM? Minor "bug" but would like to fix.
+            // else if the line we are parsing does not contain a start tag
+            // but there is at least one start tag on the page we want to 
+            // then check if the line we are parsing is within a column
+            // block.
+            //
+            // Take the entire document text and split it by new lines.
+            // Then we get the set of lines above our start line.
+            // Then we reduce back down to a single string of all lines above.
+            let initialLinesAboveArray = info.text.split("\n").splice(0, info.lineStart);
+            let { startBlockKey, linesAboveArray } = this.splitColumnParser.getStartBlockAboveLine(initialLinesAboveArray);
+            
+            if(startBlockKey === "") {
+                // We are not within a split column block so we just return here.
                 return;
             }
+
+            // Attempt to get parent from the map, if it doesnt exist
+            // something went wrong so we want to return immediatly.
+            let parent: splitColumnParent = null;
+            if(columnContainerMap.has(startBlockKey)) {
+                parent = columnContainerMap.get(startBlockKey);
+            }
+            else {
+                return;
+            }
+            elementMarkdownRenderer.onunload = () => {
+                elementUnloaded(divMapID, ()=>{
+                    parent.childRemoved(divMapID)
+                });
+            };
+
+            let linesBelowArray = info.text.split("\n").splice(info.lineStart);
+            linesBelowArray = this.splitColumnParser.getEndBlockBelowLine(linesBelowArray);
+
+            // Concat and filter down all of the lines we want to display.
+            let textFromStart = linesAboveArray.concat(linesBelowArray).reduce((prev, current) => {
+                return prev + "\n"  + current;
+            }, "");
+
+            el.children[0].detach()
+
+            let settingsData = this.splitColumnParser.parseColumnSettings(textFromStart);
+            textFromStart = settingsData.text;
+
+            this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.splitColumnParser, settingsData.settings);
+
+            renderUpdated = true;
+            parent.rendererUpdated();
+            // TODO: Find a way to remove the element from the DOM? Minor "bug" but would like to fix.
             return;
         });
     }
@@ -363,18 +369,106 @@ export default class MyPlugin extends Plugin {
         }
     }
 
-    setUpColumnMarkdown(parentElement: HTMLElement, textFromStart: string, sourcePath: string, splitColumnParser: splitColumnParser) {
+    setUpColumnMarkdown(parentElement: HTMLElement, textFromStart: string, sourcePath: string,
+        splitColumnParser: splitColumnParser, settings: splitColumnSettings) {
 
-        // TODO: Set this up to be adjustable.
         let splitColumnParent = createDiv({
             cls: `splitColumnParent rowC`,
         });
-        let colOne = splitColumnParent.createDiv({
-            cls: `columnContent twoEqualColumnFirst`
-        })
-        let colTwo = splitColumnParent.createDiv({
-            cls: `columnContent twoEqualColumnSecond`
-        })
+
+        let columnContentDivs = [];
+        if(settings.numberOfColumns === 2) {
+
+            switch(settings.columnLayout) {
+                case(ColumnLayout.standard):
+                case(ColumnLayout.middle):
+                case(ColumnLayout.center):
+                case(ColumnLayout.third):
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent twoEqualColumns_Left`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent twoEqualColumns_Right`
+                    }));
+                    break;
+    
+                case(ColumnLayout.left):
+                case(ColumnLayout.first):
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent twoColumnsHeavyLeft_Left`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent twoColumnsHeavyLeft_Right`
+                    }));
+                    break;
+    
+                case(ColumnLayout.right):
+                case(ColumnLayout.second):
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent twoColumnsHeavyRight_Left`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent twoColumnsHeavyRight_Right`
+                    }));
+                    break;
+            }
+        }
+        else if(settings.numberOfColumns === 3) {
+
+            switch(settings.columnLayout) {
+                case(ColumnLayout.standard):
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threeEqualColumns_Left`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threeEqualColumns_Middle`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threeEqualColumns_Right`
+                    }));
+                    break;
+
+                case(ColumnLayout.left):
+                case(ColumnLayout.first):
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyLeft_Left`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyLeft_Middle`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyLeft_Right`
+                    }));
+                    break;
+
+                case(ColumnLayout.middle):
+                case(ColumnLayout.center):
+                case(ColumnLayout.second):
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyMiddle_Left`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyMiddle_Middle`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyMiddle_Right`
+                    }));
+                    break;
+
+                case(ColumnLayout.right):
+                case(ColumnLayout.third):
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyRight_Left`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyRight_Middle`
+                    }));
+                    columnContentDivs.push(splitColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyRight_Right`
+                    }));
+                    break;
+            }
+        }
 
         // Create markdown renderer to parse the passed markdown
         // between the tags.
@@ -384,29 +478,23 @@ export default class MyPlugin extends Plugin {
 
         // Remove every other child from the parent so 
         // we dont end up with multiple sets of data. This should
-        // really only need to loop once for i = 0 but for loop just
+        // really only need to loop once for i = 0 but loop just
         // in case.
         for(let i = 0; i < parentElement.children.length; i++) {
             parentElement.children[i].detach();
         }        
         parentElement.appendChild(markdownRenderChild.containerEl);
 
-        // TODO: Update this call to user adjustably get the column data.
-        let columnText = splitColumnParser.splitTextByColumn(textFromStart, 2);
-
+        let columnText = splitColumnParser.splitTextByColumn(textFromStart, settings.numberOfColumns);
         // And then render the parsed markdown into the divs.
-        MarkdownRenderer.renderMarkdown(
-            columnText[0],
-            colOne,
-            sourcePath,
-            markdownRenderChild
-        );
-        MarkdownRenderer.renderMarkdown(
-            columnText[1],
-            colTwo,
-            sourcePath,
-            markdownRenderChild
-        );
+        for(let i = 0; i < columnContentDivs.length; i++) {
+            MarkdownRenderer.renderMarkdown(
+                columnText[i],
+                columnContentDivs[i],
+                sourcePath,
+                markdownRenderChild
+            );
+        }
     }
 }
 
@@ -425,16 +513,36 @@ function createDivKey(keyText: string, startIndex: number, endIndex: number, ): 
     return {keyText: keyText, startIndex: startIndex, endIndex: endIndex, getKeyWithOffset: getKeyWithOffset}
 }
 
+enum ColumnLayout { 
+    standard,
+    left,
+    first,
+    center,
+    middle,
+    second,
+    right,
+    third
+};
+
+type splitColumnSettings = {
+    numberOfColumns: number,
+    columnLayout: ColumnLayout
+}
+
 type splitColumnParser = {
     containsStartTag: (text: string) => boolean,
     containsEndTag: (text: string) => boolean,
     formatDivText: (text: string) => string,
+    parseColumnSettings: (text: string) => {text: string, settings: splitColumnSettings},
     parseDivText: (linesToHide: string[]) => {keys: divKey[], originals: string[]},
     splitTextByColumn: (originalText: string, numberOfRequestedColumns: number) => string[],
     getEndBlockBelowLine: (stringsToFilter: string[], includeEndTag?: boolean) => string[],
     getStartBlockAboveLine: (linesAboveArray: string[]) => { startBlockKey: string, linesAboveArray: string[] }
 }
-function createSplitColumnParser(startRegExString: string, endRegExString: string, columnEndRegExString: string): splitColumnParser {
+function createSplitColumnParser(startRegExString: string, 
+    endRegExString: string, 
+    columnEndRegExString: string,
+    splitColumnRegExString: string): splitColumnParser {
     
     const START_REGEX_STR = startRegExString
     const START_REGEX = new RegExp(START_REGEX_STR);
@@ -445,6 +553,9 @@ function createSplitColumnParser(startRegExString: string, endRegExString: strin
     const COL_REGEX_STR = columnEndRegExString;
     const COL_REGEX = new RegExp(COL_REGEX_STR);
 
+    const COL_SETTINGS_REGEX_STR = splitColumnRegExString;
+    const COL_SETTINGS_REGEX = new RegExp(COL_SETTINGS_REGEX_STR);
+    
     function containsStartTag(text: string): boolean {
         
         return START_REGEX.test(text);
@@ -453,6 +564,80 @@ function createSplitColumnParser(startRegExString: string, endRegExString: strin
     function containsEndTag(text: string): boolean {
         
         return END_REGEX.test(text);
+    }
+
+    function parseColumnSettings(text: string): {text: string, settings: splitColumnSettings} {
+
+        // Set the minimum number of columnds to 2.
+        let numberOfColumns = 2;
+        let columnLayout: ColumnLayout = ColumnLayout.standard
+
+        // Check if there is a settings block in the text.
+        if(COL_SETTINGS_REGEX.test(text)) {
+
+            // If the user has defined settings, get the location of the block
+            let startBlockIndex = text.search(COL_SETTINGS_REGEX_STR);
+
+            // If the user put the block in the middle of the text we dont
+            // want to hide all text above the settings.
+            let linesBeforeSettings = text.slice(0, startBlockIndex).split("\n");
+            let linesIncludingSettings = text.slice(startBlockIndex).split("\n");
+
+            // get each setting line and get the number of lines
+            // the settings block takes up.
+            let settingsText: string[] = []
+            let lineIndex = 1;
+            for(let i = 1; i < linesIncludingSettings.length; i++) {
+
+                settingsText.push(linesIncludingSettings[i])
+
+                lineIndex++;
+
+                // When we hit the first ``` ending the settings block
+                // we break the loop.
+                if(linesIncludingSettings[i].contains("```")) {
+                    break;
+                }
+            }
+
+            // Now we have parsed out the settings data we want to remove the block
+            // from the text so it isnt rendered to the preview window.
+            let linesAfterSettings = linesIncludingSettings.slice(lineIndex + 1)
+            text = linesBeforeSettings.concat(linesAfterSettings).reduce((prev, current) => {
+                return prev + "\n" + current;
+            }, "")
+
+            for(let i = 0; i < settingsText.length; i++) {
+                if(settingsText[i].toLowerCase().replace(/\s/g, "").contains("numberofcolumns:")) {
+                    let userDefNumberOfCols = parseInt(settingsText[i].split(":")[1])
+
+                    if(Number.isNaN(userDefNumberOfCols) === false) {
+                        if(userDefNumberOfCols === 3) {
+                            numberOfColumns = 3
+                        }
+                        else if(userDefNumberOfCols === 2) {
+                            numberOfColumns = 2;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            for(let i = 0; i < settingsText.length; i++) {
+                if(settingsText[i].toLowerCase().replace(/\s/g, "").contains("largestcolumn:")) {
+
+                    let setting = settingsText[i].split(":")[1].trimStart().trimEnd().toLowerCase();
+                    let userDefLayout: ColumnLayout = (<any>ColumnLayout)[setting]
+
+                    if(userDefLayout !== undefined) {
+                        columnLayout = userDefLayout;
+                    }
+                }
+            }
+        }
+
+        return { text, settings: { numberOfColumns, columnLayout } }
     }
 
     /**
@@ -671,7 +856,6 @@ function createSplitColumnParser(startRegExString: string, endRegExString: strin
          */ 
         let startBlockKey = "";
         if(START_REGEX.test(linesAboveStr) === false) {
-            console.log("No Start key above")
             linesAboveArray = []
             return { startBlockKey, linesAboveArray }
         }
@@ -715,5 +899,6 @@ function createSplitColumnParser(startRegExString: string, endRegExString: strin
         containsStartTag: containsStartTag,
         containsEndTag: containsEndTag,
         formatDivText: formatDivText,
-        parseDivText: parseDivText }
+        parseDivText: parseDivText,
+        parseColumnSettings: parseColumnSettings }
 }

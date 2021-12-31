@@ -3,12 +3,82 @@
     flex-direction:row;
 }
 
-.twoEqualColumnFirst {
+.twoEqualColumns_Left {
     width: 49.75%;
     margin-right: 0.25%;
 }
 
-.twoEqualColumnSecond {
+.twoEqualColumns_Right {
+    width: 49.75%;
+    margin-left: 0.25%;
+}
+
+.twoColumnsHeavyLeft_Left {
+    width: 66.75%;
+    margin-right: 0.25%;
+}
+.twoColumnsHeavyLeft_Right {
+    width: 32.75%;
+    margin-left: 0.25%;
+}
+
+.twoColumnsHeavyRight_Left {
+    width: 32.75%;
+    margin-right: 0.25%;
+}
+.twoColumnsHeavyRight_Right {
+    width: 66.75%;
+    margin-left: 0.25%;
+}
+
+.threeEqualColumns_Left {
+    width: 32.75%;
+    margin-right: 0.25%;
+}
+.threeEqualColumns_Middle {
+    width: 32.5%;
+    margin-inline: 0.25%;
+}
+.threeEqualColumns_Right {
+    width: 33.75%;
+    margin-left: 0.25%;
+}
+
+.threColumnsHeavyLeft_Left {
+    width: 49.75%;
+    margin-right: 0.25%;
+}
+.threColumnsHeavyLeft_Middle {
+    width: 24.5%;
+    margin-inline: 0.25%;
+}
+.threColumnsHeavyLeft_Right {
+    width: 24.75%;
+    margin-left: 0.25%;
+}
+
+.threColumnsHeavyMiddle_Left {
+    width: 24.75%;
+    margin-right: 0.25%;
+}
+.threColumnsHeavyMiddle_Middle {
+    width: 49.5%;
+    margin-inline: 0.25%;
+}
+.threColumnsHeavyMiddle_Right {
+    width: 24.75%;
+    margin-left: 0.25%;
+}
+
+.threColumnsHeavyRight_Left {
+    width: 24.75%;
+    margin-right: 0.25%;
+}
+.threColumnsHeavyRight_Middle {
+    width: 24.5%;
+    margin-inline: 0.25%;
+}
+.threColumnsHeavyRight_Right {
     width: 49.75%;
     margin-left: 0.25%;
 }
