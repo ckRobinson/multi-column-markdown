@@ -1,21 +1,13 @@
 import { App, Plugin, MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 
-export default class MyPlugin extends Plugin {
+export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
 
-    // TODO: Set these up to be customizable in settings?
-    // TODO: Set up optional start and end with shorter tag?
-    // TODO: Update parser to check toLowerCase on text?
-    START_REGEX_STR = `=== start-split-column:[a-zA-Z0-9]*(\\s[\\s\\S]+)?`
-    END_REGEX_STR = `=== end-split-column(\\s[\\s\\S]+)?`
-    COL_REGEX_STR = "=== column-end ===";
-    COL_SETTINGS_REGEX_STR = "```column-settings(\\s[\\s\\S]+)?";
-
-    splitColumnParser: splitColumnParser = undefined;
+    multiColumnParser: multiColumnParser = undefined;
 
 	async onload() {
 
-        this.splitColumnParser = createSplitColumnParser(this.START_REGEX_STR, this.END_REGEX_STR, this.COL_REGEX_STR, this.COL_SETTINGS_REGEX_STR);
+        this.multiColumnParser = createMultiColumnParser();
         this.enableMarkdownProcessor();
 	}
 
@@ -24,7 +16,7 @@ export default class MyPlugin extends Plugin {
          * Value type structure rather than a reference type class used to
          * keep track of the parent divs within the DOM.
          */
-        type splitColumnParent = {
+        type multiColumnParent = {
             key: string,
             el: HTMLElement,
             sourcePath: string,
@@ -33,11 +25,11 @@ export default class MyPlugin extends Plugin {
         }
 
         /**
-         * This function acts as a constructor for the splitColumnParent type above.
+         * This function acts as a constructor for the multiColumnParent type above.
          * It captures all of the passed data as well as defines the nessecary 
          * functions to be captured as closures before returning a new object.
          * 
-         * @param key the key for the splitColumnParent within the document map.
+         * @param key the key for the multiColumnParent within the document map.
          * @param el the htmlelement within the DOM. Used to update the dom when needed.
          * @param sourcePath the path of the file we're in, used for linking to other pages. (I think.)
          * 
@@ -49,20 +41,20 @@ export default class MyPlugin extends Plugin {
          * @param lineStart 
          * @param renderErrorRegion 
          * @param app 
-         * @param splitColumnParser 
+         * @param multiColumnParser 
          * @param hideColumnDivs 
          * @param setUpColumnMarkdown 
          * @param parseDivText 
          * 
-         * @returns a new splitColumnParent structure.
+         * @returns a new multiColumnParent structure.
          */
-        function createSplitColContainer(key: string, el: HTMLElement, lineStart: number, sourcePath: string, renderErrorRegion: HTMLDivElement, app: App, splitColumnParser: splitColumnParser,
+        function createSplitColContainer(key: string, el: HTMLElement, lineStart: number, sourcePath: string, renderErrorRegion: HTMLDivElement, app: App, multiColumnParser: multiColumnParser,
             hideColumnDivs: (linesToHide: string[], divMap: Map<string, {text: string, el: HTMLElement}>, parseDivText: (lines: string[]) => {keys: divKey[], originals: string[]}, indexOffset?: number) => void,
-            setUpColumnMarkdown: (parentElement: HTMLElement, textFromStart: string, sourcePath: string, splitColumnParser: splitColumnParser, settings: splitColumnSettings) => void,
-            parseDivText: (lines: string[]) => {keys: divKey[], originals: string[]}): splitColumnParent {
+            setUpColumnMarkdown: (parentElement: HTMLElement, textFromStart: string, sourcePath: string, multiColumnParser: multiColumnParser, settings: multiColumnSettings) => void,
+            parseDivText: (lines: string[]) => {keys: divKey[], originals: string[]}): multiColumnParent {
 
             /**
-             * When one of our split column blocks is updated within the DOM we
+             * When one of our multi column blocks is updated within the DOM we
              * call this function. It resets the error message over the
              * block because the renderer will be refreshed at that point.
              */
@@ -95,14 +87,14 @@ export default class MyPlugin extends Plugin {
              */
             function childRemoved(divMapID: string) {
 
-                renderErrorRegion.innerText = "Encountered error rendering split column markdown. Refresh the preview window or make another change to the file."
+                renderErrorRegion.innerText = "Encountered error rendering multi column markdown. Refresh the preview window or make another change to the file."
             }
 
             return {key: key, el: el, sourcePath:sourcePath, childRemoved: childRemoved, rendererUpdated: rendererUpdated }
         }
 
 
-        const columnContainerMap: Map<string, splitColumnParent> = new Map();
+        const columnContainerMap: Map<string, multiColumnParent> = new Map();
         const divMap: Map<string, {text: string, el: HTMLElement}> = new Map();
 
         // Used to determine if a div was updated in the last draw call or not. 
@@ -164,7 +156,7 @@ export default class MyPlugin extends Plugin {
                 }, "")
     
 
-                text = this.splitColumnParser.formatDivText(text);
+                text = this.multiColumnParser.formatDivText(text);
                 if(text.startsWith("\n")) {
                     text = text.slice(1, text.length);
                 }
@@ -179,7 +171,7 @@ export default class MyPlugin extends Plugin {
 
                 // We want to check here if there is a start tag in the documnet
                 // and if not we can immediatly exit the function.
-                if(this.splitColumnParser.containsStartTag(info.text) === false) {
+                if(this.multiColumnParser.containsStartTag(info.text).found === false) {
                     return;
                 }
             }
@@ -190,7 +182,7 @@ export default class MyPlugin extends Plugin {
             // Check if the line currently passed to processor contains the 
             // start regex that we want. If so we need to store a reference
             // to the element and the context to be used later.
-            if(this.splitColumnParser.containsStartTag(el.textContent) === true) {
+            if(this.multiColumnParser.containsStartTag(el.textContent).found === true) {
 
                 // If our regex matches we can split the data by - to 
                 // get the column identifier. We use this to store in
@@ -203,28 +195,28 @@ export default class MyPlugin extends Plugin {
                 // Also set the proper CSS classes here.
                 el.id = `TwoColumnContainer-${key}`
                 el.children[0].detach();
-                el.classList.add("splitColumnContainer")
+                el.classList.add("multiColumnContainer")
 
                 let renderErrorRegion = el.createDiv({
-                    cls: `splitColumnErrorMessage`,
+                    cls: `multiColumnErrorMessage`,
                 });
                 let renderColumnRegion = el.createDiv({
                     cls: `RenderColRegion`
                 })
 
-                columnContainerMap.set(key, createSplitColContainer(key, renderColumnRegion, info.lineStart, sourcePath, renderErrorRegion, this.app, this.splitColumnParser, this.hideColumnDivs, this.setUpColumnMarkdown, this.splitColumnParser.parseDivText));
+                columnContainerMap.set(key, createSplitColContainer(key, renderColumnRegion, info.lineStart, sourcePath, renderErrorRegion, this.app, this.multiColumnParser, this.hideColumnDivs, this.setUpColumnMarkdown, this.multiColumnParser.parseDivText));
 
                 // Take the entire document and get the data starting from our start tag.
                 let linesBelowArray = info.text.split("\n").splice(info.lineStart + 1);
 
                 // Now pass to a parser to find our end tag, another start tag (no recursion), or the end of the file.
                 // We want it to include the end tag so we can hide any divs below us if needed.
-                let linesBelowArrayIncEnd = this.splitColumnParser.getEndBlockBelowLine(linesBelowArray, true);
-                this.hideColumnDivs(linesBelowArrayIncEnd, divMap, this.splitColumnParser.parseDivText, info.lineStart + 1);
+                let linesBelowArrayIncEnd = this.multiColumnParser.getEndBlockBelowLine(linesBelowArray, true);
+                this.hideColumnDivs(linesBelowArrayIncEnd, divMap, this.multiColumnParser.parseDivText, info.lineStart + 1);
 
                 // Now slice off the end tag so we have an array of just the text to be displayed to the screen.
                 linesBelowArray = linesBelowArray.slice(0, linesBelowArray.length - 1);
-                linesBelowArray = this.splitColumnParser.getEndBlockBelowLine(linesBelowArray);
+                linesBelowArray = this.multiColumnParser.getEndBlockBelowLine(linesBelowArray);
 
                 // Reduce the text back to a single string.
                 let textFromStart = linesBelowArray.reduce((prev, current) => {
@@ -232,11 +224,11 @@ export default class MyPlugin extends Plugin {
                 }, "");
 
                 // Parse out a settings block if one exists.
-                let settingsData = this.splitColumnParser.parseColumnSettings(textFromStart);
+                let settingsData = this.multiColumnParser.parseColumnSettings(textFromStart);
                 textFromStart = settingsData.text;
 
                 // Pass all necessary data to the renderer.
-                this.setUpColumnMarkdown(renderColumnRegion, textFromStart, sourcePath, this.splitColumnParser, settingsData.settings);
+                this.setUpColumnMarkdown(renderColumnRegion, textFromStart, sourcePath, this.multiColumnParser, settingsData.settings);
 
                 renderUpdated = true;
                 return;
@@ -244,14 +236,14 @@ export default class MyPlugin extends Plugin {
 
             // If our current line is an end tag we want to set the data to
             // everything above us in the current block.
-            if(this.splitColumnParser.containsEndTag(el.textContent) === true) {
+            if(this.multiColumnParser.containsEndTag(el.textContent).found === true) {
 
                 let initialLinesAboveArray = info.text.split("\n").splice(0, info.lineStart);
-                let { startBlockKey, linesAboveArray } = this.splitColumnParser.getStartBlockAboveLine(initialLinesAboveArray);
+                let { startBlockKey, linesAboveArray } = this.multiColumnParser.getStartBlockAboveLine(initialLinesAboveArray);
 
                 // Attempt to get parent from the map, if it doesnt exist s
                 // something went wrong so we want to return immediatly.
-                let parent: splitColumnParent = null;
+                let parent: multiColumnParent = null;
                 if(columnContainerMap.has(startBlockKey)) {
                     parent = columnContainerMap.get(startBlockKey);
                 }
@@ -265,7 +257,7 @@ export default class MyPlugin extends Plugin {
                     });
                 };
 
-                this.hideColumnDivs(linesAboveArray, divMap, this.splitColumnParser.parseDivText);
+                this.hideColumnDivs(linesAboveArray, divMap, this.multiColumnParser.parseDivText);
 
                 // Concat and filter down all of the lines we want to display.
                 let textFromStart = linesAboveArray.reduce((prev, current) => {
@@ -274,10 +266,10 @@ export default class MyPlugin extends Plugin {
 
                 el.children[0].detach()
 
-                let settingsData = this.splitColumnParser.parseColumnSettings(textFromStart);
+                let settingsData = this.multiColumnParser.parseColumnSettings(textFromStart);
                 textFromStart = settingsData.text;
 
-                this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.splitColumnParser, settingsData.settings);
+                this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.multiColumnParser, settingsData.settings);
 
                 renderUpdated = true;
                 parent.rendererUpdated();
@@ -294,16 +286,16 @@ export default class MyPlugin extends Plugin {
             // Then we get the set of lines above our start line.
             // Then we reduce back down to a single string of all lines above.
             let initialLinesAboveArray = info.text.split("\n").splice(0, info.lineStart);
-            let { startBlockKey, linesAboveArray } = this.splitColumnParser.getStartBlockAboveLine(initialLinesAboveArray);
+            let { startBlockKey, linesAboveArray } = this.multiColumnParser.getStartBlockAboveLine(initialLinesAboveArray);
             
             if(startBlockKey === "") {
-                // We are not within a split column block so we just return here.
+                // We are not within a multi column block so we just return here.
                 return;
             }
 
             // Attempt to get parent from the map, if it doesnt exist
             // something went wrong so we want to return immediatly.
-            let parent: splitColumnParent = null;
+            let parent: multiColumnParent = null;
             if(columnContainerMap.has(startBlockKey)) {
                 parent = columnContainerMap.get(startBlockKey);
             }
@@ -317,7 +309,7 @@ export default class MyPlugin extends Plugin {
             };
 
             let linesBelowArray = info.text.split("\n").splice(info.lineStart);
-            linesBelowArray = this.splitColumnParser.getEndBlockBelowLine(linesBelowArray);
+            linesBelowArray = this.multiColumnParser.getEndBlockBelowLine(linesBelowArray);
 
             // Concat and filter down all of the lines we want to display.
             let textFromStart = linesAboveArray.concat(linesBelowArray).reduce((prev, current) => {
@@ -326,10 +318,10 @@ export default class MyPlugin extends Plugin {
 
             el.children[0].detach()
 
-            let settingsData = this.splitColumnParser.parseColumnSettings(textFromStart);
+            let settingsData = this.multiColumnParser.parseColumnSettings(textFromStart);
             textFromStart = settingsData.text;
 
-            this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.splitColumnParser, settingsData.settings);
+            this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.multiColumnParser, settingsData.settings);
 
             renderUpdated = true;
             parent.rendererUpdated();
@@ -370,10 +362,10 @@ export default class MyPlugin extends Plugin {
     }
 
     setUpColumnMarkdown(parentElement: HTMLElement, textFromStart: string, sourcePath: string,
-        splitColumnParser: splitColumnParser, settings: splitColumnSettings) {
+        multiColumnParser: multiColumnParser, settings: multiColumnSettings) {
 
-        let splitColumnParent = createDiv({
-            cls: `splitColumnParent rowC`,
+        let multiColumnParent = createDiv({
+            cls: `multiColumnParent rowC`,
         });
 
         let columnContentDivs = [];
@@ -384,30 +376,30 @@ export default class MyPlugin extends Plugin {
                 case(ColumnLayout.middle):
                 case(ColumnLayout.center):
                 case(ColumnLayout.third):
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent twoEqualColumns_Left`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent twoEqualColumns_Right`
                     }));
                     break;
     
                 case(ColumnLayout.left):
                 case(ColumnLayout.first):
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent twoColumnsHeavyLeft_Left`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent twoColumnsHeavyLeft_Right`
                     }));
                     break;
     
                 case(ColumnLayout.right):
                 case(ColumnLayout.second):
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent twoColumnsHeavyRight_Left`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent twoColumnsHeavyRight_Right`
                     }));
                     break;
@@ -417,26 +409,26 @@ export default class MyPlugin extends Plugin {
 
             switch(settings.columnLayout) {
                 case(ColumnLayout.standard):
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threeEqualColumns_Left`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threeEqualColumns_Middle`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threeEqualColumns_Right`
                     }));
                     break;
 
                 case(ColumnLayout.left):
                 case(ColumnLayout.first):
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyLeft_Left`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyLeft_Middle`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyLeft_Right`
                     }));
                     break;
@@ -444,26 +436,26 @@ export default class MyPlugin extends Plugin {
                 case(ColumnLayout.middle):
                 case(ColumnLayout.center):
                 case(ColumnLayout.second):
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyMiddle_Left`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyMiddle_Middle`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyMiddle_Right`
                     }));
                     break;
 
                 case(ColumnLayout.right):
                 case(ColumnLayout.third):
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyRight_Left`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyRight_Middle`
                     }));
-                    columnContentDivs.push(splitColumnParent.createDiv({
+                    columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyRight_Right`
                     }));
                     break;
@@ -473,7 +465,7 @@ export default class MyPlugin extends Plugin {
         // Create markdown renderer to parse the passed markdown
         // between the tags.
         let markdownRenderChild = new MarkdownRenderChild(
-            splitColumnParent
+            multiColumnParent
         );
 
         // Remove every other child from the parent so 
@@ -485,7 +477,7 @@ export default class MyPlugin extends Plugin {
         }        
         parentElement.appendChild(markdownRenderChild.containerEl);
 
-        let columnText = splitColumnParser.splitTextByColumn(textFromStart, settings.numberOfColumns);
+        let columnText = multiColumnParser.splitTextByColumn(textFromStart, settings.numberOfColumns);
         // And then render the parsed markdown into the divs.
         for(let i = 0; i < columnContentDivs.length; i++) {
             MarkdownRenderer.renderMarkdown(
@@ -524,59 +516,137 @@ enum ColumnLayout {
     third
 };
 
-type splitColumnSettings = {
+type multiColumnSettings = {
     numberOfColumns: number,
     columnLayout: ColumnLayout
 }
 
-type splitColumnParser = {
-    containsStartTag: (text: string) => boolean,
-    containsEndTag: (text: string) => boolean,
+type multiColumnParser = {
+    containsStartTag: (text: string) => { found: boolean, startPosition: number },
+    containsEndTag: (text: string) => { found: boolean, startPosition: number, tagLength: number  },
     formatDivText: (text: string) => string,
-    parseColumnSettings: (text: string) => {text: string, settings: splitColumnSettings},
+    parseColumnSettings: (text: string) => {text: string, settings: multiColumnSettings},
     parseDivText: (linesToHide: string[]) => {keys: divKey[], originals: string[]},
     splitTextByColumn: (originalText: string, numberOfRequestedColumns: number) => string[],
     getEndBlockBelowLine: (stringsToFilter: string[], includeEndTag?: boolean) => string[],
     getStartBlockAboveLine: (linesAboveArray: string[]) => { startBlockKey: string, linesAboveArray: string[] }
 }
-function createSplitColumnParser(startRegExString: string, 
-    endRegExString: string, 
-    columnEndRegExString: string,
-    splitColumnRegExString: string): splitColumnParser {
+function createMultiColumnParser(): multiColumnParser {
     
-    const START_REGEX_STR = startRegExString
-    const START_REGEX = new RegExp(START_REGEX_STR);
+    // TODO: Set these up to be customizable in settings?
+    // TODO: Set up optional start and end with shorter tag?
+    // TODO: Update parser to check toLowerCase on text?
 
-    const END_REGEX_STR = endRegExString
-    const END_REGEX = new RegExp(END_REGEX_STR);
-
-    const COL_REGEX_STR = columnEndRegExString;
-    const COL_REGEX = new RegExp(COL_REGEX_STR);
-
-    const COL_SETTINGS_REGEX_STR = splitColumnRegExString;
-    const COL_SETTINGS_REGEX = new RegExp(COL_SETTINGS_REGEX_STR);
-    
-    function containsStartTag(text: string): boolean {
-        
-        return START_REGEX.test(text);
+    const START_REGEX_STRS = ["=== start-multi-column:[a-zA-Z0-9]*(\\s[\\s\\S]+)?",
+                              "=== multi-column-start:[a-zA-Z0-9]*(\\s[\\s\\S]+)?"]
+    const START_REGEX_ARR: RegExp[] = [];
+    for(let i = 0; i < START_REGEX_STRS.length; i++) {
+        START_REGEX_ARR.push(new RegExp(START_REGEX_STRS[i]));
     }
 
-    function containsEndTag(text: string): boolean {
-        
-        return END_REGEX.test(text);
+    function containsStartTag(text: string): { found: boolean, startPosition: number } {
+
+        let found = false;
+        let startPosition = -1;
+
+        for(let i = 0; i< START_REGEX_STRS.length; i++) {
+
+            if(START_REGEX_ARR[i].test(text)) {
+                found = true;
+                startPosition = text.search(START_REGEX_STRS[i])
+                break;
+            }
+        }
+
+        return { found: found, startPosition: startPosition };    
     }
 
-    function parseColumnSettings(text: string): {text: string, settings: splitColumnSettings} {
+    const END_REGEX_STRS = ["=== end-multi-column(\\s[\\s\\S]+)?",
+                            "=== multi-column-end(\\s[\\s\\S]+)?"]
+    const END_REGEX_ARR: RegExp[] = [];
+    for(let i = 0; i < END_REGEX_STRS.length; i++) {
+        END_REGEX_ARR.push(new RegExp(END_REGEX_STRS[i]));
+    }
+    function containsEndTag(text: string): { found: boolean, startPosition: number, tagLength: number  } {
+
+        let found = false;
+        let startPosition = -1;
+        let tagLength = -1;
+
+        for(let i = 0; i< END_REGEX_STRS.length; i++) {
+
+            if(END_REGEX_ARR[i].test(text)) {
+                found = true;
+                startPosition = text.search(END_REGEX_STRS[i])
+
+                tagLength = text.slice(startPosition).split("\n")[0].length;
+                break;
+            }
+        }
+
+        return { found: found, startPosition: startPosition, tagLength: tagLength };    
+    }
+
+
+    const COL_REGEX_STRS: string[] = ["=== column-end ===",
+                                      "=== end-column ==="];
+    const COL_REGEX_ARR: RegExp[] = [];
+    for(let i = 0; i < COL_REGEX_STRS.length; i++) {
+        COL_REGEX_ARR.push(new RegExp(COL_REGEX_STRS[i]));
+    }
+    function containsColEndTag(text: string): { found: boolean, startPosition: number } {
+
+        let found = false;
+        let startPosition = -1;
+
+        for(let i = 0; i< COL_REGEX_STRS.length; i++) {
+
+            if(COL_REGEX_ARR[i].test(text)) {
+                found = true;
+                startPosition = text.search(COL_REGEX_STRS[i])
+                break;
+            }
+        }
+
+        return { found: found, startPosition: startPosition };    
+    }
+
+    const COL_SETTINGS_REGEX_STRS = ["```settings(\\s[\\s\\S]+)?",
+                                     "```column-settings(\\s[\\s\\S]+)?",
+                                     "```multi-column-settings(\\s[\\s\\S]+)?"];
+    const COL_SETTINGS_REGEX_ARR: RegExp[] = [];
+    for(let i = 0; i < COL_SETTINGS_REGEX_STRS.length; i++) {
+        COL_SETTINGS_REGEX_ARR.push(new RegExp(COL_SETTINGS_REGEX_STRS[i]));
+    }
+    function containsColSettingsTag(text: string): { found: boolean, startPosition: number } {
+
+        let found = false;
+        let startPosition = -1;
+
+        for(let i = 0; i< COL_SETTINGS_REGEX_STRS.length; i++) {
+
+            if(COL_SETTINGS_REGEX_ARR[i].test(text)) {
+                found = true;
+                startPosition = text.search(COL_SETTINGS_REGEX_STRS[i])
+                break;
+            }
+        }
+
+        return { found: found, startPosition: startPosition };    
+    }
+
+    function parseColumnSettings(text: string): {text: string, settings: multiColumnSettings} {
 
         // Set the minimum number of columnds to 2.
         let numberOfColumns = 2;
         let columnLayout: ColumnLayout = ColumnLayout.standard
 
         // Check if there is a settings block in the text.
-        if(COL_SETTINGS_REGEX.test(text)) {
+        let columnSettingsSearch = containsColSettingsTag(text);
+        if(columnSettingsSearch.found === true) {
 
             // If the user has defined settings, get the location of the block
-            let startBlockIndex = text.search(COL_SETTINGS_REGEX_STR);
+            let startBlockIndex = columnSettingsSearch.startPosition;
 
             // If the user put the block in the middle of the text we dont
             // want to hide all text above the settings.
@@ -741,12 +811,17 @@ function createSplitColumnParser(startRegExString: string,
         let tempText = originalText;
         for(let i = 0; i < numColumnsToFind; i++) {  
 
-            if(COL_REGEX.test(tempText)) {
-                let startIndex = tempText.search(COL_REGEX_STR);
+            let columnEndSearch = containsColEndTag(tempText);
+            if(columnEndSearch.found === true) {
+
+                let startIndex = columnEndSearch.startPosition;
+
                 let columnText = tempText.slice(0, startIndex);
                 columns.push(columnText);
 
-                tempText = tempText.slice(startIndex + COL_REGEX_STR.length);
+                tempText = tempText.slice(startIndex).split("\n").splice(1).reduce((prev, current) => {
+                    return prev + "\n" + current;
+                }, "");
             }
         }
         columns.push(tempText); // Push the remaining data for the last column
@@ -779,20 +854,22 @@ function createSplitColumnParser(startRegExString: string,
          * 
          * Otherwise if there is no end tag we search for another start tag. If
          * another start tag exists we get that index so we don't recusivly 
-         * include another split column block within our block.
+         * include another multi column block within our block.
          */
         let endTagIndex = -1;
-        if(END_REGEX.test(linesBelowStr) === true) {
+        let endTagSearchData = containsEndTag(linesBelowStr);
+        let startTagSearchData = containsStartTag(linesBelowStr);
+        if(endTagSearchData.found === true) {
 
-            endTagIndex = linesBelowStr.search(END_REGEX_STR) 
+            endTagIndex = endTagSearchData.startPosition
 
             if(includeEndTag) {
                 endTagIndex = endTagIndex + "--- TEST-END".length; //TODO: Update to end tag when changed.
             }
         }
-        else if(START_REGEX.test(linesBelowStr) === true) {
+        else if(startTagSearchData.found === true) {
 
-            endTagIndex = linesBelowStr.search(START_REGEX_STR);
+            endTagIndex = startTagSearchData.startPosition;
         }
 
         /*
@@ -832,7 +909,8 @@ function createSplitColumnParser(startRegExString: string,
          * removed. This makes it easier to find the closest open start tag 
          * in the data.
          */
-        while(END_REGEX.test(linesAboveStr) === true) {
+        let endTagSerachData = containsEndTag(linesAboveStr);
+        while(endTagSerachData.found === true) {
 
             // Get the index of where the first regex match in the
             // string is. then we slice from 0 to index off of the string
@@ -841,11 +919,12 @@ function createSplitColumnParser(startRegExString: string,
             //
             // TODO: This could be simplified if we just slice the text after
             // the end tag instead of the begining.
-            let indexOfRegex = linesAboveStr.search(END_REGEX_STR);
+            let indexOfRegex = endTagSerachData.startPosition;
             linesAboveArray = linesAboveStr.slice(indexOfRegex).split("\n").splice(1)
             linesAboveStr = linesAboveArray.reduce((prev, current) => {
                 return prev + "\n"  + current;
             }, "");
+            endTagSerachData = containsEndTag(linesAboveStr);
         }
 
         /**
@@ -855,7 +934,8 @@ function createSplitColumnParser(startRegExString: string,
          * key.
          */ 
         let startBlockKey = "";
-        if(START_REGEX.test(linesAboveStr) === false) {
+        let startTagSearchData = containsStartTag(linesAboveStr);
+        if(startTagSearchData.found === false) {
             linesAboveArray = []
             return { startBlockKey, linesAboveArray }
         }
@@ -868,7 +948,7 @@ function createSplitColumnParser(startRegExString: string,
              * want to get the last key in our remaining set. Same idea as
              * above.
              */
-             while(START_REGEX.test(linesAboveStr) === true) {
+             while(startTagSearchData.found === true) {
 
                 // Get the index of where the first regex match in the
                 // string is. then we slice from 0 to index off of the string
@@ -877,7 +957,7 @@ function createSplitColumnParser(startRegExString: string,
                 //
                 // TODO: This could be simplified if we just slice the text after
                 // the end tag instead of the begining.
-                let startIndex = linesAboveStr.search(START_REGEX_STR);
+                let startIndex = startTagSearchData.startPosition;
 
                 linesAboveArray = linesAboveStr.slice(startIndex).split("\n")
     
@@ -887,6 +967,8 @@ function createSplitColumnParser(startRegExString: string,
                 linesAboveStr = linesAboveArray.reduce((prev, current) => {
                     return prev + "\n"  + current;
                 }, "");
+
+                startTagSearchData = containsStartTag(linesAboveStr);
             }
         }
 
