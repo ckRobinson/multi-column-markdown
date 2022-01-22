@@ -1,5 +1,5 @@
 {
-  "name": "split-column-markdown",
+  "name": "multi-column-markdown",
   "version": "0.0.1",
   "description": "This plugin adds functionality to render markdown in multiple side by side columns rather than always a single column of text.",
   "main": "main.js",

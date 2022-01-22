@@ -1,6 +1,6 @@
-# Split Column Markdown
+# Multi Column Markdown
 
-Take your boring markdown document and add some columns to it! With Split Column 
+Take your boring markdown document and add some columns to it! With Multi Column 
 Markdown rather than limiting your document layout to a single linear column of 
 text you can define blocks of data to be layed out horizontally next to each 
 other, allowing for more creative ways to structure your notes. See the example
@@ -19,7 +19,7 @@ editor preview rendering, but hopefully that can be added in the future.
 After enabling the plugin you can mark a set of markdown with the following 
 format:
 
-=== start-split-column:\<block_id>
+=== start-multi-column:\<block_id>
 
 \# Column 1
 
@@ -27,7 +27,7 @@ format:
 
 \# Column 2
 
-=== end-split-column
+=== end-multi-column
 
 Which when viewed from the Obsidian Markdown preview window will be displayed 
 as:
@@ -36,11 +36,11 @@ as:
 
 ### **Things to note:**
 
-After defining start-split-column you must declare an ID for 
+After defining start-multi-column you must declare an ID for 
 the block. The ID is used to differentiate between separate blocks when they are
 rendered.
 
-Currently you can not place a split column within another split column.
+Currently you can not place a multi column within another multi column.
 
 # Version History
 
