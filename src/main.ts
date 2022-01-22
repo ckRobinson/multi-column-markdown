@@ -537,8 +537,8 @@ function createMultiColumnParser(): multiColumnParser {
     // TODO: Set up optional start and end with shorter tag?
     // TODO: Update parser to check toLowerCase on text?
 
-    const START_REGEX_STRS = ["=== start-multi-column:[a-zA-Z0-9]*(\\s[\\s\\S]+)?",
-                              "=== multi-column-start:[a-zA-Z0-9]*(\\s[\\s\\S]+)?"]
+    const START_REGEX_STRS = ["=== start-multi-column:[a-zA-Z0-9-_]*(\\s[\\s\\S]+)?",
+                              "=== multi-column-start:[a-zA-Z0-9-_]*(\\s[\\s\\S]+)?"]
     const START_REGEX_ARR: RegExp[] = [];
     for(let i = 0; i < START_REGEX_STRS.length; i++) {
         START_REGEX_ARR.push(new RegExp(START_REGEX_STRS[i]));
