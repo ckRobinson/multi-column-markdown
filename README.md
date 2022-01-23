@@ -196,14 +196,16 @@ This plugins is currently not published in the Obsidian Community Plugins, to in
 ~~You can install this plugin from the Obsidian Community Plugins menu by following these steps:~~
 
 - ~~Open Settings within Obsidian~~
-- ~~Click Third-party plugin and ensure Safe mode is disabled~~
+- ~~Click Community plugins and ensure Safe mode is disabled~~
 - ~~Browse community plugins and find "Multi-Column Markdown"~~
 - ~~Click Install~~
 - ~~After installation is finished, click Enable~~
 
 # From GitHub Repository
 
-Download main.js, manifest.json, styles.css from the latest release and add a new directory: [Obsidian-vault]/.obsidian/plugins/multi-column-markdown folder and add the files to that directory.
+Download main.js, manifest.json, styles.css from the latest release and add a new directory: [Obsidian-vault]/.obsidian/plugins/multi-column-markdown and add the files to that directory. 
+
+If this is your first Obsidian plugin close and reopen Obsidian and then open the settings menu, click the Community plugins tab to the left, ensure Safe mode is disabled, and then enable "Multi-Column Markdown" in the installed plugins list.
 
 <br><br>
 
