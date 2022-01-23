@@ -18,8 +18,6 @@ You create a multi-column region by defining the start, settings, column-end, an
 
 <br>
 
----
-
 Text displayed above.
 
 === start-multi-column:\<block_id>\
@@ -64,15 +62,22 @@ Each tag type can be defined with the following options:
 
 <br>
 
----
-### Valid Column Settings:
+### **Valid Column Settings:**
 ---
 
 The column settings block can be omitted which will by default set the region to two equal sized columns. To change how the region is rendered you must define a settings block. The setting tags and all valid options are listed below.
 
+The settings block must be define right after the multi-column start tag and each settings tag must be on a separate line. EG:
+
+=== start-multi-column:\<block_id>\
+\```column-settings\
+number of columns: 2\
+largest column: left\
+\```
+
 <br>
 
-### Settings Tags:
+### **Settings Tags:**
 
 Number of Columns: 
 - 2 or 3
@@ -92,21 +97,9 @@ if this option is omitted.
     - Third
     - Middle
 
----
-### Commands:
----
+<br>
 
-You can access the command pallet with ctrl/command - P. 
-
-- ### Available Commands:
-    - #### Insert Multi-Column Region
-        - Will create a two column region where the cursor is located.
-        - #### Known Issues:
-            - If the preview pane is open the columns will not be rendered properly initially. To fix close and reopen the preview window, sometimes this requires changing to a different file and back.  
-
-
----
-### Full Examples:
+### **Full Examples:**
 ---
 
 === start-multi-column:exampleID_2Columns
@@ -119,6 +112,7 @@ You can access the command pallet with ctrl/command - P.
 
 === end-multi-column
 
+**Rendered as:**
 ![Eample_2Column](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_2Column.png?raw=true)
 
 <br>
@@ -140,6 +134,7 @@ number of columns: 3\
 
 === end-multi-column
 
+**Rendered as:**
 ![Eample_3Column_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_3Column_1.png?raw=true)
 
 <br>
@@ -162,11 +157,12 @@ largest column: center\
 
 === end-multi-column
 
+**Rendered as:**
 ![Eample_3Column_2](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_3Column_2.png?raw=true)
 
----
+<br>
 
-## **Things to note:**
+### **Things to note:**
 
 ---
 
@@ -175,6 +171,19 @@ the block. The ID is used to differentiate between separate blocks when they are
 rendered.
 
 Currently you can not place a multi column within another multi column.
+
+<br>
+
+### **Commands:**
+---
+
+You can access the command pallet with ctrl/command - P. 
+
+- ### Available Commands:
+    - #### Insert Multi-Column Region
+        - Will create a two column region where the cursor is located.
+        - #### Known Issues:
+            - If the preview pane is open the columns will not be rendered properly initially. To fix close and reopen the preview window, sometimes this requires changing to a different file and back.  
 
 <br><br>
 
