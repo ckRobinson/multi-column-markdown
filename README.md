@@ -8,13 +8,11 @@ creative ways.
 
 This plugin is built for the [Obsidan](https://obsidian.md/) markdown note taking application using their plugin API.
 
-**Note:** The Obsidian API and this plugin are both still works in progress and both are subject to change. 
+<br><br>
 
----
 
-## Usage:
+# Usage:
 
----
 
 You create a multi-column region by defining the start, settings, column-end, and end tags. EG:
 
@@ -40,6 +38,8 @@ Text displayed in column 2.
 
 Text displayed below.
 
+
+Rendered as:
 ![Eample_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_1.png?raw=true)
 
 ---
@@ -68,16 +68,19 @@ Each tag type can be defined with the following options:
 ### Valid Column Settings:
 ---
 
-By default the settings block can be omitted. A multi-column region will display two equal sized columns by default. To make changes you must define the settings block and use the following valid setting keys and options where each key is on its own line.
+The column settings block can be omitted which will by default set the region to two equal sized columns. To change how the region is rendered you must define a settings block. The setting tags and all valid options are listed below.
 
-### Keys:
+<br>
+
+### Settings Tags:
 
 Number of Columns: 
-- Either 2 or 3.
+- 2 or 3
 
 Largest Column: 
 - By default all of the columns will be set to equal size
 if this option is omitted.
+
 - For either 2 or 3 column layouts
     - Standard
     - Left
@@ -103,7 +106,7 @@ You can access the command pallet with ctrl/command - P.
 
 
 ---
-#### Full Examples:
+### Full Examples:
 ---
 
 === start-multi-column:exampleID_2Columns
@@ -163,7 +166,7 @@ largest column: center\
 
 ---
 
-### **Things to note:**
+## **Things to note:**
 
 ---
 
@@ -172,6 +175,8 @@ the block. The ID is used to differentiate between separate blocks when they are
 rendered.
 
 Currently you can not place a multi column within another multi column.
+
+<br><br>
 
 # Installation
 
@@ -191,6 +196,8 @@ This plugins is currently not published in the Obsidian Community Plugins, to in
 
 Download main.js, manifest.json, styles.css from the latest release and add a new directory: [Obsidian-vault]/.obsidian/plugins/multi-column-markdown folder and add the files to that directory.
 
+<br><br>
+
 # Known Issues
 
 ### When preview pane and edit pane are open at the same time.
@@ -204,7 +211,16 @@ Download main.js, manifest.json, styles.css from the latest release and add a ne
 
 ### Other
 - This plugin currently does not support Obsidian's new markdown editor preview rendering, but hopefully that can be added in the future.
+
+- The Obsidian API and this plugin are both still works in progress and both are subject to change. 
+
+<br><br>
+
 # Version History
 
-### **0.0.1**
+### **0.1.0**
 Initial release.
+- Obsidian properly parses the syntax used by this plugin.
+- Documents with multi-column regions are rendered properly in the document preview.
+- Includes custom command to quickly add a multi-column region to a document.
+
