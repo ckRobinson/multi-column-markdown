@@ -106,7 +106,7 @@ You can access the command pallet with ctrl/command - P.
 #### Full Examples:
 ---
 
-=== start-multi-column:exampleID_2Columns\
+=== start-multi-column:exampleID_2Columns
 
 \# Column 1
 
