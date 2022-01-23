@@ -9,7 +9,7 @@ export default class MultiColumnMarkdown extends Plugin {
 	async onload() {
 
         this.multiColumnParser = createMultiColumnParser();
-        this.enableMarkdownProcessor();
+        this.setupMarkdownPostProcessor();
 
         //TODO: Set up this as a modal to set settings automatically
         this.addCommand({            
@@ -47,7 +47,7 @@ ${editor.getDoc().getSelection()}`
         });
 	}
 
-    enableMarkdownProcessor() {
+    setupMarkdownPostProcessor() {
         /**
          * Value type structure rather than a reference type class used to
          * keep track of the parent divs within the DOM.
