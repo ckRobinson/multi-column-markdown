@@ -40,7 +40,7 @@ Text displayed in column 2.
 
 Text displayed below.
 
-![Eample_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/Example_1.png?raw=true)
+![Eample_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_1.png?raw=true)
 
 ---
 
@@ -116,7 +116,7 @@ You can access the command pallet with ctrl/command - P.
 
 === end-multi-column
 
-![Eample_2Column](https://github.com/ckRobinson/multi-column_markdown/blob/master/Example_2Column.png?raw=true)
+![Eample_2Column](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_2Column.png?raw=true)
 
 <br>
 
@@ -137,7 +137,7 @@ number of columns: 3\
 
 === end-multi-column
 
-![Eample_3Column_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/Example_3Column_1.png?raw=true)
+![Eample_3Column_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_3Column_1.png?raw=true)
 
 <br>
 
@@ -159,7 +159,7 @@ largest column: center\
 
 === end-multi-column
 
-![Eample_3Column_2](https://github.com/ckRobinson/multi-column_markdown/blob/master/Example_3Column_2.png?raw=true)
+![Eample_3Column_2](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_3Column_2.png?raw=true)
 
 ---
 
