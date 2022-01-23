@@ -8,7 +8,7 @@
     "build": "rollup --config rollup.config.js --environment BUILD:production"
   },
   "keywords": [],
-  "author": "",
+  "author": "Cameron Robinson",
   "license": "GPL-3.0",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^18.0.0",
