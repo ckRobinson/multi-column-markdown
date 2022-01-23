@@ -1,4 +1,4 @@
-import { App, Plugin, MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
+import { App, MarkdownView, Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 import { DivKey, ColumnLayout, MultiColumnParser, MultiColumnSettings, createMultiColumnParser } from './MultiColumnParser';
 
 export default class MultiColumnMarkdown extends Plugin {
@@ -10,6 +10,41 @@ export default class MultiColumnMarkdown extends Plugin {
 
         this.multiColumnParser = createMultiColumnParser();
         this.enableMarkdownProcessor();
+
+        //TODO: Set up this as a modal to set settings automatically
+        this.addCommand({            
+            id: `insert-multi-column-region`,
+            name: `Insert Multi-Column Region`,
+            editorCheckCallback: (checking, editor, view) => {
+
+                const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (markdownView) {
+                    if (checking === false) {
+                        try {
+                            editor.getDoc().replaceSelection(
+`
+=== multi-column-start:Replace-This-With-Region-ID
+\`\`\`column-settings
+Number of Columns: 2
+Largest Column: standard
+\`\`\`
+
+=== end-column ===
+
+=== multi-column-end
+
+${editor.getDoc().getSelection()}`
+                            );
+                        } catch (e) {
+                            new Notice(
+                                "Encountered an error inserting a multi-column region. Please try again later."
+                            );
+                        }
+                    }
+                    return true;
+                }
+            }
+        });
 	}
 
     enableMarkdownProcessor() {
