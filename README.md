@@ -21,6 +21,9 @@ You create a multi-column region by defining the start, settings, column-end, an
 <br>
 
 ---
+
+Text displayed above.
+
 === start-multi-column:\<block_id>\
 \```column-settings\
 number of columns: 2\
@@ -34,6 +37,10 @@ Text displayed in column 1.
 Text displayed in column 2.
 
 === end-multi-column
+
+Text displayed below.
+
+![Eample_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/Example_1.png?raw=true)
 
 ---
 
@@ -83,6 +90,19 @@ if this option is omitted.
     - Middle
 
 ---
+### Commands:
+---
+
+You can access the command pallet with ctrl/command - P. 
+
+- ### Available Commands:
+    - #### Insert Multi-Column Region
+        - Will create a two column region where the cursor is located.
+        - #### Known Issues:
+            - If the preview pane is open the columns will not be rendered properly initially. To fix close and reopen the preview window, sometimes this requires changing to a different file and back.  
+
+
+---
 #### Full Examples:
 ---
 
@@ -95,6 +115,8 @@ if this option is omitted.
 \# Column 2
 
 === end-multi-column
+
+![Eample_2Column](https://github.com/ckRobinson/multi-column_markdown/blob/master/Example_2Column.png?raw=true)
 
 <br>
 
@@ -115,6 +137,8 @@ number of columns: 3\
 
 === end-multi-column
 
+![Eample_3Column_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/Example_3Column_1.png?raw=true)
+
 <br>
 
 === start-multi-column:exampleID_3ColumnsLargestCenter\
@@ -123,7 +147,7 @@ number of columns: 3\
 largest column: center\
 \```
 
-\# Column 1
+\#### Column 1
 
 === end-column ===
 
@@ -131,9 +155,11 @@ largest column: center\
 
 === end-column ===
 
-\# Column 3
+\#### Column 3
 
 === end-multi-column
+
+![Eample_3Column_2](https://github.com/ckRobinson/multi-column_markdown/blob/master/Example_3Column_2.png?raw=true)
 
 ---
 
@@ -151,13 +177,15 @@ Currently you can not place a multi column within another multi column.
 
 ## From Obsidian Community Plugins
 
-You can install this plugin from the Obsidian Community Plugins menu by following these steps:
+This plugins is currently not published in the Obsidian Community Plugins, to install please follow the GitHub installation instructions below.
 
-- Open Settings within Obsidian
-- Click Third-party plugin and ensure Safe mode is disabled
-- Browse community plugins and find "Multi-Column Markdown"
-- Click Install
-- After installation is finished, click Enable
+~~You can install this plugin from the Obsidian Community Plugins menu by following these steps:~~
+
+- ~~Open Settings within Obsidian~~
+- ~~Click Third-party plugin and ensure Safe mode is disabled~~
+- ~~Browse community plugins and find "Multi-Column Markdown"~~
+- ~~Click Install~~
+- ~~After installation is finished, click Enable~~
 
 # From GitHub Repository
 
@@ -171,6 +199,8 @@ Download main.js, manifest.json, styles.css from the latest release and add a ne
     - Quick Fix #1: Close and reopen the preview pane. Sometimes this requires swapping to a new file and back.
 
     - Quick Fix #2: Add a new character to an already existing line and then remove the character. This will force a full refresh of the multi-column region.
+- Adding a new multi-column region around an existing set of data causes the existing data to be rendered twice, the original data and again within the multi-column.
+    - Quick Fix: Close and reopen the preview pane. Sometimes this requires swapping to a new file and back.
 
 ### Other
 - This plugin currently does not support Obsidian's new markdown editor preview rendering, but hopefully that can be added in the future.
