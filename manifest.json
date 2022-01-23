@@ -1,7 +1,7 @@
 {
 	"id": "multi-column-markdown",
 	"name": "Multi-Column Markdown",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"minAppVersion": "0.9.12",
 	"description": "This plugin adds functionality to render markdown in multiple side by side columns rather than always a single column of text.",
 	"author": "Cameron Robinson",
