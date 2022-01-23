@@ -445,6 +445,7 @@ ${editor.getDoc().getSelection()}`
     
                 case(ColumnLayout.right):
                 case(ColumnLayout.second):
+                case(ColumnLayout.last):
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent twoColumnsHeavyRight_Left`
                     }));
@@ -498,6 +499,7 @@ ${editor.getDoc().getSelection()}`
 
                 case(ColumnLayout.right):
                 case(ColumnLayout.third):
+                case(ColumnLayout.last):
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `columnContent threColumnsHeavyRight_Left`
                     }));

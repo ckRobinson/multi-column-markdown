@@ -22,7 +22,8 @@ export enum ColumnLayout {
     middle,
     second,
     right,
-    third
+    third,
+    last
 };
 
 export type MultiColumnSettings = {
