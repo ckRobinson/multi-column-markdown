@@ -26,9 +26,19 @@ export enum ColumnLayout {
     last
 };
 
+enum BorderOption {
+    enabled,
+    on,
+    true,
+    disabled,
+    off,
+    false
+}
+
 export type MultiColumnSettings = {
     numberOfColumns: number,
-    columnLayout: ColumnLayout
+    columnLayout: ColumnLayout,
+    drawBorder: boolean
 }
 
 export type MultiColumnParser = {
@@ -151,6 +161,7 @@ export function createMultiColumnParser(): MultiColumnParser {
         // Set the minimum number of columnds to 2.
         let numberOfColumns = 2;
         let columnLayout: ColumnLayout = ColumnLayout.standard
+        let borderDrawn: boolean = true;
 
         // Check if there is a settings block in the text.
         let columnSettingsSearch = containsColSettingsTag(text);
@@ -216,9 +227,27 @@ export function createMultiColumnParser(): MultiColumnParser {
                     }
                 }
             }
+
+            for(let i = 0; i < settingsText.length; i++) {
+                if(settingsText[i].toLowerCase().replace(/\s/g, "").contains("border:")) {
+
+                    let setting = settingsText[i].split(":")[1].trimStart().trimEnd().toLowerCase();
+                    let isBorderDrawn: BorderOption = (<any>BorderOption)[setting]
+
+                    if(isBorderDrawn !== undefined) {
+                        switch(isBorderDrawn){
+                            case(BorderOption.disabled):
+                            case(BorderOption.off):
+                            case(BorderOption.false):
+                                borderDrawn = false;
+                                break;
+                        }
+                    }
+                }
+            }
         }
 
-        return { text, settings: { numberOfColumns, columnLayout } }
+        return { text, settings: { numberOfColumns, columnLayout, drawBorder: borderDrawn } }
     }
 
     /**

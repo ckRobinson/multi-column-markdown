@@ -352,7 +352,9 @@ ${editor.getDoc().getSelection()}`
                 return prev + "\n"  + current;
             }, "");
 
-            el.children[0].detach()
+            if(el.children.length > 0) {
+                el.children[0].detach()
+            }
 
             let settingsData = this.multiColumnParser.parseColumnSettings(textFromStart);
             textFromStart = settingsData.text;
@@ -511,6 +513,13 @@ ${editor.getDoc().getSelection()}`
                     }));
                     break;
             }
+        }
+
+        for(let i = 0; i < columnContentDivs.length; i++) {
+            if(settings.drawBorder) {
+                columnContentDivs[i].addClass("columnBorder");
+            }
+            columnContentDivs[i].addClass("columnShadow");
         }
 
         // Create markdown renderer to parse the passed markdown

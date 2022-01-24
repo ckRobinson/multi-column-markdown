@@ -85,13 +85,18 @@
 
 .columnContent {
     padding-inline: 10px;
+}
 
+.columnBorder {
     border: grey;
     border-style: solid;
     border-width: 0.5px;
 }
 
-
+.columnShadow {
+    border-radius: 0.1rem;
+    box-shadow: 0 0.2rem 0.5rem var(--background-modifier-box-shadow);
+}
 
 .multiColumnErrorMessage {
     margin-bottom: 10px;
