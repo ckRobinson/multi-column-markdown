@@ -1,7 +1,7 @@
 {
   "name": "multi-column-markdown",
-  "version": "0.1.0",
-  "description": "This plugin adds functionality to render markdown in multiple side by side columns rather than always a single column of text.",
+  "version": "0.2.0",
+	"description": "This plugin adds functionality to create markdown documents with multiple columns of content viewable within Obsidian's preview mode",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",

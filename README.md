@@ -37,7 +37,7 @@ Text displayed in column 2.
 Text displayed below.
 
 
-Rendered as:
+**Rendered as:**
 ![Eample_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_1.png?raw=true)
 
 ---
@@ -65,7 +65,7 @@ Each tag type can be defined with the following options:
 ### **Valid Column Settings:**
 ---
 
-The column settings block can be omitted which will by default set the region to two equal sized columns. To change how the region is rendered you must define a settings block. The setting tags and all valid options are listed below.
+The column settings block can be omitted which will by default set the region to two equal sized columns. To change how the region is rendered you must define a settings block. The settings tags and all valid options for each setting are listed below.
 
 The settings block must be define right after the multi-column start tag and each settings tag must be on a separate line. EG:
 
@@ -73,6 +73,7 @@ The settings block must be define right after the multi-column start tag and eac
 \```column-settings\
 number of columns: 2\
 largest column: left\
+border: enabled\
 \```
 
 <br>
@@ -97,6 +98,12 @@ if this option is omitted.
     - Third
     - Middle
 
+Border:
+- By default the border is enabled but can be removed with:
+    - disabled
+    - off
+    - false
+
 <br>
 
 ### **Full Examples:**
@@ -120,6 +127,7 @@ if this option is omitted.
 === start-multi-column:exampleID_3Columns\
 \```column-settings\
 number of columns: 3\
+border: off\
 \```
 
 \# Column 1
@@ -167,10 +175,9 @@ largest column: center\
 ---
 
 After defining start-multi-column you must declare an ID for 
-the block. The ID is used to differentiate between separate blocks when they are
-rendered.
+the region. The ID is used to differentiate between different regions if there are multiple in the same document.
 
-Currently you can not place a multi column within another multi column.
+Currently you can not place a multi-column region within another multi-column region.
 
 <br>
 
@@ -213,11 +220,11 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 ### When preview pane and edit pane are open at the same time.
 
-- Cutting a line or deleting the last character from a line within a multi-column region will not update in the preview pane.
+- Cutting out a line or deleting the last character on a line that was within a multi-column region will not update in the preview pane.
     - Quick Fix #1: Close and reopen the preview pane. Sometimes this requires swapping to a new file and back.
 
     - Quick Fix #2: Add a new character to an already existing line and then remove the character. This will force a full refresh of the multi-column region.
-- Adding a new multi-column region around an existing set of data causes the existing data to be rendered twice, the original data and again within the multi-column.
+- Adding a new multi-column region around an existing set of data causes the existing data to be rendered twice. Once as the original data and again within the new multi-column region.
     - Quick Fix: Close and reopen the preview pane. Sometimes this requires swapping to a new file and back.
 
 ### Other
@@ -228,6 +235,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 <br><br>
 
 # Version History
+
+### **0.2.0**
+Added additional setting to the multi-column regions. Users can now disable the borders around the regions if desired by setting "border: disabled" within the settings block.
 
 ### **0.1.0**
 Initial release.

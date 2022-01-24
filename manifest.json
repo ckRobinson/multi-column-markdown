@@ -1,9 +1,9 @@
 {
 	"id": "multi-column-markdown",
 	"name": "Multi-Column Markdown",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"minAppVersion": "0.13.19",
-	"description": "This plugin adds functionality to render markdown in multiple side by side columns rather than always a single column of text.",
+	"description": "This plugin adds functionality to create markdown documents with multiple columns of content viewable within Obsidian's preview mode",
 	"author": "Cameron Robinson",
 	"authorUrl": "https://portfolio.ckrobinson.net",
 	"isDesktopOnly": false
