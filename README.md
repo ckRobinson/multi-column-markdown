@@ -208,7 +208,7 @@ This plugins is currently not published in the Obsidian Community Plugins, to in
 - ~~Click Install~~
 - ~~After installation is finished, click Enable~~
 
-# From GitHub Repository
+## From GitHub Repository
 
 Download main.js, manifest.json, styles.css from the latest release and add a new directory: [Obsidian-vault]/.obsidian/plugins/multi-column-markdown and add the files to that directory. 
 
