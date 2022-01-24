@@ -1,5 +1,5 @@
 import { App, MarkdownView, Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
-import { DivKey, ColumnLayout, MultiColumnParser, MultiColumnSettings, createMultiColumnParser } from './MultiColumnParser';
+import { DivKey, MultiColumnParser, MultiColumnSettings, createMultiColumnParser } from './MultiColumnParser';
 
 export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
@@ -418,102 +418,7 @@ ${editor.getDoc().getSelection()}`
         let multiColumnParent = createDiv({
             cls: `multiColumnParent rowC`,
         });
-
-        let columnContentDivs = [];
-        if(settings.numberOfColumns === 2) {
-
-            switch(settings.columnLayout) {
-                case(ColumnLayout.standard):
-                case(ColumnLayout.middle):
-                case(ColumnLayout.center):
-                case(ColumnLayout.third):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoEqualColumns_Left`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoEqualColumns_Right`
-                    }));
-                    break;
-    
-                case(ColumnLayout.left):
-                case(ColumnLayout.first):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoColumnsHeavyLeft_Left`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoColumnsHeavyLeft_Right`
-                    }));
-                    break;
-    
-                case(ColumnLayout.right):
-                case(ColumnLayout.second):
-                case(ColumnLayout.last):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoColumnsHeavyRight_Left`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoColumnsHeavyRight_Right`
-                    }));
-                    break;
-            }
-        }
-        else if(settings.numberOfColumns === 3) {
-
-            switch(settings.columnLayout) {
-                case(ColumnLayout.standard):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threeEqualColumns_Left`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threeEqualColumns_Middle`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threeEqualColumns_Right`
-                    }));
-                    break;
-
-                case(ColumnLayout.left):
-                case(ColumnLayout.first):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyLeft_Left`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyLeft_Middle`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyLeft_Right`
-                    }));
-                    break;
-
-                case(ColumnLayout.middle):
-                case(ColumnLayout.center):
-                case(ColumnLayout.second):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyMiddle_Left`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyMiddle_Middle`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyMiddle_Right`
-                    }));
-                    break;
-
-                case(ColumnLayout.right):
-                case(ColumnLayout.third):
-                case(ColumnLayout.last):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyRight_Left`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyRight_Middle`
-                    }));
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyRight_Right`
-                    }));
-                    break;
-            }
-        }
+        let columnContentDivs = multiColumnParser.getColumnContentDivs(settings, multiColumnParent);
 
         for(let i = 0; i < columnContentDivs.length; i++) {
             if(settings.drawBorder) {

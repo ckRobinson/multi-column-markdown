@@ -14,7 +14,7 @@ function createDivKey(keyText: string, startIndex: number, endIndex: number, ): 
     return {keyText: keyText, startIndex: startIndex, endIndex: endIndex, getKeyWithOffset: getKeyWithOffset}
 }
 
-export enum ColumnLayout { 
+enum ColumnLayout { 
     standard,
     left,
     first,
@@ -49,7 +49,8 @@ export type MultiColumnParser = {
     parseDivText: (linesToHide: string[]) => {keys: DivKey[], originals: string[]},
     splitTextByColumn: (originalText: string, numberOfRequestedColumns: number) => string[],
     getEndBlockBelowLine: (stringsToFilter: string[], includeEndTag?: boolean) => string[],
-    getStartBlockAboveLine: (linesAboveArray: string[]) => { startBlockKey: string, linesAboveArray: string[] }
+    getStartBlockAboveLine: (linesAboveArray: string[]) => { startBlockKey: string, linesAboveArray: string[] },
+    getColumnContentDivs: (settings: MultiColumnSettings, multiColumnParent: HTMLDivElement) => HTMLDivElement[]
 }
 
 export function createMultiColumnParser(): MultiColumnParser {
@@ -515,6 +516,107 @@ export function createMultiColumnParser(): MultiColumnParser {
         return { startBlockKey, linesAboveArray };
     }
 
+    function getColumnContentDivs(settings: MultiColumnSettings, multiColumnParent: HTMLDivElement): HTMLDivElement[] {
+
+        let columnContentDivs: HTMLDivElement[] = []
+        if(settings.numberOfColumns === 2) {
+
+            switch(settings.columnLayout) {
+                case(ColumnLayout.standard):
+                case(ColumnLayout.middle):
+                case(ColumnLayout.center):
+                case(ColumnLayout.third):
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent twoEqualColumns_Left`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent twoEqualColumns_Right`
+                    }));
+                    break;
+    
+                case(ColumnLayout.left):
+                case(ColumnLayout.first):
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent twoColumnsHeavyLeft_Left`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent twoColumnsHeavyLeft_Right`
+                    }));
+                    break;
+    
+                case(ColumnLayout.right):
+                case(ColumnLayout.second):
+                case(ColumnLayout.last):
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent twoColumnsHeavyRight_Left`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent twoColumnsHeavyRight_Right`
+                    }));
+                    break;
+            }
+        }
+        else if(settings.numberOfColumns === 3) {
+
+            switch(settings.columnLayout) {
+                case(ColumnLayout.standard):
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threeEqualColumns_Left`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threeEqualColumns_Middle`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threeEqualColumns_Right`
+                    }));
+                    break;
+
+                case(ColumnLayout.left):
+                case(ColumnLayout.first):
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyLeft_Left`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyLeft_Middle`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyLeft_Right`
+                    }));
+                    break;
+
+                case(ColumnLayout.middle):
+                case(ColumnLayout.center):
+                case(ColumnLayout.second):
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyMiddle_Left`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyMiddle_Middle`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyMiddle_Right`
+                    }));
+                    break;
+
+                case(ColumnLayout.right):
+                case(ColumnLayout.third):
+                case(ColumnLayout.last):
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyRight_Left`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyRight_Middle`
+                    }));
+                    columnContentDivs.push(multiColumnParent.createDiv({
+                        cls: `columnContent threColumnsHeavyRight_Right`
+                    }));
+                    break;
+            }
+        }
+
+        return columnContentDivs;
+    }
+
     return { splitTextByColumn: splitTextByColumn, 
         getEndBlockBelowLine: getEndBlockBelowLine, 
         getStartBlockAboveLine: getStartBlockAboveLine,
@@ -522,5 +624,7 @@ export function createMultiColumnParser(): MultiColumnParser {
         containsEndTag: containsEndTag,
         formatDivText: formatDivText,
         parseDivText: parseDivText,
-        parseColumnSettings: parseColumnSettings }
+        parseColumnSettings: parseColumnSettings,
+        getColumnContentDivs: getColumnContentDivs
+    }
 }
