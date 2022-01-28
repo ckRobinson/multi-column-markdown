@@ -1,3 +1,11 @@
+/*
+ * File: multi-column-markdown/src/MultiColumnParser.ts
+ * Created Date: Saturday, January 22nd 2022, 6:02:46 pm
+ * Author: Cameron Robinson
+ * 
+ * Copyright (c) 2022 Cameron Robinson
+ */
+
 export type DivKey = {
     keyText: string,
     startIndex: number,

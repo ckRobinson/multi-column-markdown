@@ -1,3 +1,11 @@
+/*
+ * File: multi-column-markdown/src/main.ts
+ * Created Date: Tuesday, October 5th 2021, 1:09 pm
+ * Author: Cameron Robinson
+ * 
+ * Copyright (c) 2022 Cameron Robinson
+ */
+
 import { App, MarkdownView, Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 import { DivKey, MultiColumnParser, MultiColumnSettings, createMultiColumnParser } from './MultiColumnParser';
 
