@@ -426,13 +426,20 @@ ${editor.getDoc().getSelection()}`
         let multiColumnParent = createDiv({
             cls: `multiColumnParent rowC`,
         });
+        if(settings.drawShadow === true) {
+            multiColumnParent.addClass("multiColumnParentShadow");
+        }
+
         let columnContentDivs = multiColumnParser.getColumnContentDivs(settings, multiColumnParent);
 
         for(let i = 0; i < columnContentDivs.length; i++) {
-            if(settings.drawBorder) {
+            if(settings.drawBorder === true) {
                 columnContentDivs[i].addClass("columnBorder");
             }
-            columnContentDivs[i].addClass("columnShadow");
+
+            if(settings.drawShadow === true) {
+                columnContentDivs[i].addClass("columnShadow");
+            }
         }
 
         // Create markdown renderer to parse the passed markdown

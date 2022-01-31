@@ -43,10 +43,20 @@ enum BorderOption {
     false
 }
 
+enum ShadowOption {
+    enabled,
+    on,
+    true,
+    disabled,
+    off,
+    false
+}
+
 export type MultiColumnSettings = {
     numberOfColumns: number,
     columnLayout: ColumnLayout,
-    drawBorder: boolean
+    drawBorder: boolean,
+    drawShadow: boolean
 }
 
 export type MultiColumnParser = {
@@ -171,6 +181,7 @@ export function createMultiColumnParser(): MultiColumnParser {
         let numberOfColumns = 2;
         let columnLayout: ColumnLayout = ColumnLayout.standard
         let borderDrawn: boolean = true;
+        let shadowDrawn: boolean = true;
 
         // Check if there is a settings block in the text.
         let columnSettingsSearch = containsColSettingsTag(text);
@@ -254,9 +265,27 @@ export function createMultiColumnParser(): MultiColumnParser {
                     }
                 }
             }
+
+            for(let i = 0; i < settingsText.length; i++) {
+                if(settingsText[i].toLowerCase().replace(/\s/g, "").contains("shadow:")) {
+
+                    let setting = settingsText[i].split(":")[1].trimStart().trimEnd().toLowerCase();
+                    let isShadowDrawn: ShadowOption = (<any>ShadowOption)[setting]
+
+                    if(isShadowDrawn !== undefined) {
+                        switch(isShadowDrawn){
+                            case(ShadowOption.disabled):
+                            case(ShadowOption.off):
+                            case(ShadowOption.false):
+                                shadowDrawn = false;
+                                break;
+                        }
+                    }
+                }
+            }
         }
 
-        return { text, settings: { numberOfColumns, columnLayout, drawBorder: borderDrawn } }
+        return { text, settings: { numberOfColumns, columnLayout, drawBorder: borderDrawn, drawShadow: shadowDrawn } }
     }
 
     /**
