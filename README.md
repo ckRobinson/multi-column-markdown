@@ -236,9 +236,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 # Version History
 
 ### **0.3.0**
-Entire overhaul of the parsing and render engine. This rework fixes many of the issues in the previous version including the double rendering and data still being rendered after removing an entire line. It also fixes compatability issues where items such as Dataview code blocks as well as images were not being rendered properly within a region.
-- New cleaner backend for parsing and rendering multi-column regions.
-- Improved compatability with other plugins.
+Entire overhaul of the parsing and render engine. This rework fixes many of the issues in the previous version including the double rendering and data still being rendered after removing an entire line. It also fixes compatibility issues where items such as Dataview code blocks as well as images were not being rendered properly within a region.
+- New cleaner back-end for parsing and rendering multi-column regions.
+- Improved comparability with other plugins.
 - Additional setting to allow the removal of the region shadow.
 
 ### **0.2.0**
