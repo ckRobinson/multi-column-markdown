@@ -6,17 +6,23 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { App, MarkdownView, Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
-import { DivKey, MultiColumnParser, MultiColumnSettings, createMultiColumnParser } from './MultiColumnParser';
+import { MarkdownView, Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, MarkdownSectionInformation } from 'obsidian';
+import * as multiColumnParser from './MultiColumnParser';
+import { DOMManager, createDomManager, startRegionParent } from './domManager';
+import { DOMObject, DOMObjectTag } from './domObject';
+import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
+
+import { getUID } from './utils';
 
 export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
 
-    multiColumnParser: MultiColumnParser = undefined;
+    manager: DOMManager = undefined;
 
 	async onload() {
 
-        this.multiColumnParser = createMultiColumnParser();
+        this.manager = createDomManager();
+
         this.setupMarkdownPostProcessor();
 
         //TODO: Set up this as a modal to set settings automatically
@@ -56,109 +62,6 @@ ${editor.getDoc().getSelection()}`
 	}
 
     setupMarkdownPostProcessor() {
-        /**
-         * Value type structure rather than a reference type class used to
-         * keep track of the parent divs within the DOM.
-         */
-        type multiColumnParent = {
-            key: string,
-            el: HTMLElement,
-            sourcePath: string,
-            childRemoved: (divMapID: string) => void,
-            rendererUpdated: () => void
-        }
-
-        /**
-         * This function acts as a constructor for the multiColumnParent type above.
-         * It captures all of the passed data as well as defines the nessecary 
-         * functions to be captured as closures before returning a new object.
-         * 
-         * @param key the key for the multiColumnParent within the document map.
-         * @param el the htmlelement within the DOM. Used to update the dom when needed.
-         * @param sourcePath the path of the file we're in, used for linking to other pages. (I think.)
-         * 
-         * =====
-         * 
-         * All other parameters below are not currently used, They are a work in progress
-         * for updating the DOM when a child element is deleted without the renderer updating.
-         * 
-         * @param lineStart 
-         * @param renderErrorRegion 
-         * @param app 
-         * @param multiColumnParser 
-         * @param hideColumnDivs 
-         * @param setUpColumnMarkdown 
-         * @param parseDivText 
-         * 
-         * @returns a new multiColumnParent structure.
-         */
-        function createSplitColContainer(key: string, el: HTMLElement, lineStart: number, sourcePath: string, renderErrorRegion: HTMLDivElement, app: App, multiColumnParser: MultiColumnParser,
-            hideColumnDivs: (linesToHide: string[], divMap: Map<string, {text: string, el: HTMLElement}>, parseDivText: (lines: string[]) => {keys: DivKey[], originals: string[]}, indexOffset?: number) => void,
-            setUpColumnMarkdown: (parentElement: HTMLElement, textFromStart: string, sourcePath: string, multiColumnParser: MultiColumnParser, settings: MultiColumnSettings) => void,
-            parseDivText: (lines: string[]) => {keys: DivKey[], originals: string[]}): multiColumnParent {
-
-            /**
-             * When one of our multi column blocks is updated within the DOM we
-             * call this function. It resets the error message over the
-             * block because the renderer will be refreshed at that point.
-             */
-            function rendererUpdated() {
-                renderErrorRegion.innerText = "";
-            }
-
-            /**
-             * This function is called when a child div is removed from the DOM
-             * but the renderer is not updated. Something like cutting out a block
-             * of text will make this occur. Here we ideally want to refresh the
-             * preview DOM to match the changes. However for right now we display
-             * an error to the user that the preview renderer does not match
-             * the expected output. This is really only an issue when the user
-             * has an editor and preview leaf open.
-             * 
-             * ======
-             * 
-             * TODO: Idea: Rather than attempting to refresh the entire text
-             * cache on update. We just want to update the required portion
-             * of the cache that contains the updated text. Something like
-             * slicing out the old text from the cache and rebuilding from 
-             * the newly updated DOM. Will require storing more info about
-             * the column's children in a struct or class but seems do-able.
-             * 
-             * @param divMapID This is the ID of the item being removed from the 
-             * DOM. The ID is created when the child is initially rendered and 
-             * used here to retrieve their data so we can know what has changed 
-             * within the DOM.
-             */
-            function childRemoved(divMapID: string) {
-
-                renderErrorRegion.innerText = "Encountered error rendering multi column markdown. Refresh the preview window or make another change to the file."
-            }
-
-            return {key: key, el: el, sourcePath:sourcePath, childRemoved: childRemoved, rendererUpdated: rendererUpdated }
-        }
-
-
-        const columnContainerMap: Map<string, multiColumnParent> = new Map();
-        const divMap: Map<string, {text: string, el: HTMLElement}> = new Map();
-
-        // Used to determine if a div was updated in the last draw call or not. 
-        // if we reach the elementUnloaded callback below and redererUpdated is
-        // false then we know we have to handle the re-rendering of the preview
-        // window ourselves.
-        let renderUpdated = false;
-        function elementUnloaded(divMapID: string, onUnload?: ()=>void) {
-            if(renderUpdated === false) {
-                if(onUnload) {
-                    onUnload()
-                }
-                // console.log("Nothing updated, updating in callback.")
-                divMap.delete(divMapID);
-            }
-            else {
-                divMap.delete(divMapID);
-            }
-            renderUpdated = false
-        }
 
         this.registerMarkdownPostProcessor(async (el, ctx) => {
 
@@ -167,247 +70,153 @@ ${editor.getDoc().getSelection()}`
             // no start tag in the document we can just return and
             // ignore the rest of the parsing.
             let info = ctx.getSectionInfo(el);
-            let elementMarkdownRenderer = null;
-            let divMapID = ""
 
-            const sourcePath =
-            typeof ctx == "string"
-                ? ctx
-                : ctx?.sourcePath ??
-                    this.app.workspace.getActiveFile()?.path ??
-                    "";    
+            /**
+             * We need the context info to properly parse so returning here 
+             * info is null. TODO: Set error in view if this occurs.
+             */
+            if(!info) {
 
-            // Whenever there is an update to the document window we
-            // want to capture the div being rendered so we can use it ourselves
-            // this currently is mostly used to render an error when the div is
-            // removed but not updated. Working on re-rendering the data to the
-            // screen if the data has been updated.
-            if(info){
-
-                let index = 0;
-                let allTextLines = info.text.split("\n");
-                for(let i = 0; i < info.lineStart; i++) {
-
-                    if(allTextLines[i] !== "") {
-                        index++;
-                    }
-                }
-                let startLine = index;
-                let endLine = startLine + ((info.lineEnd) - info.lineStart);
-
-                let text = info.text.split("\n").slice(info.lineStart, info.lineEnd + 1).reduce((prev, curr) => {
-                    return prev + "\n" + curr
-                }, "")
-    
-
-                text = this.multiColumnParser.formatDivText(text);
-                if(text.startsWith("\n")) {
-                    text = text.slice(1, text.length);
-                }
-    
-                divMapID = startLine + text + endLine;
-                divMap.set(divMapID, {text: text, el: el });
-                elementMarkdownRenderer = new MarkdownRenderChild(el);
-                elementMarkdownRenderer.onunload = () => {
-                    elementUnloaded(divMapID);
-                };
-                ctx.addChild(elementMarkdownRenderer);
-
-                // We want to check here if there is a start tag in the documnet
-                // and if not we can immediatly exit the function.
-                if(this.multiColumnParser.containsStartTag(info.text).found === false) {
-                    return;
-                }
-            }
-            else {
                 return;
             }
 
-            // Check if the line currently passed to processor contains the 
-            // start regex that we want. If so we need to store a reference
-            // to the element and the context to be used later.
-            if(this.multiColumnParser.containsStartTag(el.textContent).found === true) {
+            const sourcePath = ctx.sourcePath;
 
-                // If our regex matches we can split the data by - to 
-                // get the column identifier. We use this to store in
-                // our map to know what div to store our markdown in
-                // when later the data is updated within the block.
-                let key = el.textContent.split(":")[1]
+            /**
+             * Whenever the document renderer is updated we need to capture the
+             * element that was processed so we can determine where to place it,
+             * if needed, within our multi-column region. 
+             * 
+             * We need to do this because as far as I can tell there is no way
+             * to find out what siblings the element has from this callback.
+             * The goal of this code block is to allow us to track the siblings
+             * of elements so we can then know what order to render the elements
+             * within our region.
+             */
+            let nearbySiblings: nearbySiblings = findSiblingsAboveEl(el, info, sourcePath);
 
-                // remove the text from the container so it does not
-                // appear in the render and set the ID.
-                // Also set the proper CSS classes here.
-                el.id = `TwoColumnContainer-${key}`
+            let currentObject = nearbySiblings.currentObject;
+            /**
+             * Now we add the object to the manager and then setup the
+             * callback for when the object is removed from view that will remove 
+             * the item from the manager.
+             */
+            let elementIndexInManager = this.manager.addObject(nearbySiblings.siblingsAbove, nearbySiblings.currentObject);
+            let elementMarkdownRenderer = new MarkdownRenderChild(el);
+            elementMarkdownRenderer.onunload = () => {
+                if(this.manager) {
+                    
+                    // We can attempt to update the view here after the item is removed
+                    // but need to get the item's parent element before removing object from manager.
+                    let parentElementData = this.manager.getParentAboveObject(currentObject.UID);
+
+                    this.manager.removeObject(currentObject.UID);
+
+                    if(parentElementData === null) {
+                        return;
+                    }
+                    this.updateMultiColumnRegion(parentElementData);
+                }
+            };
+            ctx.addChild(elementMarkdownRenderer);
+
+            /**
+             * Now that we have set the element in our manager we want to see if this
+             * document contains a start tag. If no start tag exists we just return
+             * here as no other parsing or rendering is required.
+             */
+            if(multiColumnParser.containsStartTag(info.text) === false) {
+                return;
+            }
+
+            /**
+             * At this point we know that this document contains a multi-column region
+             * so we now move forward to determine what we need to do with our current 
+             * element.
+             */
+
+            // Get the lines for just our current element from the document, this is needed for
+            // certain parsing and trying to see if this can be removed still.
+            let elementData = info.text.split("\n").splice(info.lineStart, info.lineEnd + 1 - info.lineStart).reduce((prev, current) => {
+                return prev + "\n"  + current;
+            }, "");
+
+            // Check our current element for any special flags.
+            if(multiColumnParser.containsStartTag(el.textContent) === true) {
+
+                /** 
+                 * Set up the current element to act as the parent for the 
+                 * multi-column region.
+                 */
+                el.id = `TwoColumnContainer-${getUID()}`
                 el.children[0].detach();
                 el.classList.add("multiColumnContainer")
-
-                let renderErrorRegion = el.createDiv({
+                let renderErrorRegion = el.createDiv({ //TODO: Determine if this is needed now
                     cls: `multiColumnErrorMessage`,
                 });
                 let renderColumnRegion = el.createDiv({
                     cls: `RenderColRegion`
                 })
 
-                columnContainerMap.set(key, createSplitColContainer(key, renderColumnRegion, info.lineStart, sourcePath, renderErrorRegion, this.app, this.multiColumnParser, this.hideColumnDivs, this.setUpColumnMarkdown, this.multiColumnParser.parseDivText));
-
-                // Take the entire document and get the data starting from our start tag.
-                let linesBelowArray = info.text.split("\n").splice(info.lineStart + 1);
-
-                // Now pass to a parser to find our end tag, another start tag (no recursion), or the end of the file.
-                // We want it to include the end tag so we can hide any divs below us if needed.
-                let linesBelowArrayIncEnd = this.multiColumnParser.getEndBlockBelowLine(linesBelowArray, true);
-                this.hideColumnDivs(linesBelowArrayIncEnd, divMap, this.multiColumnParser.parseDivText, info.lineStart + 1);
-
-                // Now slice off the end tag so we have an array of just the text to be displayed to the screen.
-                linesBelowArray = linesBelowArray.slice(0, linesBelowArray.length - 1);
-                linesBelowArray = this.multiColumnParser.getEndBlockBelowLine(linesBelowArray);
-
-                // Reduce the text back to a single string.
-                let textFromStart = linesBelowArray.reduce((prev, current) => {
-                    return prev + "\n"  + current;
-                }, "");
-
-                // Parse out a settings block if one exists.
-                let settingsData = this.multiColumnParser.parseColumnSettings(textFromStart);
-                textFromStart = settingsData.text;
-
-                // Pass all necessary data to the renderer.
-                this.setUpColumnMarkdown(renderColumnRegion, textFromStart, sourcePath, this.multiColumnParser, settingsData.settings);
-
-                renderUpdated = true;
-                return;
+                /**
+                 * Here we inform the manager that this item is a multi-column start
+                 * region so we can find it later by other objects.
+                 */
+                currentObject = this.manager.setElementToStartRegion(currentObject.UID, renderColumnRegion);
             }
+            else if(multiColumnParser.containsEndTag(el.textContent) === true) {
 
-            // If our current line is an end tag we want to set the data to
-            // everything above us in the current block.
-            if(this.multiColumnParser.containsEndTag(el.textContent).found === true) {
-
-                let initialLinesAboveArray = info.text.split("\n").splice(0, info.lineStart);
-                let { startBlockKey, linesAboveArray } = this.multiColumnParser.getStartBlockAboveLine(initialLinesAboveArray);
-
-                // Attempt to get parent from the map, if it doesnt exist s
-                // something went wrong so we want to return immediatly.
-                let parent: multiColumnParent = null;
-                if(columnContainerMap.has(startBlockKey)) {
-                    parent = columnContainerMap.get(startBlockKey);
-                }
-                else {
-                    return;
-                }
-                
-                elementMarkdownRenderer.onunload = () => {
-                    elementUnloaded(divMapID, ()=>{
-                        parent.childRemoved(divMapID);
-                    });
-                };
-
-                this.hideColumnDivs(linesAboveArray, divMap, this.multiColumnParser.parseDivText);
-
-                // Concat and filter down all of the lines we want to display.
-                let textFromStart = linesAboveArray.reduce((prev, current) => {
-                    return prev + "\n"  + current;
-                }, "");
-
-                el.children[0].detach()
-
-                let settingsData = this.multiColumnParser.parseColumnSettings(textFromStart);
-                textFromStart = settingsData.text;
-
-                this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.multiColumnParser, settingsData.settings);
-
-                renderUpdated = true;
-                parent.rendererUpdated();
-
-                return;
+                this.manager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
             }
+            else if(multiColumnParser.containsColEndTag(elementData) === true) {
 
-            // else if the line we are parsing does not contain a start tag
-            // but there is at least one start tag on the page we want to 
-            // then check if the line we are parsing is within a column
-            // block.
-            //
-            // Take the entire document text and split it by new lines.
-            // Then we get the set of lines above our start line.
-            // Then we reduce back down to a single string of all lines above.
-            let initialLinesAboveArray = info.text.split("\n").splice(0, info.lineStart);
-            let { startBlockKey, linesAboveArray } = this.multiColumnParser.getStartBlockAboveLine(initialLinesAboveArray);
+                this.manager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
+            }
+            else if(multiColumnParser.containsColSettingsTag(elementData) === true) {
+
+                this.manager.setElementToSettingsBlock(currentObject.UID, elementData);
+            }
             
-            if(startBlockKey === "") {
-                // We are not within a multi column block so we just return here.
+            /**
+             * Now we use the index of our element to find a region start object
+             * above us. If the function returns null we either didnt find a object
+             * or we hit an end tag before a start tag both of which mean the object
+             * is not within a region.
+             * 
+             * If we just set up a start tag in the if statement abovethis is slightly 
+             * inefficient but does mean the code is slightly less complicated.
+             */
+            let parentElementData = this.manager.getParentAboveObject(currentObject.UID);
+            if(parentElementData === null) {
                 return;
             }
-
-            // Attempt to get parent from the map, if it doesnt exist
-            // something went wrong so we want to return immediatly.
-            let parent: multiColumnParent = null;
-            if(columnContainerMap.has(startBlockKey)) {
-                parent = columnContainerMap.get(startBlockKey);
-            }
-            else {
-                return;
-            }
-            elementMarkdownRenderer.onunload = () => {
-                elementUnloaded(divMapID, ()=>{
-                    parent.childRemoved(divMapID)
-                });
-            };
-
-            let linesBelowArray = info.text.split("\n").splice(info.lineStart);
-            linesBelowArray = this.multiColumnParser.getEndBlockBelowLine(linesBelowArray);
-
-            // Concat and filter down all of the lines we want to display.
-            let textFromStart = linesAboveArray.concat(linesBelowArray).reduce((prev, current) => {
-                return prev + "\n"  + current;
-            }, "");
-
-            if(el.children.length > 0) {
-                el.children[0].detach()
+    
+            /**
+             * We want to hide all of the original elements that are now going to be
+             * rendered within our mutli-column region, but we need to make sure 
+             * we don't also hide the start element so make sure to check for that here.
+             */
+            if(currentObject.tag !== DOMObjectTag.startRegion){
+                el.addClass("multiColumnDataHidden");
             }
 
-            let settingsData = this.multiColumnParser.parseColumnSettings(textFromStart);
-            textFromStart = settingsData.text;
+            this.updateMultiColumnRegion(parentElementData);
 
-            this.setUpColumnMarkdown(parent.el, textFromStart, sourcePath, this.multiColumnParser, settingsData.settings);
-
-            renderUpdated = true;
-            parent.rendererUpdated();
-            // TODO: Find a way to remove the element from the DOM? Minor "bug" but would like to fix.
             return;
         });
     }
 
-    /**
-     * We want to get a list of the text contained within each "sibling"
-     * div in the DOM. However there is something about how obsidian
-     * works with the divs that make this more difficult to achieve
-     * than one would expect. This function is a work around that problem.
-     * 
-     * Above we set up a callback that creates a map of all of the divs 
-     * displayed on the dom. When this function is called we are passed
-     * a long text string that contains the text we want to hide from the DOM
-     * this text must be parsed to find the proper keys.
-     * @param linesToHide 
-     * @param divMap 
-     * @param parseDivText a function that will take in the strings and return the DivKeys of each line.
-     */
-    hideColumnDivs(linesToHide: string[], 
-                   divMap: Map<string, {text: string, el: HTMLElement}>, 
-                   parseDivText: (linesToHide: string[]) => {keys: DivKey[], originals: string[]}, indexOffset: number = 0) {
+    updateMultiColumnRegion(parentElementData: startRegionParent) {
 
-        let { keys } = parseDivText(linesToHide);
+        
+        /**
+         * We take the parent element and use it to find all of the elements from
+         * our manager that need to be rendered within our region.
+         */                                            
+        let { domObjects } = this.manager.getRegionFromStartTagIndex(parentElementData.indexInDom);
 
-        // Now we have a list of the keys to remove from the DOM.
-        // and if the key is in the map we set the element's text to empty string.
-        // TODO: Should we reset all of the other items in the dom to active? 
-        // probably would cause some bugs with enabling data from other areas
-        // but currently there is a bug with stuff remaining removed after
-        // being hidden in this way.
-        for(let i = 0; i < keys.length; i++) {
-            let key = keys[i].getKeyWithOffset(indexOffset)
-            if(divMap.has(key)) {
-                divMap.get(key).el.textContent = ""
-            }
-        }
+        // Pass the elements and other data into the render function that actually sets up the DOM 
+        this.renderColumnMarkdown(parentElementData.parentRenderElement, domObjects, parentElementData.parentRenderSettings);
     }
 
     /**
@@ -415,13 +224,10 @@ ${editor.getDoc().getSelection()}`
      * user defined number of children with the proper css classes to be rendered properly.
      * 
      * @param parentElement The element that the multi-column region will be rendered under.
-     * @param textFromStart The text that will be parsed and rendered into the multi-column region
-     * @param sourcePath The path of the file used for creating internal links (I think.)
-     * @param multiColumnParser The parser object that will parse the text from the start.
+     * @param regionElements The list of DOM objects that will be coppied under the parent object
      * @param settings The settings the user has defined for the region.
      */
-    setUpColumnMarkdown(parentElement: HTMLElement, textFromStart: string, sourcePath: string,
-        multiColumnParser: MultiColumnParser, settings: MultiColumnSettings) {
+    renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
         let multiColumnParent = createDiv({
             cls: `multiColumnParent rowC`,
@@ -430,8 +236,11 @@ ${editor.getDoc().getSelection()}`
             multiColumnParent.addClass("multiColumnParentShadow");
         }
 
-        let columnContentDivs = multiColumnParser.getColumnContentDivs(settings, multiColumnParent);
-
+        /**
+         * Pass our parent div and settings to parser to create the required
+         * column divs as children of the parent.
+         */
+        let columnContentDivs = getColumnContentDivs(settings, multiColumnParent);
         for(let i = 0; i < columnContentDivs.length; i++) {
             if(settings.drawBorder === true) {
                 columnContentDivs[i].addClass("columnBorder");
@@ -457,16 +266,181 @@ ${editor.getDoc().getSelection()}`
         }        
         parentElement.appendChild(markdownRenderChild.containerEl);
 
-        let columnText = multiColumnParser.splitTextByColumn(textFromStart, settings.numberOfColumns);
-        // And then render the parsed markdown into the divs.
-        for(let i = 0; i < columnContentDivs.length; i++) {
-            MarkdownRenderer.renderMarkdown(
-                columnText[i],
-                columnContentDivs[i],
-                sourcePath,
-                markdownRenderChild
-            );
+        let columnIndex = 0;
+        for(let i = 0; i < regionElements.length; i++) {
+
+            // We want to skip column break tags but only if we have columns 
+            // left to enter data for.
+            if(regionElements[i].tag === DOMObjectTag.columnBreak && 
+               (columnIndex + 1) < settings.numberOfColumns) {
+
+                columnIndex++;
+            }
+            else if (regionElements[i].tag !== DOMObjectTag.startRegion && 
+                     regionElements[i].tag !== DOMObjectTag.endRegion && 
+                     regionElements[i].tag !== DOMObjectTag.regionSettings) {
+
+                /**
+                 * Make a deep copy of the element so we can remove the hidden class before
+                 * appending to our column div.
+                 */
+                let clonedElement = regionElements[i].element.cloneNode(true) as HTMLElement;
+                clonedElement.removeClass("multiColumnDataHidden");
+                clonedElement.style.display = "block"
+
+                columnContentDivs[columnIndex].appendChild(clonedElement);
+            }
         }
     }
 }
 
+/**
+ * Sets up the CSS classes and the number of columns based on the passed settings.
+ * @param settings The user defined settings that determine what CSS is set here.
+ * @param multiColumnParent The parent object that the column divs will be created under.
+ * @returns The list of column divs created under the passed parent element.
+ */
+function getColumnContentDivs(settings: MultiColumnSettings, multiColumnParent: HTMLDivElement): HTMLDivElement[] {
+
+    let columnContentDivs: HTMLDivElement[] = []
+    if(settings.numberOfColumns === 2) {
+
+        switch(settings.columnLayout) {
+            case(ColumnLayout.standard):
+            case(ColumnLayout.middle):
+            case(ColumnLayout.center):
+            case(ColumnLayout.third):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent twoEqualColumns_Left`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent twoEqualColumns_Right`
+                }));
+                break;
+
+            case(ColumnLayout.left):
+            case(ColumnLayout.first):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent twoColumnsHeavyLeft_Left`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent twoColumnsHeavyLeft_Right`
+                }));
+                break;
+
+            case(ColumnLayout.right):
+            case(ColumnLayout.second):
+            case(ColumnLayout.last):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent twoColumnsHeavyRight_Left`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent twoColumnsHeavyRight_Right`
+                }));
+                break;
+        }
+    }
+    else if(settings.numberOfColumns === 3) {
+
+        switch(settings.columnLayout) {
+            case(ColumnLayout.standard):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threeEqualColumns_Left`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threeEqualColumns_Middle`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threeEqualColumns_Right`
+                }));
+                break;
+
+            case(ColumnLayout.left):
+            case(ColumnLayout.first):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threColumnsHeavyLeft_Left`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threColumnsHeavyLeft_Middle`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threColumnsHeavyLeft_Right`
+                }));
+                break;
+
+            case(ColumnLayout.middle):
+            case(ColumnLayout.center):
+            case(ColumnLayout.second):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threColumnsHeavyMiddle_Left`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threColumnsHeavyMiddle_Middle`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threColumnsHeavyMiddle_Right`
+                }));
+                break;
+
+            case(ColumnLayout.right):
+            case(ColumnLayout.third):
+            case(ColumnLayout.last):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threColumnsHeavyRight_Left`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threColumnsHeavyRight_Middle`
+                }));
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `columnContent threColumnsHeavyRight_Right`
+                }));
+                break;
+        }
+    }
+
+    return columnContentDivs;
+}
+
+
+export type nearbySiblings = { 
+    siblingsAbove: HTMLDivElement,
+    currentObject: DOMObject, 
+}
+function findSiblingsAboveEl(el: HTMLElement, fileInfo: MarkdownSectionInformation, sourcePath: string) {
+
+    /*
+     * We re render all of the items above our element so we can determine where 
+     * to place the new item in the manager.
+     * 
+     * Also extracting the text to set within the object mostly for debugging 
+     * purposes.
+     */
+    let linesAbove = fileInfo.text.split("\n").splice(0, fileInfo.lineStart);
+    let linesOf = fileInfo.text.split("\n").splice(fileInfo.lineStart, (fileInfo.lineEnd + 1 - fileInfo.lineStart));
+    let elementText = linesOf.reduce((prev, curr) => {
+        return prev + curr;
+    });
+
+    let siblingsAbove = createDiv();
+
+    let markdownRenderChild = new MarkdownRenderChild(
+        siblingsAbove
+    );
+    MarkdownRenderer.renderMarkdown(
+        linesAbove.reduce((prev, current) => {
+            return prev + "\n"  + current;
+        }, ""),
+        siblingsAbove,
+        sourcePath,
+        markdownRenderChild
+    );
+
+    /**
+     * Now we need to set up our dom object to be added to the manager.
+     */
+    let currentObject: DOMObject = new DOMObject(elementText, el)
+
+
+    let nearbySiblings: nearbySiblings = {siblingsAbove, currentObject };
+    return nearbySiblings;
+}
