@@ -7,12 +7,12 @@
  */
 
 import { MarkdownView, Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, MarkdownSectionInformation } from 'obsidian';
-import * as multiColumnParser from './MultiColumnParser';
-import { DOMManager, createDomManager, startRegionParent } from './domManager';
-import { DOMObject, DOMObjectTag } from './domObject';
+import * as multiColumnParser from './utilities/textParser';
+import { DOMManager, createDomManager, startRegionParent } from './dom_manager/domManager';
+import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
 import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
 
-import { getUID } from './utils';
+import { getUID } from './utilities/utils';
 
 export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;

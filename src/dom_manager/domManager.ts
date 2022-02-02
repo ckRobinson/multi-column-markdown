@@ -6,9 +6,9 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { parseColumnSettings } from './MultiColumnParser';
+import { parseColumnSettings } from '../utilities/textParser';
 import { DOMObject, DOMStartRegionObject, DOMRegionSettingsObject, DOMObjectTag } from './domObject';
-import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
+import { MultiColumnSettings, ColumnLayout } from "../regionSettings";
 
 export type startRegionParent = { 
     parentRenderElement: HTMLElement, 

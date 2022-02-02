@@ -6,8 +6,8 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { getUID } from "./utils";
-import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
+import { getUID } from "../utilities/utils";
+import { MultiColumnSettings, ColumnLayout } from "../regionSettings";
 
 export enum DOMObjectTag {
     none,

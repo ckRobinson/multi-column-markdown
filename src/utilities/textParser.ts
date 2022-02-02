@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption } from "./regionSettings";
+import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption } from "../regionSettings";
 
 const START_REGEX_STRS = ["=== start-multi-column",
                           "=== multi-column-start"]
