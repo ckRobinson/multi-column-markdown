@@ -37,7 +37,7 @@ export default class MultiColumnMarkdown extends Plugin {
                         try {
                             editor.getDoc().replaceSelection(
 `
-=== multi-column-start:Replace-This-With-Region-ID
+=== multi-column-start
 \`\`\`column-settings
 Number of Columns: 2
 Largest Column: standard
