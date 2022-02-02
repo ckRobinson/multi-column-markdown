@@ -20,7 +20,7 @@ You create a multi-column region by defining the start, settings, column-end, an
 
 Text displayed above.
 
-=== start-multi-column:\<block_id>\
+=== start-multi-column\
 \```column-settings\
 number of columns: 2\
 largest column: left\
@@ -47,8 +47,8 @@ Text displayed below.
 Each tag type can be defined with the following options:
 
 - Start Multi-Column Region:
-    - === start-multi-column:\<block_id>
-    - === multi-column-start:\<block_id>
+    - === start-multi-column
+    - === multi-column-start
 - End Multi-Column Region:
     - === end-multi-column
     - === multi-column-end
@@ -69,7 +69,7 @@ The column settings block can be omitted which will by default set the region to
 
 The settings block must be define right after the multi-column start tag and each settings tag must be on a separate line. EG:
 
-=== start-multi-column:\<block_id>\
+=== start-multi-column\
 \```column-settings\
 number of columns: 2\
 largest column: left\
@@ -104,12 +104,18 @@ Border:
     - off
     - false
 
+Shadow:
+- On by default, can be removed with:
+    - disabled
+    - off
+    - false
+
 <br>
 
 ### **Full Examples:**
 ---
 
-=== start-multi-column:exampleID_2Columns
+=== start-multi-column
 
 \# Column 1
 
@@ -124,7 +130,7 @@ Border:
 
 <br>
 
-=== start-multi-column:exampleID_3Columns\
+=== start-multi-column\
 \```column-settings\
 number of columns: 3\
 border: off\
@@ -147,7 +153,7 @@ border: off\
 
 <br>
 
-=== start-multi-column:exampleID_3ColumnsLargestCenter\
+=== start-multi-column\
 \```settings\
 number of columns: 3\
 largest column: center\
@@ -174,9 +180,6 @@ largest column: center\
 
 ---
 
-After defining start-multi-column you must declare an ID for 
-the region. The ID is used to differentiate between different regions if there are multiple in the same document.
-
 Currently you can not place a multi-column region within another multi-column region.
 
 <br>
@@ -188,9 +191,7 @@ You can access the command pallet with ctrl/command - P.
 
 - ### Available Commands:
     - #### Insert Multi-Column Region
-        - Will create a two column region where the cursor is located.
-        - #### Known Issues:
-            - If the preview pane is open the columns will not be rendered properly initially. To fix close and reopen the preview window, sometimes this requires changing to a different file and back.  
+        - Will create a two column region where the cursor is located.  
 
 <br><br>
 
@@ -218,14 +219,12 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 # Known Issues
 
-### When preview pane and edit pane are open at the same time.
+### When rendering in preview window
 
-- Cutting out a line or deleting the last character on a line that was within a multi-column region will not update in the preview pane.
-    - Quick Fix #1: Close and reopen the preview pane. Sometimes this requires swapping to a new file and back.
-
-    - Quick Fix #2: Add a new character to an already existing line and then remove the character. This will force a full refresh of the multi-column region.
-- Adding a new multi-column region around an existing set of data causes the existing data to be rendered twice. Once as the original data and again within the new multi-column region.
-    - Quick Fix: Close and reopen the preview pane. Sometimes this requires swapping to a new file and back.
+- There seems to be an issue with the preview view where scrolling to the bottom of a document causes block of content near the top to be removed by obsidian. When this occurs with a multi-column region it makes the scroll bar jump and causes issues finding the information you are looking for. 
+    - Potential workarounds: 
+        - Shrinking the view width horizontally appears to fix the scrolling problem.
+        - Sometimes loading a different file and back can fix the problem but not always.
 
 ### Other
 - This plugin currently does not support Obsidian's new markdown editor preview rendering, but hopefully that can be added in the future.
@@ -235,6 +234,12 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 <br><br>
 
 # Version History
+
+### **0.3.0**
+Entire overhaul of the parsing and render engine. This rework fixes many of the issues in the previous version including the double rendering and data still being rendered after removing an entire line. It also fixes compatability issues where items such as Dataview code blocks as well as images were not being rendered properly within a region.
+- New cleaner backend for parsing and rendering multi-column regions.
+- Improved compatability with other plugins.
+- Additional setting to allow the removal of the region shadow.
 
 ### **0.2.0**
 Added additional setting to the multi-column regions. Users can now disable the borders around the regions if desired by setting "border: disabled" within the settings block.
