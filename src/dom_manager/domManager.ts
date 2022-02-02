@@ -10,6 +10,34 @@ import { parseColumnSettings } from '../utilities/textParser';
 import { DOMObject, DOMStartRegionObject, DOMRegionSettingsObject, DOMObjectTag } from './domObject';
 import { MultiColumnSettings, ColumnLayout } from "../regionSettings";
 
+export class GlobalDOMManager {
+    managers: Map<string, DOMManager>;
+
+    constructor() {
+        this.managers = new Map();
+    }
+
+    public removeManagerCallback(key: string) {
+        if(this.managers.has(key) === true) {
+            this.managers.delete(key);
+        }
+    }
+
+    public getManager(key: string) {
+
+        let fileManager = null;
+        if(this.managers.has(key) === true) {
+            fileManager = this.managers.get(key);
+        }
+        else {
+            fileManager = createDomManager(this, key);
+            this.managers.set(key, fileManager);
+        }
+
+        return fileManager;
+    }
+}
+
 export type startRegionParent = { 
     parentRenderElement: HTMLElement, 
     parentRenderSettings: MultiColumnSettings, 
@@ -28,9 +56,7 @@ export type DOMManager = {
     getParentAboveObject: (objectUID: string) => startRegionParent | null
 }
 
-// TODO: Update this to handle multiple open preview documents at once by setting up
-// a second map using file name as the key to keep track of separate items in memory.
-export function createDomManager(): DOMManager {
+export function createDomManager(parentManager: GlobalDOMManager, domKey: string): DOMManager {
 
     /**
      * We use a list and a map to help keep track of the objects. Requires
@@ -77,6 +103,10 @@ export function createDomManager(): DOMManager {
         domObjectMap.delete(objectUID);
         
         domList.remove(obj);
+
+        if(domList.length === 0) {
+            parentManager.removeManagerCallback(domKey);
+        }
 
         // x = domList.slice(0);
         // console.log(x);
@@ -168,7 +198,7 @@ export function createDomManager(): DOMManager {
         }
     }
 
-    function getParentAboveIndex(objectUID: string): startRegionParent | null{
+    function getParentAboveObject(objectUID: string): startRegionParent | null{
 
         let returnData: startRegionParent = null
         let regionSettings: MultiColumnSettings = {numberOfColumns: 2, columnLayout: ColumnLayout.standard, drawBorder: true, drawShadow: true};
@@ -218,6 +248,6 @@ export function createDomManager(): DOMManager {
              updateElementTag: updateElementTag, 
              setElementToStartRegion: setElementToStartRegion,
              setElementToSettingsBlock: setElementToSettingsBlock,
-             getParentAboveObject: getParentAboveIndex
+             getParentAboveObject: getParentAboveObject
     }
 }

@@ -8,7 +8,7 @@
 
 import { MarkdownView, Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, MarkdownSectionInformation } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
-import { DOMManager, createDomManager, startRegionParent } from './dom_manager/domManager';
+import { DOMManager, startRegionParent, GlobalDOMManager } from './dom_manager/domManager';
 import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
 import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
 
@@ -17,11 +17,11 @@ import { getUID } from './utilities/utils';
 export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
 
-    manager: DOMManager = undefined;
-
+    globalManager: GlobalDOMManager = new GlobalDOMManager();
+    
 	async onload() {
 
-        this.manager = createDomManager();
+        console.log("Loading multi-column markdown");
 
         this.setupMarkdownPostProcessor();
 
@@ -82,6 +82,11 @@ ${editor.getDoc().getSelection()}`
 
             const sourcePath = ctx.sourcePath;
 
+            let domManager = this.globalManager.getManager(sourcePath);
+            if(domManager === null) {
+                console.log("Found null DOM manager. Could not process multi-column markdown.")
+                return;
+            }
             /**
              * Whenever the document renderer is updated we need to capture the
              * element that was processed so we can determine where to place it,
@@ -101,21 +106,21 @@ ${editor.getDoc().getSelection()}`
              * callback for when the object is removed from view that will remove 
              * the item from the manager.
              */
-            let elementIndexInManager = this.manager.addObject(nearbySiblings.siblingsAbove, nearbySiblings.currentObject);
+            let elementIndexInManager = domManager.addObject(nearbySiblings.siblingsAbove, nearbySiblings.currentObject);
             let elementMarkdownRenderer = new MarkdownRenderChild(el);
             elementMarkdownRenderer.onunload = () => {
-                if(this.manager) {
+                if(domManager) {
                     
                     // We can attempt to update the view here after the item is removed
                     // but need to get the item's parent element before removing object from manager.
-                    let parentElementData = this.manager.getParentAboveObject(currentObject.UID);
+                    let parentElementData = domManager.getParentAboveObject(currentObject.UID);
 
-                    this.manager.removeObject(currentObject.UID);
+                    domManager.removeObject(currentObject.UID);
 
                     if(parentElementData === null) {
                         return;
                     }
-                    this.updateMultiColumnRegion(parentElementData);
+                    this.updateMultiColumnRegion(parentElementData, domManager);
                 }
             };
             ctx.addChild(elementMarkdownRenderer);
@@ -162,19 +167,19 @@ ${editor.getDoc().getSelection()}`
                  * Here we inform the manager that this item is a multi-column start
                  * region so we can find it later by other objects.
                  */
-                currentObject = this.manager.setElementToStartRegion(currentObject.UID, renderColumnRegion);
+                currentObject = domManager.setElementToStartRegion(currentObject.UID, renderColumnRegion);
             }
             else if(multiColumnParser.containsEndTag(el.textContent) === true) {
 
-                this.manager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
+                domManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
             }
             else if(multiColumnParser.containsColEndTag(elementData) === true) {
 
-                this.manager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
+                domManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
             }
             else if(multiColumnParser.containsColSettingsTag(elementData) === true) {
 
-                this.manager.setElementToSettingsBlock(currentObject.UID, elementData);
+                domManager.setElementToSettingsBlock(currentObject.UID, elementData);
             }
             
             /**
@@ -186,7 +191,7 @@ ${editor.getDoc().getSelection()}`
              * If we just set up a start tag in the if statement abovethis is slightly 
              * inefficient but does mean the code is slightly less complicated.
              */
-            let parentElementData = this.manager.getParentAboveObject(currentObject.UID);
+            let parentElementData = domManager.getParentAboveObject(currentObject.UID);
             if(parentElementData === null) {
                 return;
             }
@@ -200,20 +205,20 @@ ${editor.getDoc().getSelection()}`
                 el.addClass("multiColumnDataHidden");
             }
 
-            this.updateMultiColumnRegion(parentElementData);
+            this.updateMultiColumnRegion(parentElementData, domManager);
 
             return;
         });
     }
 
-    updateMultiColumnRegion(parentElementData: startRegionParent) {
+    updateMultiColumnRegion(parentElementData: startRegionParent, domManager: DOMManager) {
 
         
         /**
          * We take the parent element and use it to find all of the elements from
          * our manager that need to be rendered within our region.
          */                                            
-        let { domObjects } = this.manager.getRegionFromStartTagIndex(parentElementData.indexInDom);
+        let { domObjects } = domManager.getRegionFromStartTagIndex(parentElementData.indexInDom);
 
         // Pass the elements and other data into the render function that actually sets up the DOM 
         this.renderColumnMarkdown(parentElementData.parentRenderElement, domObjects, parentElementData.parentRenderSettings);
