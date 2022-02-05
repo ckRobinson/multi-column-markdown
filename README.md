@@ -199,8 +199,6 @@ You can access the command pallet with ctrl/command - P.
 
 ## From Obsidian Community Plugins
 
-This plugins is currently not published in the Obsidian Community Plugins, to install please follow the GitHub installation instructions below.
-
 You can install this plugin from the Obsidian Community Plugins menu by following these steps:
 
 - Open Settings within Obsidian
