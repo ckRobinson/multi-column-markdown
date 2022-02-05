@@ -38,7 +38,7 @@ Text displayed below.
 
 
 **Rendered as:**
-![Eample_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_1.png?raw=true)
+![Eample_1](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_1.png?raw=true)
 
 ---
 
@@ -126,7 +126,7 @@ Shadow:
 === end-multi-column
 
 **Rendered as:**
-![Eample_2Column](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_2Column.png?raw=true)
+![Eample_2Column](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_2Column.png?raw=true)
 
 <br>
 
@@ -149,7 +149,7 @@ border: off\
 === end-multi-column
 
 **Rendered as:**
-![Eample_3Column_1](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_3Column_1.png?raw=true)
+![Eample_3Column_1](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_3Column_1.png?raw=true)
 
 <br>
 
@@ -172,7 +172,7 @@ largest column: center\
 === end-multi-column
 
 **Rendered as:**
-![Eample_3Column_2](https://github.com/ckRobinson/multi-column_markdown/blob/master/images/Example_3Column_2.png?raw=true)
+![Eample_3Column_2](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_3Column_2.png?raw=true)
 
 <br>
 
