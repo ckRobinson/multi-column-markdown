@@ -29,13 +29,10 @@ export default class MultiColumnMarkdown extends Plugin {
         this.addCommand({            
             id: `insert-multi-column-region`,
             name: `Insert Multi-Column Region`,
-            editorCheckCallback: (checking, editor, view) => {
+            editorCallback: (editor, view) => {
 
-                const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-                    if (checking === false) {
-                        try {
-                            editor.getDoc().replaceSelection(
+                try {
+                    editor.getDoc().replaceSelection(
 `
 === multi-column-start
 \`\`\`column-settings
@@ -48,14 +45,11 @@ Largest Column: standard
 === multi-column-end
 
 ${editor.getDoc().getSelection()}`
-                            );
-                        } catch (e) {
-                            new Notice(
-                                "Encountered an error inserting a multi-column region. Please try again later."
-                            );
-                        }
-                    }
-                    return true;
+                    );
+                } catch (e) {
+                    new Notice(
+                        "Encountered an error inserting a multi-column region. Please try again later."
+                    );
                 }
             }
         });
