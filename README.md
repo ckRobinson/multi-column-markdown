@@ -28,7 +28,7 @@ largest column: left\
 
 Text displayed in column 1.
 
-=== end-column ===
+\=== end-column ===
 
 Text displayed in column 2.
 
@@ -53,8 +53,8 @@ Each tag type can be defined with the following options:
     - === end-multi-column
     - === multi-column-end
 - End a Column:
-    - === column-end ===
-    - === end-column ===
+    - \=== column-end ===
+    - \=== end-column ===
 - Settings Region:
     - \```settings```
     - \```column-settings```
@@ -119,7 +119,7 @@ Shadow:
 
 \# Column 1
 
-=== end-column ===
+\=== end-column ===
 
 \# Column 2
 
@@ -138,11 +138,11 @@ border: off\
 
 \# Column 1
 
-=== end-column ===
+\=== end-column ===
 
 \# Column 2
 
-=== end-column ===
+\=== end-column ===
 
 \# Column 3
 
@@ -161,11 +161,11 @@ largest column: center\
 
 \#### Column 1
 
-=== end-column ===
+\=== end-column ===
 
 \# Column 2
 
-=== end-column ===
+\=== end-column ===
 
 \#### Column 3
 
@@ -201,13 +201,13 @@ You can access the command pallet with ctrl/command - P.
 
 This plugins is currently not published in the Obsidian Community Plugins, to install please follow the GitHub installation instructions below.
 
-~~You can install this plugin from the Obsidian Community Plugins menu by following these steps:~~
+You can install this plugin from the Obsidian Community Plugins menu by following these steps:
 
-- ~~Open Settings within Obsidian~~
-- ~~Click Community plugins and ensure Safe mode is disabled~~
-- ~~Browse community plugins and find "Multi-Column Markdown"~~
-- ~~Click Install~~
-- ~~After installation is finished, click Enable~~
+- Open Settings within Obsidian
+- Click Community plugins and ensure Safe mode is disabled
+- Browse community plugins and find "Multi-Column Markdown"
+- Click Install
+- After installation is finished, click Enable
 
 ## From GitHub Repository
 
@@ -226,6 +226,10 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
         - Shrinking the view width horizontally appears to fix the scrolling problem.
         - Sometimes loading a different file and back can fix the problem but not always.
 
+- When entering data into a multi-column region the data can sometimes be rendered a line above or below the intended location in the preview window. When the line is near the start or end of a column or region it may be rendered in the wrong column or outside of the region entirely.
+    - Workaround:
+        - Swapping to a different file and back will update the preview window and fix the render issue.
+
 ### Other
 - This plugin currently does not support Obsidian's new markdown editor preview rendering, but hopefully that can be added in the future.
 
@@ -238,7 +242,7 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 ### **0.3.0**
 Entire overhaul of the parsing and render engine. This rework fixes many of the issues in the previous version including the double rendering and data still being rendered after removing an entire line. It also fixes compatibility issues where items such as Dataview code blocks as well as images were not being rendered properly within a region.
 - New cleaner back-end for parsing and rendering multi-column regions.
-- Improved comparability with other plugins.
+- Improved compatability with other plugins.
 - Additional setting to allow the removal of the region shadow.
 
 ### **0.2.0**
