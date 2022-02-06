@@ -8,8 +8,8 @@
 
 import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption } from "../regionSettings";
 
-const START_REGEX_STRS = ["=== start-multi-column",
-                          "=== multi-column-start"]
+const START_REGEX_STRS = ["=== *start-multi-column",
+                          "=== *multi-column-start"]
 const START_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < START_REGEX_STRS.length; i++) {
     START_REGEX_ARR.push(new RegExp(START_REGEX_STRS[i]));
@@ -28,8 +28,8 @@ export function containsStartTag(text: string): boolean {
     return found;
 }
 
-const END_REGEX_STRS = ["=== end-multi-column",
-                        "=== multi-column-end"]
+const END_REGEX_STRS = ["=== *end-multi-column",
+                        "=== *multi-column-end"]
 const END_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < END_REGEX_STRS.length; i++) {
     END_REGEX_ARR.push(new RegExp(END_REGEX_STRS[i]));
@@ -48,8 +48,10 @@ export function containsEndTag(text: string): boolean {
     return found;
 }
 
-const COL_REGEX_STRS: string[] = ["=== column-end ===",
-                                  "=== end-column ==="];
+const COL_REGEX_STRS: string[] = ["=== *column-end *===",
+                                  "=== *end-column *===",
+                                  "=== *column-break *===",
+                                  "=== *break-column *==="];
 const COL_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < COL_REGEX_STRS.length; i++) {
     COL_REGEX_ARR.push(new RegExp(COL_REGEX_STRS[i]));
