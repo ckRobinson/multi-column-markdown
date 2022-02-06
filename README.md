@@ -6,10 +6,7 @@ now define blocks of data to be layed out horizontally next to each other. This
 additional functionality gives you the freedom to structure your notes in more
 creative ways. 
 
-This plugin is built for the [Obsidan](https://obsidian.md/) markdown note taking application using their plugin API.
-
-<br><br>
-
+<br>
 
 # Usage:
 
@@ -55,6 +52,8 @@ Each tag type can be defined with the following options:
 - End a Column:
     - \=== column-end ===
     - \=== end-column ===
+    - \=== column-break ===
+    - \=== break-column ===
 - Settings Region:
     - \```settings```
     - \```column-settings```
@@ -229,6 +228,8 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
         - Swapping to a different file and back will update the preview window and fix the render issue.
 
 ### Other
+- Opening large files can cause Obsidian to slow down and lag while the document is being parsed.
+
 - This plugin currently does not support Obsidian's new markdown editor preview rendering, but hopefully that can be added in the future.
 
 - The Obsidian API and this plugin are both still works in progress and both are subject to change. 
@@ -236,6 +237,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 <br><br>
 
 # Version History
+
+### **0.3.1**
+- Loosed spacing requirements on tags causing what should be considered false negatives when parsing.
 
 ### **0.3.0**
 Entire overhaul of the parsing and render engine. This rework fixes many of the issues in the previous version including the double rendering and data still being rendered after removing an entire line. It also fixes compatibility issues where items such as Dataview code blocks as well as images were not being rendered properly within a region.
