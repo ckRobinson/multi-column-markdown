@@ -60,9 +60,17 @@ ${editor.getDoc().getSelection()}`
             editorCallback: (editor, view) => {
 
                 try {
-                    let text = editor.getRange({ line: 0, ch: 0 }, { line: editor.getDoc().lineCount(), ch: 0});
-                    let lines = text.split("\n");
+                    /**
+                     * Not sure if there is an easier way to do this.
+                     * 
+                     * Get all of the lines of the document split by newlines.
+                     */
+                    let lines = editor.getRange({ line: 0, ch: 0 }, { line: editor.getDoc().lineCount(), ch: 0}).split("\n");
 
+                    /**
+                     * Loop through all of the lines checking if the line is a 
+                     * start tag and if so is it missing an ID.
+                     */
                     let linesWithoutIDs = []
                     let textWithoutIDs = []
                     for(let i = 0; i < lines.length; i++) {
@@ -79,6 +87,10 @@ ${editor.getDoc().getSelection()}`
                         return;
                     }
 
+                    /**
+                     * Now loop through each line that is missing an ID and
+                     * generate a random ID and replace the original text.
+                     */
                     for(let i = 0; i < linesWithoutIDs.length; i++) {
 
                         let originalText = textWithoutIDs[i]
@@ -92,6 +104,7 @@ ${editor.getDoc().getSelection()}`
                         editor.replaceRange(text, { line: linesWithoutIDs[i], ch: 0 }, 
                                                   { line: linesWithoutIDs[i], ch: originalText.length});
                     }
+                    new Notice (`Replaced ${linesWithoutIDs.length} missing ID(s) in the current document.`);
                 } catch (e) {
                     new Notice(
                         "Encountered an error addign IDs to multi-column regions. Please try again later."
