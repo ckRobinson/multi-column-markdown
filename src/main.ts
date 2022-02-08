@@ -105,8 +105,6 @@ ${editor.getDoc().getSelection()}`
              */
             if(multiColumnParser.containsStartTag(elementTextSpaced)) {
 
-                let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
-
                 /** 
                  * Set up the current element to act as the parent for the 
                  * multi-column region.
@@ -121,7 +119,15 @@ ${editor.getDoc().getSelection()}`
                     cls: `RenderColRegion`
                 })
 
-                fileDOMManager.createRegionalManager(startBlockData.startBlockKey, renderErrorRegion, renderColumnRegion);
+                let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
+                let regionKey = startBlockData.startBlockKey.replace(" ", "");
+                if(regionKey === "") {
+                    //TODO: Check if ID already in document?
+                    renderErrorRegion.innerText = "Region ID is missing please set an id after the tag. EG: '=== multi-column-start: randomID'"
+                    return
+                }
+
+                fileDOMManager.createRegionalManager(regionKey, renderErrorRegion, renderColumnRegion);
                 elementMarkdownRenderer.onunload = () => {
                     if(fileDOMManager) {
     
