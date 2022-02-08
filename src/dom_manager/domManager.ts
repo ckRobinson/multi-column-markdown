@@ -187,17 +187,10 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
             let regionSettingsObj: DOMRegionSettingsObject = new DOMRegionSettingsObject(domList[index], settings);
             
             domObjectMap.set(regionSettingsObj.UID, regionSettingsObj);
-            domList.remove(obj);
+            domList[index] = regionSettingsObj;
 
             regionSettings.push(regionSettingsObj)
         }
-    }
-
-    /**
-     * @returns a copy of the DOM list the manager is tracking.
-     */
-     function getDomList(): DOMObject[] {
-        return domList.slice(0);
     }
 
     /**
@@ -223,7 +216,7 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
         return { 
             parentRenderElement: regionParent, 
             parentRenderSettings: settings,
-            domObjects: getDomList()
+            domObjects: domList
         };
     }
 
