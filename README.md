@@ -48,7 +48,9 @@ Each multi-column region must start with either:
 - === start-multi-column: \<RegionID>
 - === multi-column-start: \<RegionID>
 
-After defining the start tag you must declare an ID for the region. The ID is used to differentiate between different regions if there are multiple in the same document. Each ID must be unique or unexpected render issues may occur. 
+After defining the start tag you must declare an ID for the region. The ID is used to differentiate between different regions if there are multiple in the same document, however even when only a single region exists there must still be an ID. 
+
+Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
 
 By using the "Insert Multi-Column Region" command (more below) the start ID will be pre-set as a randomly generated 4 character string.
 
