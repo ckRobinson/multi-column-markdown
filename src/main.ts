@@ -142,6 +142,23 @@ ${editor.getDoc().getSelection()}`
             }
 
             /**
+             * If we encounter a start tag on the document we set the flag to start
+             * parsing the rest of the document.
+             */
+            if(multiColumnParser.containsStartTag(el.textContent)) {
+                fileDOMManager.setStartTag();
+            }
+
+            /** 
+             * If the document does not contain any start tags we ignore the
+             * rest of the parsing. This is only set to true once the first
+             * start tag element is parsed above.
+             */
+            if(fileDOMManager.getStartTag() === false) {
+                    return;
+            }
+
+            /**
              * Take the info provided and generate the required variables from 
              * the line start and end values.
              */
@@ -154,8 +171,6 @@ ${editor.getDoc().getSelection()}`
                 return prev + curr;
             });
 
-            let elementMarkdownRenderer = new MarkdownRenderChild(el);
-
             /**
              * If the current line is a start tag we want to set up the
              * region manager. The regional manager takes care
@@ -163,7 +178,7 @@ ${editor.getDoc().getSelection()}`
              * file manager we got above above takes care of all regional 
              * managers in each file.
              */
-            if(multiColumnParser.containsStartTag(elementTextSpaced)) {
+            if(multiColumnParser.containsStartTag(el.textContent)) {
 
                 /** 
                  * Set up the current element to act as the parent for the 
@@ -187,6 +202,7 @@ ${editor.getDoc().getSelection()}`
                     return
                 }
 
+                let elementMarkdownRenderer = new MarkdownRenderChild(el);
                 fileDOMManager.createRegionalManager(regionKey, renderErrorRegion, renderColumnRegion);
                 elementMarkdownRenderer.onunload = () => {
                     if(fileDOMManager) {
@@ -212,11 +228,6 @@ ${editor.getDoc().getSelection()}`
             let textAboveArray = linesAboveArray.reduce((prev, curr) => {
                 return prev + "\n" + curr
             }, "")
-
-            // Check if any of the lines above us contain the start tag.
-            if(multiColumnParser.containsStartTag(textAboveArray) === false) {
-                return;
-            }
 
             /**
              * A line above us contains a start tag now see if we're within that
@@ -261,6 +272,8 @@ ${editor.getDoc().getSelection()}`
              * the item from the manager.
              */
             regionalManager.addObject(siblingsAbove, currentObject);
+
+            let elementMarkdownRenderer = new MarkdownRenderChild(el);
             elementMarkdownRenderer.onunload = () => {
                 if(regionalManager) {
                     

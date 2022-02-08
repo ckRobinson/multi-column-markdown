@@ -40,13 +40,17 @@ export class GlobalDOMManager {
 
 export type FileDOMManager = {
     regionMap: Map<string, RegionDOMManager>,
+    hasStartTag: boolean,
     createRegionalManager: (regionKey: string, errorElement: HTMLElement, regionElement: HTMLElement) => RegionDOMManager
     getRegionalManager: (regionKey: string) => RegionDOMManager | null,
-    removeRegion: (regionKey: string) => void
+    removeRegion: (regionKey: string) => void,
+    setStartTag: () => void,
+    getStartTag: () => boolean
 }
 function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string): FileDOMManager {
     
     let regionMap: Map<string, RegionDOMManager> = new Map();
+    let hasStartTag: boolean = false;
 
     function removeRegion(regionKey: string): void {
 
@@ -81,7 +85,22 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
         return regonalManager;
     }
 
-    return { regionMap: regionMap, createRegionalManager: createRegionalManager, getRegionalManager: getRegionalManager, removeRegion: removeRegion }
+    function setStartTag() {
+        hasStartTag = true;
+    }
+
+    function getStartTag() {
+        return hasStartTag;
+    }
+
+    return { regionMap: regionMap, 
+        hasStartTag: hasStartTag,  
+        createRegionalManager: createRegionalManager, 
+        getRegionalManager: getRegionalManager, 
+        removeRegion: removeRegion, 
+        setStartTag: setStartTag, 
+        getStartTag: getStartTag 
+    }
 }
 
 export type MultiColumnRenderData = { 

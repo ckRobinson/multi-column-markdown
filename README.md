@@ -266,6 +266,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 # Version History
 
+### **0.4.1**
+- Added additional check in attempt to reduce parsing time on documents without multi-column regions.
+
 ### **0.4.0**
 Additional parsing and render engine improvements. New changes should make larger files quicker to load as well as vastly reduce the additional overhead when loading files without multi-column regions.
 - Cleaned up parsing and render engine.
