@@ -121,11 +121,11 @@ ${editor.getDoc().getSelection()}`
                     cls: `RenderColRegion`
                 })
 
-                let regionalManager = fileDOMManager.createManager(startBlockData.startBlockKey, renderErrorRegion, renderColumnRegion);
+                fileDOMManager.createRegionalManager(startBlockData.startBlockKey, renderErrorRegion, renderColumnRegion);
                 elementMarkdownRenderer.onunload = () => {
                     if(fileDOMManager) {
     
-                        regionalManager.removeObject(startBlockData.startBlockKey);
+                        fileDOMManager.removeRegion(startBlockData.startBlockKey);
     
                         // TODO: Loop through all of the region children to remove the hidden CSS tag.
                     }
@@ -175,7 +175,7 @@ ${editor.getDoc().getSelection()}`
 
             // Now we only want to work with the lines within the current block
             linesAboveArray = startBockAbove.linesAboveArray;
-            let regionalManager = fileDOMManager.getManager(startBockAbove.startBlockKey);
+            let regionalManager = fileDOMManager.getRegionalManager(startBockAbove.startBlockKey);
 
             /**
              * If we can not get the start block and this region's dom manager 

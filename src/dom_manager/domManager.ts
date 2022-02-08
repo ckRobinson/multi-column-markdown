@@ -17,7 +17,7 @@ export class GlobalDOMManager {
         this.managers = new Map();
     }
 
-    public removeManagerCallback(key: string) {
+    public removeFileManagerCallback(key: string) {
         if(this.managers.has(key) === true) {
             this.managers.delete(key);
         }
@@ -30,7 +30,7 @@ export class GlobalDOMManager {
             fileManager = this.managers.get(key);
         }
         else {
-            fileManager = createRegionalDOMManager(this, key);
+            fileManager = createFileDOMManager(this, key);
             this.managers.set(key, fileManager);
         }
 
@@ -39,44 +39,44 @@ export class GlobalDOMManager {
 }
 
 export type FileDOMManager = {
-    domObjectMap: Map<string, RegionDOMManager>,
-    createManager: (key: string, errorElement: HTMLElement, regionElement: HTMLElement) => RegionDOMManager
-    getManager: (key: string) => RegionDOMManager | null,
-    removeRegion: (objectUID: string) => void
+    regionMap: Map<string, RegionDOMManager>,
+    createRegionalManager: (regionKey: string, errorElement: HTMLElement, regionElement: HTMLElement) => RegionDOMManager
+    getRegionalManager: (regionKey: string) => RegionDOMManager | null,
+    removeRegion: (regionKey: string) => void
 }
-function createRegionalDOMManager(parentManager: GlobalDOMManager, domKey: string): FileDOMManager {
+function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string): FileDOMManager {
     
-    let domObjectMap: Map<string, RegionDOMManager> = new Map();
+    let regionMap: Map<string, RegionDOMManager> = new Map();
 
-    function removeObject(objectUID: string): void {
+    function removeRegion(regionKey: string): void {
 
-        domObjectMap.delete(objectUID);
+        regionMap.delete(regionKey);
         
-        if(domObjectMap.size === 0) {
-            parentManager.removeManagerCallback(domKey);
+        if(regionMap.size === 0) {
+            parentManager.removeFileManagerCallback(fileKey);
         }
     }
 
-    function createManager(key: string, errorElement: HTMLElement, regionElement: HTMLElement) {
+    function createRegionalManager(regionKey: string, errorElement: HTMLElement, regionElement: HTMLElement) {
 
         //TODO: Use the error element to display a warning when the region key is not defined.
 
-        let regonalManager = createRegionalDomManager(this, key, regionElement);
-        this.domObjectMap.set(key, regonalManager);
+        let regonalManager = createRegionalDomManager(this, regionKey, regionElement);
+        regionMap.set(regionKey, regonalManager);
         return regonalManager;
     }
 
-    function getManager(key: string): RegionDOMManager | null {
+    function getRegionalManager(regionKey: string): RegionDOMManager | null {
 
         let regonalManager = null;
-        if(this.domObjectMap.has(key) === true) {
-            regonalManager = this.domObjectMap.get(key);
+        if(regionMap.has(regionKey) === true) {
+            regonalManager = regionMap.get(regionKey);
         }
 
         return regonalManager;
     }
 
-    return { domObjectMap, createManager, getManager, removeRegion: removeObject }
+    return { regionMap: regionMap, createRegionalManager: createRegionalManager, getRegionalManager: getRegionalManager, removeRegion: removeRegion }
 }
 
 export type startRegionParent = { 
