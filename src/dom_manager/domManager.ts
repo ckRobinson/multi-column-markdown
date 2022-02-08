@@ -50,6 +50,11 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
 
     function removeRegion(regionKey: string): void {
 
+        let regionManager = regionMap.get(regionKey);
+        if(regionManager) {
+            regionManager.displayOriginalElements();
+        }
+
         regionMap.delete(regionKey);
         
         if(regionMap.size === 0) {
@@ -59,7 +64,7 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
 
     function createRegionalManager(regionKey: string, errorElement: HTMLElement, regionElement: HTMLElement) {
 
-        //TODO: Use the error element to display a warning when the region key is not defined.
+        //TODO: Use the error element whenever there is an error.
 
         let regonalManager = createRegionalDomManager(this, regionKey, regionElement);
         regionMap.set(regionKey, regonalManager);
@@ -93,7 +98,8 @@ export type RegionDOMManager = {
     updateElementTag: (objectUID: string, newTag: DOMObjectTag) => void,
     setElementToStartRegion: (objectUID: string, renderColumnRegion: HTMLElement) => DOMStartRegionObject,
     setElementToSettingsBlock: (objectUID: string, settingsText: string) => void,
-    getRegionParent: () => startRegionParent
+    getRegionParent: () => startRegionParent,
+    displayOriginalElements: () => void
 }
 
 export function createRegionalDomManager(fileManager: FileDOMManager, regionKey: string, startRegionElement: HTMLElement): RegionDOMManager {
@@ -270,6 +276,14 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
         };
     }
 
+    function displayOriginalElements() {
+
+        for(let i = 0; i < domList.length; i++) {
+
+            domList[i].element.removeClass("multiColumnDataHidden")
+        }
+    }
+
     return { getDomList: getDomList, 
              addObject: addObject, 
              removeObject: removeObject, 
@@ -277,6 +291,7 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
              updateElementTag: updateElementTag, 
              setElementToStartRegion: setElementToStartRegion,
              setElementToSettingsBlock: setElementToSettingsBlock,
-             getRegionParent: getRegionParent
+             getRegionParent: getRegionParent,
+             displayOriginalElements: displayOriginalElements
     }
 }
