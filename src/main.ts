@@ -8,7 +8,7 @@
 
 import { MarkdownView, Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, MarkdownSectionInformation } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
-import { DOMManager, startRegionParent, GlobalDOMManager } from './dom_manager/domManager';
+import { RegionDOMManager, startRegionParent, GlobalDOMManager } from './dom_manager/domManager';
 import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
 import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
 
@@ -76,72 +76,36 @@ ${editor.getDoc().getSelection()}`
 
             const sourcePath = ctx.sourcePath;
 
-            let domManager = this.globalManager.getManager(sourcePath);
-            if(domManager === null) {
+            let fileDOMManager = this.globalManager.getFileManager(sourcePath);
+            if(fileDOMManager === null) {
                 console.log("Found null DOM manager. Could not process multi-column markdown.")
                 return;
             }
-            /**
-             * Whenever the document renderer is updated we need to capture the
-             * element that was processed so we can determine where to place it,
-             * if needed, within our multi-column region. 
-             * 
-             * We need to do this because as far as I can tell there is no way
-             * to find out what siblings the element has from this callback.
-             * The goal of this code block is to allow us to track the siblings
-             * of elements so we can then know what order to render the elements
-             * within our region.
-             */
-            let nearbySiblings: nearbySiblings = findSiblingsAboveEl(el, info, sourcePath);
 
-            let currentObject = nearbySiblings.currentObject;
             /**
-             * Now we add the object to the manager and then setup the
-             * callback for when the object is removed from view that will remove 
-             * the item from the manager.
+             * Take the info provided and generate the required variables from 
+             * the line start and end values.
              */
-            let elementIndexInManager = domManager.addObject(nearbySiblings.siblingsAbove, nearbySiblings.currentObject);
+            let linesOfElement = info.text.split("\n").splice(info.lineStart, (info.lineEnd + 1 - info.lineStart));
+            let elementTextSpaced = linesOfElement.reduce((prev, curr) => {
+                return prev + "\n" + curr;
+            });
+            let elementText = linesOfElement.reduce((prev, curr) => {
+                return prev + curr;
+            });
+
             let elementMarkdownRenderer = new MarkdownRenderChild(el);
-            elementMarkdownRenderer.onunload = () => {
-                if(domManager) {
-                    
-                    // We can attempt to update the view here after the item is removed
-                    // but need to get the item's parent element before removing object from manager.
-                    let parentElementData = domManager.getParentAboveObject(currentObject.UID);
-
-                    domManager.removeObject(currentObject.UID);
-
-                    if(parentElementData === null) {
-                        return;
-                    }
-                    this.updateMultiColumnRegion(parentElementData, domManager);
-                }
-            };
-            ctx.addChild(elementMarkdownRenderer);
 
             /**
-             * Now that we have set the element in our manager we want to see if this
-             * document contains a start tag. If no start tag exists we just return
-             * here as no other parsing or rendering is required.
+             * If the current line is a start tag we want to set up the
+             * region manager. The regional manager takes care
+             * of all items between it's start and end tags while the
+             * file manager we got above above takes care of all regional 
+             * managers in each file.
              */
-            if(multiColumnParser.containsStartTag(info.text) === false) {
-                return;
-            }
+            if(multiColumnParser.containsStartTag(elementTextSpaced)) {
 
-            /**
-             * At this point we know that this document contains a multi-column region
-             * so we now move forward to determine what we need to do with our current 
-             * element.
-             */
-
-            // Get the lines for just our current element from the document, this is needed for
-            // certain parsing and trying to see if this can be removed still.
-            let elementData = info.text.split("\n").splice(info.lineStart, info.lineEnd + 1 - info.lineStart).reduce((prev, current) => {
-                return prev + "\n"  + current;
-            }, "");
-
-            // Check our current element for any special flags.
-            if(multiColumnParser.containsStartTag(el.textContent) === true) {
+                let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
 
                 /** 
                  * Set up the current element to act as the parent for the 
@@ -157,25 +121,131 @@ ${editor.getDoc().getSelection()}`
                     cls: `RenderColRegion`
                 })
 
-                /**
-                 * Here we inform the manager that this item is a multi-column start
-                 * region so we can find it later by other objects.
-                 */
-                currentObject = domManager.setElementToStartRegion(currentObject.UID, renderColumnRegion);
-            }
-            else if(multiColumnParser.containsEndTag(el.textContent) === true) {
+                let regionalManager = fileDOMManager.createManager(startBlockData.startBlockKey, renderErrorRegion, renderColumnRegion);
+                elementMarkdownRenderer.onunload = () => {
+                    if(fileDOMManager) {
+    
+                        regionalManager.removeObject(startBlockData.startBlockKey);
+    
+                        // TODO: Loop through all of the region children to remove the hidden CSS tag.
+                    }
+                };
+                ctx.addChild(elementMarkdownRenderer);
 
-                domManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
+                /**
+                 * Now we have created our regional manager and defined what elements 
+                 * need to be rendered into. So we can return without any more processing.
+                 */
+                return
+            }
+
+            /** 
+             * Here we know that there is a region on the page but we are not sure
+             * if our current item is part of a region. If we are not part of a 
+             * region we return without any more processing.
+             */
+
+            /**
+             * Get a list of all of the lines above our current element.
+             * We will use this to determine if the element is within a block so
+             * we can otherwise ignore the element and keep compute time down.
+             */
+            let linesAboveArray = info.text.split("\n").slice(0, info.lineStart)
+            let textAboveArray = linesAboveArray.reduce((prev, curr) => {
+                return prev + "\n" + curr
+            }, "")
+
+            // Check if any of the lines above us contain the start tag.
+            if(multiColumnParser.containsStartTag(textAboveArray) === false) {
+                return;
+            }
+
+            /**
+             * A line above us contains a start tag now see if we're within that
+             * block.
+             */
+            let startBockAbove = multiColumnParser.getStartBlockAboveLine(linesAboveArray);
+            if(startBockAbove == null) {
+                return;
+            }
+            
+            /**
+             * Here we now know we're within a regional block.
+             */
+
+            // Now we only want to work with the lines within the current block
+            linesAboveArray = startBockAbove.linesAboveArray;
+            let regionalManager = fileDOMManager.getManager(startBockAbove.startBlockKey);
+
+            /**
+             * If we can not get the start block and this region's dom manager 
+             * we can not continue something has gone wrong.
+             */
+            if(regionalManager === null) {
+                return
+            }
+            
+            /**
+             * Now we take the lines above our current element up until the
+             * start region tag and render that into an HTML element. We will 
+             * use this element to determine where to place our current element.
+             */
+            let siblingsAbove: HTMLDivElement = findSiblingsAboveEl(linesAboveArray, sourcePath);
+
+            /**
+             * Set up our dom object to be added to the manager.
+             */
+            let currentObject: DOMObject = new DOMObject(elementText, el)
+
+            /**
+             * Now we add the object to the manager and then setup the
+             * callback for when the object is removed from view that will remove 
+             * the item from the manager.
+             */
+            regionalManager.addObject(siblingsAbove, currentObject);
+            elementMarkdownRenderer.onunload = () => {
+                if(regionalManager) {
+                    
+                    // We can attempt to update the view here after the item is removed
+                    // but need to get the item's parent element before removing object from manager.
+                    let parentElementData = regionalManager.getRegionParent();
+
+                    regionalManager.removeObject(currentObject.UID);
+
+                    if(parentElementData === null) {
+                        return;
+                    }
+                    this.updateMultiColumnRegion(parentElementData, regionalManager);
+                }
+            };
+            ctx.addChild(elementMarkdownRenderer);
+
+            /**
+             * At this point we know that this document contains a multi-column region
+             * so we now move forward to determine what we need to do with our current 
+             * element.
+             */
+
+            // Get the lines for just our current element from the document, this is needed for
+            // certain parsing and trying to see if this can be removed still.
+            let elementData = info.text.split("\n").splice(info.lineStart, info.lineEnd + 1 - info.lineStart).reduce((prev, current) => {
+                return prev + "\n"  + current;
+            }, "");
+
+            if(multiColumnParser.containsEndTag(el.textContent) === true) {
+
+                regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
             }
             else if(multiColumnParser.containsColEndTag(elementData) === true) {
 
-                domManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
+                regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
             }
             else if(multiColumnParser.containsColSettingsTag(elementData) === true) {
 
-                domManager.setElementToSettingsBlock(currentObject.UID, elementData);
+                regionalManager.setElementToSettingsBlock(currentObject.UID, elementData);
             }
             
+            console.log("TEST")
             /**
              * Now we use the index of our element to find a region start object
              * above us. If the function returns null we either didnt find a object
@@ -185,11 +255,12 @@ ${editor.getDoc().getSelection()}`
              * If we just set up a start tag in the if statement abovethis is slightly 
              * inefficient but does mean the code is slightly less complicated.
              */
-            let parentElementData = domManager.getParentAboveObject(currentObject.UID);
+            let parentElementData = regionalManager.getRegionParent();
             if(parentElementData === null) {
                 return;
             }
     
+            console.log("Hiding data and rendering?")
             /**
              * We want to hide all of the original elements that are now going to be
              * rendered within our mutli-column region, but we need to make sure 
@@ -199,20 +270,20 @@ ${editor.getDoc().getSelection()}`
                 el.addClass("multiColumnDataHidden");
             }
 
-            this.updateMultiColumnRegion(parentElementData, domManager);
+            this.updateMultiColumnRegion(parentElementData, regionalManager);
 
             return;
         });
     }
 
-    updateMultiColumnRegion(parentElementData: startRegionParent, domManager: DOMManager) {
+    updateMultiColumnRegion(parentElementData: startRegionParent, domManager: RegionDOMManager) {
 
         
         /**
          * We take the parent element and use it to find all of the elements from
          * our manager that need to be rendered within our region.
          */                                            
-        let { domObjects } = domManager.getRegionFromStartTagIndex(parentElementData.indexInDom);
+        let domObjects = domManager.getDomList();
 
         // Pass the elements and other data into the render function that actually sets up the DOM 
         this.renderColumnMarkdown(parentElementData.parentRenderElement, domObjects, parentElementData.parentRenderSettings);
@@ -260,9 +331,9 @@ ${editor.getDoc().getSelection()}`
         // we dont end up with multiple sets of data. This should
         // really only need to loop once for i = 0 but loop just
         // in case.
-        for(let i = 0; i < parentElement.children.length; i++) {
+        for(let i = parentElement.children.length - 1; i >= 0; i--) {
             parentElement.children[i].detach();
-        }        
+        }
         parentElement.appendChild(markdownRenderChild.containerEl);
 
         let columnIndex = 0;
@@ -405,7 +476,7 @@ export type nearbySiblings = {
     siblingsAbove: HTMLDivElement,
     currentObject: DOMObject, 
 }
-function findSiblingsAboveEl(el: HTMLElement, fileInfo: MarkdownSectionInformation, sourcePath: string) {
+function findSiblingsAboveEl(linesAbove: string[], sourcePath: string): HTMLDivElement {
 
     /*
      * We re render all of the items above our element so we can determine where 
@@ -414,14 +485,7 @@ function findSiblingsAboveEl(el: HTMLElement, fileInfo: MarkdownSectionInformati
      * Also extracting the text to set within the object mostly for debugging 
      * purposes.
      */
-    let linesAbove = fileInfo.text.split("\n").splice(0, fileInfo.lineStart);
-    let linesOf = fileInfo.text.split("\n").splice(fileInfo.lineStart, (fileInfo.lineEnd + 1 - fileInfo.lineStart));
-    let elementText = linesOf.reduce((prev, curr) => {
-        return prev + curr;
-    });
-
     let siblingsAbove = createDiv();
-
     let markdownRenderChild = new MarkdownRenderChild(
         siblingsAbove
     );
@@ -434,12 +498,7 @@ function findSiblingsAboveEl(el: HTMLElement, fileInfo: MarkdownSectionInformati
         markdownRenderChild
     );
 
-    /**
-     * Now we need to set up our dom object to be added to the manager.
-     */
-    let currentObject: DOMObject = new DOMObject(elementText, el)
+    console.log(linesAbove, siblingsAbove.children)
 
-
-    let nearbySiblings: nearbySiblings = {siblingsAbove, currentObject };
-    return nearbySiblings;
+    return siblingsAbove;
 }
