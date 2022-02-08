@@ -8,7 +8,7 @@
 
 import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
-import { RegionDOMManager, startRegionParent, GlobalDOMManager } from './dom_manager/domManager';
+import { RegionDOMManager, MultiColumnRenderData, GlobalDOMManager } from './dom_manager/domManager';
 import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
 import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
 
@@ -172,7 +172,7 @@ ${editor.getDoc().getSelection()}`
                 el.id = `TwoColumnContainer-${getUID()}`
                 el.children[0].detach();
                 el.classList.add("multiColumnContainer")
-                let renderErrorRegion = el.createDiv({ //TODO: Determine if this is needed now
+                let renderErrorRegion = el.createDiv({
                     cls: `multiColumnErrorMessage`,
                 });
                 let renderColumnRegion = el.createDiv({
@@ -192,8 +192,6 @@ ${editor.getDoc().getSelection()}`
                     if(fileDOMManager) {
     
                         fileDOMManager.removeRegion(startBlockData.startBlockKey);
-    
-                        // TODO: Loop through all of the region children to remove the hidden CSS tag.
                     }
                 };
                 ctx.addChild(elementMarkdownRenderer);
@@ -235,7 +233,7 @@ ${editor.getDoc().getSelection()}`
 
             // Now we only want to work with the lines within the current region.
             linesAboveArray = startBockAbove.linesAboveArray;
-            let regionalManager = fileDOMManager.getRegionalManager(startBockAbove.startBlockKey);
+            let regionalManager: RegionDOMManager = fileDOMManager.getRegionalManager(startBockAbove.startBlockKey);
 
             /**
              * If we can not get the start block and this region's dom manager 
@@ -268,14 +266,18 @@ ${editor.getDoc().getSelection()}`
                     
                     // We can attempt to update the view here after the item is removed
                     // but need to get the item's parent element before removing object from manager.
-                    let parentElementData = regionalManager.getRegionParent();
+                    let regionRenderData: MultiColumnRenderData = regionalManager.getRegionRenderData();
 
                     regionalManager.removeObject(currentObject.UID);
 
-                    if(parentElementData === null) {
+                    /**
+                     * Need to check here if element is null as this closure will be called
+                     * repeatedly on file change.
+                     */
+                    if(regionRenderData.parentRenderElement === null) {
                         return;
                     }
-                    this.updateMultiColumnRegion(parentElementData, regionalManager);
+                    this.renderColumnMarkdown(regionRenderData.parentRenderElement, regionRenderData.domObjects, regionRenderData.parentRenderSettings);
                 }
             };
             ctx.addChild(elementMarkdownRenderer);
@@ -298,13 +300,9 @@ ${editor.getDoc().getSelection()}`
             }
             
             /**
-             * Use our regional manager to get the element we want to render under.
+             * Use our regional manager to get everything needed to render the region.
              */
-            let parentElementData = regionalManager.getRegionParent();
-            if(parentElementData === null) {
-                // This shouldn't ever be null now, leaving here temporarily to guarentee no bugs.
-                return;
-            }
+            let parentElementData: MultiColumnRenderData = regionalManager.getRegionRenderData();
     
             /**
              * We want to hide all of the original elements that are now going to be
@@ -312,23 +310,10 @@ ${editor.getDoc().getSelection()}`
              */
             el.addClass("multiColumnDataHidden");
 
-            this.updateMultiColumnRegion(parentElementData, regionalManager);
+            this.renderColumnMarkdown(parentElementData.parentRenderElement, parentElementData.domObjects, parentElementData.parentRenderSettings);
 
             return;
         });
-    }
-
-    updateMultiColumnRegion(parentElementData: startRegionParent, domManager: RegionDOMManager) {
-
-        
-        /**
-         * We take the parent element and use it to find all of the elements from
-         * our manager that need to be rendered within our region.
-         */                                            
-        let domObjects = domManager.getDomList();
-
-        // Pass the elements and other data into the render function that actually sets up the DOM 
-        this.renderColumnMarkdown(parentElementData.parentRenderElement, domObjects, parentElementData.parentRenderSettings);
     }
 
     /**

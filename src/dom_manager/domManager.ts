@@ -84,21 +84,19 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
     return { regionMap: regionMap, createRegionalManager: createRegionalManager, getRegionalManager: getRegionalManager, removeRegion: removeRegion }
 }
 
-export type startRegionParent = { 
+export type MultiColumnRenderData = { 
     parentRenderElement: HTMLElement, 
-    parentRenderSettings: MultiColumnSettings
+    parentRenderSettings: MultiColumnSettings,
+    domObjects: DOMObject[]
 }
 
 export type RegionDOMManager = {
 
-    getDomList: () => DOMObject[]
     addObject: (siblingsAbove: HTMLDivElement, obj: DOMObject) => number,
     removeObject: (objectKey: string) => void,
-    getRegionFromStartTagIndex: (startingIndex: number) => { domObjects: DOMObject[], endRegionIndex: number },
     updateElementTag: (objectUID: string, newTag: DOMObjectTag) => void,
-    setElementToStartRegion: (objectUID: string, renderColumnRegion: HTMLElement) => DOMStartRegionObject,
     setElementToSettingsBlock: (objectUID: string, settingsText: string) => void,
-    getRegionParent: () => startRegionParent,
+    getRegionRenderData: () => MultiColumnRenderData,
     displayOriginalElements: () => void
 }
 
@@ -115,6 +113,7 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
     let domList: DOMObject[] = []
     let domObjectMap: Map<string, DOMObject> = new Map();
     let regionParent: HTMLElement = startRegionElement;
+    let regionSettings: DOMRegionSettingsObject[] = [];
 
     function addObject(siblingsAbove: HTMLDivElement, obj: DOMObject): number {
 
@@ -148,7 +147,18 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
         let obj = domObjectMap.get(objectUID);
         domObjectMap.delete(objectUID);
         
-        domList.remove(obj);
+        if(domList.contains(obj)) {
+            domList.remove(obj);
+        }
+
+        // If the object is a settings object we need to remove from the 
+        // settings list.
+        if(obj.tag === DOMObjectTag.regionSettings) {
+            let settingsObj = obj as DOMRegionSettingsObject;
+            if(regionSettings.contains(settingsObj)) {
+                regionSettings.remove(settingsObj);
+            }
+        }
 
         if(domList.length === 0) {
             fileManager.removeRegion(regionKey);
@@ -158,53 +168,6 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
         // console.log(x);
     }
 
-    function getRegionFromStartTagIndex(startingIndex: number): { domObjects: DOMObject[], endRegionIndex: number } {
-
-        /**
-         * If we don't find an end tag we just use the rest of the document
-         * as the end of the region.
-         * 
-         * TODO: Error checking on starting index and array size.
-         */
-        
-        // Make a copy of the list that we can edit when performing the search.
-        let domCopy = domList.slice(0);
-        let endTagIndex = domCopy.length - 1;
-        let removeIndicies: number[] = []
-        for(let i = startingIndex; i < domCopy.length; i++) {
-
-            /** 
-             * This is a "Hacky" way to make sure we don't render
-             * multiple regions within the same region. Currently
-             * this solves the bug that items are removed AFTER
-             * the post processing is done so the extra start
-             * tags are being included in the render list.
-             */
-            if(domCopy[i].tag === DOMObjectTag.startRegion) {
-                // console.log("Adding item to remove indicies.")
-                removeIndicies.push(i);
-            }
-            else if(domCopy[i].tag === DOMObjectTag.endRegion) {
-
-                // console.log(`Found end tag at index: ${i} text: ${domCopy[i].nodeKey}`)
-                endTagIndex = i;
-                break;
-            }
-        }
-        for(let i = 0; i < removeIndicies.length; i++) {
-            domCopy.splice(removeIndicies[i], 1);
-        }
-        
-        let regionList = domCopy.slice(startingIndex, endTagIndex - removeIndicies.length + 1);
-        // console.log("Setting up markdown with:", regionList);
-
-        return { domObjects: regionList, endRegionIndex: endTagIndex }
-    }
-
-    function getDomList(): DOMObject[] {
-        return domList.slice(0);
-    }
-
     function updateElementTag(objectUID: string, newTag: DOMObjectTag): void {
 
         let obj = domObjectMap.get(objectUID);
@@ -212,22 +175,6 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
         if(index !== -1) {
             domList[index].tag = newTag;
         }
-    }
-
-    function setElementToStartRegion(objectUID: string, renderColumnRegion: HTMLElement): DOMStartRegionObject {
-        
-        let startRegionObj: DOMStartRegionObject = null;
-        let obj = domObjectMap.get(objectUID);
-        let index = domList.indexOf(obj);
-        if(index !== -1) {
-            startRegionObj = new DOMStartRegionObject(domList[index], renderColumnRegion)
-        
-            domObjectMap.set(startRegionObj.UID, startRegionObj);
-            domList[index] = startRegionObj;
-
-        }
-
-        return startRegionObj;
     }
 
     function setElementToSettingsBlock(objectUID: string, settingsText: string): void {
@@ -240,58 +187,68 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
             let regionSettingsObj: DOMRegionSettingsObject = new DOMRegionSettingsObject(domList[index], settings);
             
             domObjectMap.set(regionSettingsObj.UID, regionSettingsObj);
-            domList[index] = regionSettingsObj;
+            domList.remove(obj);
+
+            regionSettings.push(regionSettingsObj)
         }
     }
 
-    function getRegionParent(): startRegionParent {
+    /**
+     * @returns a copy of the DOM list the manager is tracking.
+     */
+     function getDomList(): DOMObject[] {
+        return domList.slice(0);
+    }
 
-        let regionSettings: MultiColumnSettings = {numberOfColumns: 2, columnLayout: ColumnLayout.standard, drawBorder: true, drawShadow: true};
+    /**
+     * Creates an object containing all necessary information for the region
+     * to be rendered to the preview pane.
+     * 
+     * @returns a MultiColumnRenderData object with the root DOM element, settings object, and 
+     * all child objects in the order they should be rendered.
+     */
+    function getRegionRenderData(): MultiColumnRenderData {
 
-        /**
-         * Iterate over the list backwards searching for an item with the start
-         * tag. If we find a end tag first we return null and if we find a 
-         * settings tag we save the settings as those will be used to render the
-         * region.
-         */
-        for(let i = 0; 1 < 3; i++) {
-            
-            if(domList.length <= i) {
-                break;
-            }
+        // Set defaults before attempting to get settings.
+        let settings: MultiColumnSettings = {numberOfColumns: 2, columnLayout: ColumnLayout.standard, drawBorder: true, drawShadow: true};
+        if(regionSettings.length > 0) {
 
-            if(domList[i].tag === DOMObjectTag.endRegion) {
-                break;
-            }
-            else if(domList[i].tag === DOMObjectTag.regionSettings) {
-                
-                let regionSettingsObj: DOMRegionSettingsObject = domList[i] as DOMRegionSettingsObject;
-                regionSettings = regionSettingsObj.regionSettings;
-            }
+            /**
+             * Since we append settings onto the end of the array we want the last
+             * item in the array as that would be the most recent settings we parsed.
+             */
+            settings = regionSettings[regionSettings.length - 1].regionSettings;
         }
         
         return { 
             parentRenderElement: regionParent, 
-            parentRenderSettings: regionSettings
+            parentRenderSettings: settings,
+            domObjects: getDomList()
         };
     }
 
+    /**
+     * This fuction is called when a start tag is removed from view meaning
+     * our parent element storing the multi-column region is removed. It 
+     * removes the CSS class from all of the elements so they will be
+     * re-rendered in the preview window.
+     */
     function displayOriginalElements() {
 
         for(let i = 0; i < domList.length; i++) {
 
-            domList[i].element.removeClass("multiColumnDataHidden")
+            domList[i].element.removeClass("multiColumnDataHidden");
+        }
+        for(let i = 0; i < regionSettings.length; i++) {
+            regionSettings[i].element.removeClass("multiColumnDataHidden");
         }
     }
 
-    return { getDomList: getDomList, 
-             addObject: addObject, 
+    return { addObject: addObject, 
              removeObject: removeObject, 
-             getRegionFromStartTagIndex: getRegionFromStartTagIndex, 
              updateElementTag: updateElementTag, 
-             setElementToStartRegion: setElementToStartRegion,
              setElementToSettingsBlock: setElementToSettingsBlock,
-             getRegionParent: getRegionParent,
+             getRegionRenderData: getRegionRenderData,
              displayOriginalElements: displayOriginalElements
     }
 }

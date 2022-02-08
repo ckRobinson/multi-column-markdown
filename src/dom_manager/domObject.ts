@@ -7,7 +7,7 @@
  */
 
 import { getUID } from "../utilities/utils";
-import { MultiColumnSettings, ColumnLayout } from "../regionSettings";
+import { MultiColumnSettings } from "../regionSettings";
 
 export enum DOMObjectTag {
     none,
