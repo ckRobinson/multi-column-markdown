@@ -120,7 +120,7 @@ ${editor.getDoc().getSelection()}`
                 })
 
                 let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
-                let regionKey = startBlockData.startBlockKey.replace(" ", "");
+                let regionKey = startBlockData.startBlockKey;
                 if(regionKey === "") {
                     //TODO: Check if ID already in document?
                     renderErrorRegion.innerText = "Region ID is missing please set an id after the tag. EG: '=== multi-column-start: randomID'"

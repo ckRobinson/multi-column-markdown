@@ -193,8 +193,6 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
 export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockKey: string, 
                                                         linesAboveArray: string[] } | null {
 
-    console.log("Getting start block.")
-
     // Reduce the array down into a single string so that we can
     // easily RegEx over the string and find the indicies we're looking for.
     let linesAboveStr = linesAboveArray.reduce((prev, current) => {
@@ -262,7 +260,7 @@ export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockK
             
             let keySplit = linesAboveArray[0].split(":");
             if(keySplit.length > 1){
-                startBlockKey = keySplit[1]
+                startBlockKey = keySplit[1].replace(" ", "")
             }
 
             linesAboveArray = linesAboveArray.splice(1)
