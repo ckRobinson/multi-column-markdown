@@ -17,7 +17,7 @@ You create a multi-column region by defining the start, settings, column-end, an
 
 Text displayed above.
 
-=== start-multi-column\
+=== start-multi-column: \<RegionID>\
 \```column-settings\
 number of columns: 2\
 largest column: left\
@@ -41,11 +41,30 @@ Text displayed below.
 
 <br>
 
+### **Region Start Tag:**
+
+Each multi-column region must start with either:
+
+- === start-multi-column: \<RegionID>
+- === multi-column-start: \<RegionID>
+
+After defining the start tag you must declare an ID for the region. The ID is used to differentiate between different regions if there are multiple in the same document. Each ID must be unique or unexpected render issues may occur. 
+
+By using the "Insert Multi-Column Region" command (more below) the start ID will be pre-set as a randomly generated 4 character string.
+
+You can also use the "Fix Missing IDs" command which will search the currently open document and append random IDs to all regions that are missing one.
+
+<br>
+
+### **Valid Tags:**
+
+<br>
+
 Each tag type can be defined with the following options:
 
 - Start Multi-Column Region:
-    - === start-multi-column
-    - === multi-column-start
+    - === start-multi-column: \<RegionID>
+    - === multi-column-start: \<RegionID>
 - End Multi-Column Region:
     - === end-multi-column
     - === multi-column-end
@@ -68,7 +87,7 @@ The column settings block can be omitted which will by default set the region to
 
 The settings block must be define right after the multi-column start tag and each settings tag must be on a separate line. EG:
 
-=== start-multi-column\
+=== start-multi-column: \<RandomRegionID>\
 \```column-settings\
 number of columns: 2\
 largest column: left\
@@ -114,7 +133,7 @@ Shadow:
 ### **Full Examples:**
 ---
 
-=== start-multi-column
+=== start-multi-column: \<RandomRegionID>
 
 \# Column 1
 
@@ -129,7 +148,7 @@ Shadow:
 
 <br>
 
-=== start-multi-column\
+=== start-multi-column: \<RandomRegionID>\
 \```column-settings\
 number of columns: 3\
 border: off\
@@ -152,7 +171,7 @@ border: off\
 
 <br>
 
-=== start-multi-column\
+=== start-multi-column: \<RandomRegionID>\
 \```settings\
 number of columns: 3\
 largest column: center\
@@ -183,14 +202,18 @@ Currently you can not place a multi-column region within another multi-column re
 
 <br>
 
-### **Commands:**
+### **Available Commands:**
 ---
 
 You can access the command pallet with ctrl/command - P. 
 
-- ### Available Commands:
-    - #### Insert Multi-Column Region
-        - Will create a two column region where the cursor is located.  
+#### **Insert Multi-Column Region**
+> Will create a two column region where the cursor is located with a randomly generated ID and a default settings block created. Anything currently selected will be moved outside the end of the inserted region as to not overwrite any data.
+
+<br>
+
+#### **Fix Missing IDs For Multi-Column Regions**
+> Will search the current document for any region start tags that are missing IDs and randomly generate new IDs for each region.
 
 <br><br>
 
@@ -229,6 +252,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 ### Other
 - Opening large files can cause Obsidian to slow down and lag while the document is being parsed.
+    - As of 0.4.0 this should be less of an issue but still keeping an eye on it.
+
+<br>
 
 - This plugin currently does not support Obsidian's new markdown editor preview rendering, but hopefully that can be added in the future.
 
@@ -238,8 +264,14 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 # Version History
 
+### **0.4.0**
+Additional parsing and render engine improvements. New changes should make larger files quicker to load as well as vastly reduce the additional overhead when loading files without multi-column regions.
+- Cleaned up parsing and render engine.
+- Added error message to multi-column regions that are missing region IDs.
+- Added additional command to command palette to insert missing region IDs.
+
 ### **0.3.1**
-- Loosed spacing requirements on tags causing what should be considered false negatives when parsing.
+- Loosened spacing requirements on tags causing what should be considered false negatives when parsing.
 
 ### **0.3.0**
 Entire overhaul of the parsing and render engine. This rework fixes many of the issues in the previous version including the double rendering and data still being rendered after removing an entire line. It also fixes compatibility issues where items such as Dataview code blocks as well as images were not being rendered properly within a region.
