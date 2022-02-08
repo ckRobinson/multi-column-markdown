@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { MarkdownView, Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, MarkdownSectionInformation } from 'obsidian';
+import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { RegionDOMManager, startRegionParent, GlobalDOMManager } from './dom_manager/domManager';
 import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
@@ -136,7 +136,8 @@ ${editor.getDoc().getSelection()}`
             let elementTextSpaced = linesOfElement.reduce((prev, curr) => {
                 return prev + "\n" + curr;
             });
-            let elementText = linesOfElement.reduce((prev, curr) => {
+            let elementText = linesOfElement.reduce((prev, curr) => { 
+                // TODO: This can probably be removed as it is only used to identify DOMObjects.
                 return prev + curr;
             });
 
@@ -169,7 +170,7 @@ ${editor.getDoc().getSelection()}`
                 let regionKey = startBlockData.startBlockKey;
                 if(regionKey === "") {
                     //TODO: Check if ID already in document?
-                    renderErrorRegion.innerText = "Region ID is missing please set an id after the tag. EG: '=== multi-column-start: randomID'"
+                    renderErrorRegion.innerText = "Region ID is missing. Please set an id after the start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
                     return
                 }
 
@@ -190,12 +191,6 @@ ${editor.getDoc().getSelection()}`
                  */
                 return
             }
-
-            /** 
-             * Here we know that there is a region on the page but we are not sure
-             * if our current item is part of a region. If we are not part of a 
-             * region we return without any more processing.
-             */
 
             /**
              * Get a list of all of the lines above our current element.
@@ -225,7 +220,7 @@ ${editor.getDoc().getSelection()}`
              * Here we now know we're within a regional block.
              */
 
-            // Now we only want to work with the lines within the current block
+            // Now we only want to work with the lines within the current region.
             linesAboveArray = startBockAbove.linesAboveArray;
             let regionalManager = fileDOMManager.getRegionalManager(startBockAbove.startBlockKey);
 
@@ -273,54 +268,36 @@ ${editor.getDoc().getSelection()}`
             ctx.addChild(elementMarkdownRenderer);
 
             /**
-             * At this point we know that this document contains a multi-column region
-             * so we now move forward to determine what we need to do with our current 
-             * element.
+             * Now we check if our current element is a special flag so we can
+             * properly set the element tag within the regional manager.
              */
-
-            // Get the lines for just our current element from the document, this is needed for
-            // certain parsing and trying to see if this can be removed still.
-            let elementData = info.text.split("\n").splice(info.lineStart, info.lineEnd + 1 - info.lineStart).reduce((prev, current) => {
-                return prev + "\n"  + current;
-            }, "");
-
             if(multiColumnParser.containsEndTag(el.textContent) === true) {
 
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
             }
-            else if(multiColumnParser.containsColEndTag(elementData) === true) {
+            else if(multiColumnParser.containsColEndTag(elementTextSpaced) === true) {
 
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
             }
-            else if(multiColumnParser.containsColSettingsTag(elementData) === true) {
+            else if(multiColumnParser.containsColSettingsTag(elementTextSpaced) === true) {
 
-                regionalManager.setElementToSettingsBlock(currentObject.UID, elementData);
+                regionalManager.setElementToSettingsBlock(currentObject.UID, elementTextSpaced);
             }
             
-            console.log("TEST")
             /**
-             * Now we use the index of our element to find a region start object
-             * above us. If the function returns null we either didnt find a object
-             * or we hit an end tag before a start tag both of which mean the object
-             * is not within a region.
-             * 
-             * If we just set up a start tag in the if statement abovethis is slightly 
-             * inefficient but does mean the code is slightly less complicated.
+             * Use our regional manager to get the element we want to render under.
              */
             let parentElementData = regionalManager.getRegionParent();
             if(parentElementData === null) {
+                // This shouldn't ever be null now, leaving here temporarily to guarentee no bugs.
                 return;
             }
     
-            console.log("Hiding data and rendering?")
             /**
              * We want to hide all of the original elements that are now going to be
-             * rendered within our mutli-column region, but we need to make sure 
-             * we don't also hide the start element so make sure to check for that here.
+             * rendered within our mutli-column region
              */
-            if(currentObject.tag !== DOMObjectTag.startRegion){
-                el.addClass("multiColumnDataHidden");
-            }
+            el.addClass("multiColumnDataHidden");
 
             this.updateMultiColumnRegion(parentElementData, regionalManager);
 
@@ -530,12 +507,12 @@ export type nearbySiblings = {
 }
 function findSiblingsAboveEl(linesAbove: string[], sourcePath: string): HTMLDivElement {
 
-    /*
-     * We re render all of the items above our element so we can determine where 
-     * to place the new item in the manager.
+    /**
+     * We re-render all of the items above our element, until the start tag, 
+     * so we can determine where to place the new item in the manager.
      * 
-     * Also extracting the text to set within the object mostly for debugging 
-     * purposes.
+     * TODO: Can reduce the amount needing to be rendered by only rendering to
+     * the start tag or a column-break whichever is closer.
      */
     let siblingsAbove = createDiv();
     let markdownRenderChild = new MarkdownRenderChild(
@@ -549,8 +526,6 @@ function findSiblingsAboveEl(linesAbove: string[], sourcePath: string): HTMLDivE
         sourcePath,
         markdownRenderChild
     );
-
-    console.log(linesAbove, siblingsAbove.children)
 
     return siblingsAbove;
 }
