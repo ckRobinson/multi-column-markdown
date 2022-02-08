@@ -53,6 +53,52 @@ ${editor.getDoc().getSelection()}`
                 }
             }
         });
+
+        this.addCommand({            
+            id: `add-IDs-To-multi-column-region`,
+            name: `Fix Missing IDs for Multi-Column Regions`,
+            editorCallback: (editor, view) => {
+
+                try {
+                    let text = editor.getRange({ line: 0, ch: 0 }, { line: editor.getDoc().lineCount(), ch: 0});
+                    let lines = text.split("\n");
+
+                    let linesWithoutIDs = []
+                    let textWithoutIDs = []
+                    for(let i = 0; i < lines.length; i++) {
+
+                        let data = multiColumnParser.isStartTagWithID(lines[i]);
+                        if(data.isStartTag === true && data.hasKey === false) {
+                            linesWithoutIDs.push(i);
+                            textWithoutIDs.push(lines[i])
+                        }
+                    }                    
+
+                    if(linesWithoutIDs.length === 0) {
+                        new Notice ("Found 0 missing IDs in the current document.");
+                        return;
+                    }
+
+                    for(let i = 0; i < linesWithoutIDs.length; i++) {
+
+                        let originalText = textWithoutIDs[i]
+                        let text = originalText;
+                        text = text.trimEnd();
+                        if(text.charAt(text.length - 1) === ":") {
+                            text = text.slice(0, text.length-1);
+                        }
+                        text = `${text}: ID_${getUID(4)}`;
+
+                        editor.replaceRange(text, { line: linesWithoutIDs[i], ch: 0 }, 
+                                                  { line: linesWithoutIDs[i], ch: originalText.length});
+                    }
+                } catch (e) {
+                    new Notice(
+                        "Encountered an error addign IDs to multi-column regions. Please try again later."
+                    );
+                }
+            }
+        });
 	}
 
     setupMarkdownPostProcessor() {

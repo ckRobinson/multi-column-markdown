@@ -33,6 +33,21 @@ export function containsStartTag(text: string): boolean {
     return findStartTag(text).found
 }
 
+export function isStartTagWithID(text: string): {isStartTag: boolean, hasKey: boolean} {
+
+    let startTagData = findStartTag(text);
+    if(startTagData.found === true) {
+
+        let key = getStartTagKey(text)
+        if(key === null || key === "") {
+            return {isStartTag: true, hasKey: false};
+        }
+        return {isStartTag: true, hasKey: true};
+    }
+
+    return {isStartTag: false, hasKey: false};
+}
+
 const END_REGEX_STRS = ["=== *end-multi-column",
                         "=== *multi-column-end"]
 const END_REGEX_ARR: RegExp[] = [];
@@ -258,9 +273,10 @@ export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockK
 
             linesAboveArray = linesAboveStr.slice(startIndex).split("\n")
             
-            let keySplit = linesAboveArray[0].split(":");
-            if(keySplit.length > 1){
-                startBlockKey = keySplit[1].replace(" ", "")
+            let startTag = linesAboveArray[0];
+            let key = getStartTagKey(startTag);
+            if(key !== null) {
+                startBlockKey = key;
             }
 
             linesAboveArray = linesAboveArray.splice(1)
@@ -273,4 +289,14 @@ export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockK
     }
 
     return { startBlockKey, linesAboveArray };
+}
+
+function getStartTagKey(startTag: string): string | null {
+
+    let keySplit = startTag.split(":");
+    if(keySplit.length > 1){
+        return keySplit[1].replace(" ", "")
+    }
+
+    return null;
 }
