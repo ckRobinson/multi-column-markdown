@@ -7,6 +7,13 @@
  */
 
 
-export function getUID(): string {
-    return Math.random().toString(36).substring(2);
+export function getUID(length: number = 10): string {
+
+    if(length > 10) {
+        length = 10;
+    }
+    let UID = Math.random().toString(36).substring(2);
+    UID = UID.slice(0, length);
+    
+    return UID;
 }
