@@ -44,8 +44,10 @@ export type FileDOMManager = {
     createRegionalManager: (regionKey: string, errorElement: HTMLElement, regionElement: HTMLElement) => RegionDOMManager
     getRegionalManager: (regionKey: string) => RegionDOMManager | null,
     removeRegion: (regionKey: string) => void,
-    setStartTag: () => void,
-    getStartTag: () => boolean
+    setHasStartTag: () => void,
+    getHasStartTag: () => boolean,
+    getNumberOfRegions: () => number,
+    checkKeyExists: (checkKey: string) => boolean
 }
 function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string): FileDOMManager {
     
@@ -85,12 +87,20 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
         return regonalManager;
     }
 
-    function setStartTag() {
+    function setHasStartTag() {
         hasStartTag = true;
     }
 
-    function getStartTag() {
+    function getHasStartTag() {
         return hasStartTag;
+    }
+
+    function getNumberOfRegions() {
+        return regionMap.size
+    }
+
+    function checkKeyExists(checkKey: string) {
+        return regionMap.has(checkKey);
     }
 
     return { regionMap: regionMap, 
@@ -98,8 +108,10 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
         createRegionalManager: createRegionalManager, 
         getRegionalManager: getRegionalManager, 
         removeRegion: removeRegion, 
-        setStartTag: setStartTag, 
-        getStartTag: getStartTag 
+        setHasStartTag: setHasStartTag, 
+        getHasStartTag: getHasStartTag,
+        getNumberOfRegions: getNumberOfRegions,
+        checkKeyExists: checkKeyExists
     }
 }
 
