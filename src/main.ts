@@ -146,7 +146,7 @@ ${editor.getDoc().getSelection()}`
              * parsing the rest of the document.
              */
             if(multiColumnParser.containsStartTag(el.textContent)) {
-                fileDOMManager.setStartTag();
+                fileDOMManager.setHasStartTag();
             }
 
             /** 
@@ -154,7 +154,7 @@ ${editor.getDoc().getSelection()}`
              * rest of the parsing. This is only set to true once the first
              * start tag element is parsed above.
              */
-            if(fileDOMManager.getStartTag() === false) {
+            if(fileDOMManager.getHasStartTag() === false) {
                     return;
             }
 
@@ -196,10 +196,27 @@ ${editor.getDoc().getSelection()}`
 
                 let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
                 let regionKey = startBlockData.startBlockKey;
-                if(regionKey === "") {
-                    //TODO: Check if ID already in document?
-                    renderErrorRegion.innerText = "Region ID is missing. Please set an id after the start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
-                    return
+                if(fileDOMManager.checkKeyExists(regionKey) === true) {
+
+                    let { numberOfTags, keys } = multiColumnParser.countStartTags(info.text);
+
+                    let index = 0;
+                    for(; index < numberOfTags; index++) {
+
+                        // Because we checked if key exists one of these has to match.
+                        if(keys[index] === regionKey) {
+                            break;
+                        }
+                    }
+
+                    if(keys[index] === "" ) {
+                        renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                    }
+                    else {
+                        renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
+                    }
+
+                    return;
                 }
 
                 let elementMarkdownRenderer = new MarkdownRenderChild(el);
