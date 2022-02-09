@@ -48,7 +48,7 @@ Each multi-column region must start with either:
 - === start-multi-column: \<RegionID>
 - === multi-column-start: \<RegionID>
 
-After defining the start tag you must declare an ID for the region. The ID is used to differentiate between different regions if there are multiple in the same document, however even when only a single region exists there must still be an ID. 
+After defining the start tag you must declare an ID for the region. The ID is used to differentiate between different regions if there are multiple in the same document.
 
 Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
 
@@ -265,6 +265,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 <br><br>
 
 # Version History
+
+### **0.4.2**
+- Now allow a single empty ID per document.
 
 ### **0.4.1**
 - Added additional check in attempt to reduce parsing time on documents without multi-column regions.
