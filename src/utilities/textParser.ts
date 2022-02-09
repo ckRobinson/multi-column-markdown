@@ -196,6 +196,36 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     return settings;
 }
 
+export function countStartTags(text: string): { numberOfTags: number, keys: string[] } {
+
+    let keys: string[] = [];
+    let startTagData = findStartTag(text);
+    while(startTagData.found) {
+        
+        // Slice off everything before the tag
+        text = text.slice(startTagData.startPosition);
+
+        /**
+         * Get just the start tag line and then set text to everything just
+         * after the start tag.
+         */
+        let tag = text.split("\n")[0];
+        text = text.slice(1); // This moves the text 1 character so we dont match the same tag.
+
+        // Parse out the key and append to the list.
+        let key = getStartTagKey(tag);
+        if(key === null) {
+            key = ""
+        }
+        keys.push(key);
+
+        // Search again for another tag before looping.
+        startTagData = findStartTag(text);
+    }
+
+    return { numberOfTags: keys.length, keys };
+}
+
 /**
  * This function will filter a set of strings, returning all items starting
  * from the closest open start tag through the last item in the set. 
