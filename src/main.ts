@@ -200,23 +200,27 @@ ${editor.getDoc().getSelection()}`
 
                     let { numberOfTags, keys } = multiColumnParser.countStartTags(info.text);
 
-                    let index = 0;
-                    for(; index < numberOfTags; index++) {
+                    let numMatches = 0;
+                    for(let i = 0; i < numberOfTags; i++) {
 
                         // Because we checked if key exists one of these has to match.
-                        if(keys[index] === regionKey) {
-                            break;
+                        if(keys[i] === regionKey) {
+                            numMatches++;
                         }
                     }
 
-                    if(keys[index] === "" ) {
-                        renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                    // We only want to display an error if there are more than 2 of the same id across
+                    // the whole document. This prevents erros when obsidian reloads the whole document
+                    // and there are two of the same key in the map.
+                    if(numMatches >= 2) {
+                        if(regionKey === "") {
+                            renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                        }
+                        else {
+                            renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
+                        }
+                        return;
                     }
-                    else {
-                        renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
-                    }
-
-                    return;
                 }
 
                 let elementMarkdownRenderer = new MarkdownRenderChild(el);
