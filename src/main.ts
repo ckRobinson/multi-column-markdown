@@ -488,45 +488,36 @@ ${editor.getDoc().getSelection()}`
     updateRenderedMarkdown(regionElements: DOMObject[]) {
 
         /**
-            /** 
-        /**
          * Go through every node of the region looking for the "specialRender" type
          * which are the elements that may need to be rendered using the original
          * element rather than a copy.
          */
         for(let i = 0; i < regionElements.length; i++) {
             
-            /** The first time the document is updated after load this will return
-             * undefined so here we get the element type and then if needed set
-             * up our dual renderer element before updating it afterwards.
-             * 
-             * We want to set the element type here in the update call because
-             * the type may not be set until after our inital load is called if
-             * multi-column markdown runs before other plugins that update the
-             * elements.
+
+            /**
+             * Here we check every item again to see if they need to be updated.
+             * This could be made slightly more efficient if we can truly determine
+             * wether an item is a normal render item, however it seems like it
+             * may take a bit of extra time in order for the classes we check for
+             * to be added to the elements.
              */
-            if(regionElements[i].elementType === ElementRenderType.undefined) {
+            let elementType = regionElements[i].elementType;
 
-                regionElements[i].elementType = getElementRenderType(regionElements[i].element);
-                if(regionElements[i].elementType === ElementRenderType.specialRender) {
-
-                    this.setUpDualRender(regionElements[i]);
-                }
+            // If the element is not currently a special render element we check again
+            // as the original element may have been updated.
+            if(elementType !== ElementRenderType.specialRender) {
+                
+                // If the new result returns as a special renderer we update so
+                // this wont run again for this item.
+                elementType = getElementRenderType(regionElements[i].element);
             }
 
-            if(regionElements[i].elementType === ElementRenderType.specialRender) {
+            if(elementType === ElementRenderType.specialRender) {
+                    
+                regionElements[i].elementType = elementType;
 
-                /**
-                 * Now check if this node is missing the original element because
-                 * it was moved. If the node is missing we move it back in.
-                 */
-                let specialElementContainer = regionElements[i].elementContainer;
-
-                if(specialElementContainer !== null && 
-                   specialElementContainer.getElementsByClassName(`.${MultiColumnLayoutCSS.OriginalElementType}`).length === 0) {
-    
-                    specialElementContainer.insertBefore(regionElements[i].element, specialElementContainer.children[0]);
-                } 
+                this.setUpDualRender(regionElements[i]);
             }
         }
     }

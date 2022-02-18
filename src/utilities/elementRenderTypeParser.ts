@@ -21,6 +21,7 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
     }
 
     if(hasAdmonition(element) === true) {
+        
         return ElementRenderType.normalRender
     }
 
