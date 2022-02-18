@@ -7,6 +7,7 @@
  */
 
 import { getUID } from "../utilities/utils";
+import { ElementRenderType } from "../utilities/elementRenderTypeParser";
 import { MultiColumnSettings } from "../regionSettings";
 
 export enum DOMObjectTag {
@@ -17,70 +18,14 @@ export enum DOMObjectTag {
     endRegion
 }
 
-export enum ElementType {
-    paragraph,
-    heading,
-    list,
-    specialRender,
-    normalRender
-}
-
-function getElementType(element: HTMLElement): ElementType {
-
-    /**
-     * Look for specific kinds of elements by their CSS class names here. These 
-     * are going to be brittle links as they rely on other plugin definitions but
-     * as this is only adding in extra compatability to the plugins defined here 
-     * it should be ok.
-     * 
-     * These may be classes on one of the simple elements (such as a paragraph)
-     * that we search for below so need to look for these first.
-     */
-    if(element.getElementsByClassName("dice-roller").length !== 0) {
-
-        return ElementType.specialRender
-    }
-
-    if(element.getElementsByClassName("admonition").length !== 0) {
-        return ElementType.normalRender
-    }
-
-    /**
-     * If we didnt find a special element we want to check for simple elements
-     * such as paragraphs or lists. In the current implementation we only set up
-     * the special case for "specialRender" elements so this *should* be saving
-     * some rendering time by setting these tags properly.
-     */
-    let innerHTML = element.innerHTML;
-    if(innerHTML.startsWith("<p")) {
-
-        return ElementType.paragraph;
-    }
-    else if(innerHTML.startsWith("<h1") || 
-       innerHTML.startsWith("<h2") || 
-       innerHTML.startsWith("<h3") || 
-       innerHTML.startsWith("<h4") ||
-       innerHTML.startsWith("<h5")) {
-
-        return ElementType.heading;
-    }
-    else if(innerHTML.startsWith("<ul") || 
-       innerHTML.startsWith("<ol")) {
-        return ElementType.list;
-    }
-    
-    // If still nothing found we return other as the default response if nothing else found.
-    return ElementType.specialRender;
-}
-
 export class DOMObject {
     nodeKey: string;
     element: HTMLElement;
     UID: string;
     tag: DOMObjectTag;
     usingOriginalElement: boolean
-    elementType: ElementType = ElementType.specialRender;
-    specialElementContainer: HTMLElement = null;
+    elementType: ElementRenderType = ElementRenderType.undefined;
+    elementContainer: HTMLDivElement = null;
 
     constructor(element: HTMLElement, 
                 randomID:string = getUID(), 
@@ -90,7 +35,6 @@ export class DOMObject {
         this.UID = randomID;
         this.tag = tag;
         this.usingOriginalElement = false
-        this.elementType = getElementType(element);
     }
 
     setMainDOMElement(domElement: HTMLElement) {

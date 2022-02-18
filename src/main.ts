@@ -9,11 +9,12 @@
 import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { RegionDOMManager, MultiColumnRenderData, GlobalDOMManager } from './dom_manager/domManager';
-import { DOMObject, DOMObjectTag, ElementType } from './dom_manager/domObject';
+import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
 import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
 
 import { getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
+import { ElementRenderType, getElementRenderType } from './utilities/elementRenderTypeParser';
 
 export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
@@ -421,45 +422,13 @@ ${editor.getDoc().getSelection()}`
                 regionElements[i].tag !== DOMObjectTag.endRegion      ||
                 regionElements[i].tag !== DOMObjectTag.columnBreak ) {
 
-                /**
-                 * If our element is of "specialRender" type it *may* need to be rendered
-                 * using the original element rather than a copy. For example, an element
-                 * may have an onClick event that would not get coppied to the clone.
-                 */
-                let element = null
-                if(regionElements[i].elementType === ElementType.specialRender) {
-
-                    /**
-                     * If we just moved these elements into the region it would get 
-                     * moved back out into the original location in the DOM by obsidian
-                     * when scrolling or on file changes. On the next refresh it
-                     * would be moved back but that can lead to a region jumping
-                     * around as the item is moved in and out. 
-                     * 
-                     * Here we set up a div to contain the element and create
-                     * a visual only clone of it. The clone will only be visible
-                     * when the original is not in the multi-column region so it
-                     * saves us from the visual noise of the region jumping around.
-                     */
-                    element = createDiv({
-                        cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
-                    });
-
-                    regionElements[i].specialElementContainer = element;
-
-                    element.appendChild(regionElements[i].element)                    
-                    regionElements[i].element.addClass(MultiColumnLayoutCSS.OriginalElementType)
-
-                    let clonedNode = regionElements[i].element.cloneNode(true) as HTMLDivElement;
-                    clonedNode.addClass(MultiColumnLayoutCSS.ClonedElementType)
-                    clonedNode.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType])
-                    element.appendChild(clonedNode);
-                }
-                else {
-
-                    // Otherwise we just make a copy of the original element to display.
-                    element = regionElements[i].element.cloneNode(true) as HTMLDivElement;
-                }
+                // We store the elements in a wrapper container until we determine
+                let element = createDiv({
+                    cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
+                });
+                regionElements[i].elementContainer = element;
+                // Otherwise we just make a copy of the original element to display.
+                element.appendChild(regionElements[i].element.cloneNode(true) as HTMLDivElement);
 
                 if(element !== null) {
 
@@ -481,6 +450,41 @@ ${editor.getDoc().getSelection()}`
         }
     }
 
+    setUpDualRender(domElement: DOMObject) {
+
+        /**
+         * If our element is of "specialRender" type it *may* need to be rendered
+         * using the original element rather than a copy. For example, an element
+         * may have an onClick event that would not get coppied to the clone.
+         * 
+         * If we just moved these elements into the region it would get 
+         * moved back out into the original location in the DOM by obsidian
+         * when scrolling or when the file is updated. On the next refresh it
+         * would be moved back but that can lead to a region jumping
+         * around as the item is moved in and out. 
+         * 
+         * Here we set up the div to contain the element and create
+         * a visual only clone of it. The clone will only be visible
+         * when the original is not in the multi-column region so it
+         * saves us from the visual noise of the region jumping around.
+         */
+
+        // Remove the old elements before we set up the dual rendered elements.
+        let containerElement: HTMLDivElement = domElement.elementContainer
+        let renderElement: HTMLDivElement = domElement.element as HTMLDivElement
+        for(let i = containerElement.children.length - 1; i >= 0; i--) {
+            containerElement.children[i].detach();
+        }
+
+        containerElement.appendChild(renderElement)                    
+        renderElement.addClass(MultiColumnLayoutCSS.OriginalElementType)
+
+        let clonedNode = renderElement.cloneNode(true) as HTMLDivElement;
+        clonedNode.addClass(MultiColumnLayoutCSS.ClonedElementType)
+        clonedNode.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType])
+        containerElement.appendChild(clonedNode);
+    }
+
     updateRenderedMarkdown(regionElements: DOMObject[]) {
 
         /**
@@ -491,13 +495,32 @@ ${editor.getDoc().getSelection()}`
          * element rather than a copy.
          */
         for(let i = 0; i < regionElements.length; i++) {
-            if(regionElements[i].elementType === ElementType.specialRender) {
+            
+            /** The first time the document is updated after load this will return
+             * undefined so here we get the element type and then if needed set
+             * up our dual renderer element before updating it afterwards.
+             * 
+             * We want to set the element type here in the update call because
+             * the type may not be set until after our inital load is called if
+             * multi-column markdown runs before other plugins that update the
+             * elements.
+             */
+            if(regionElements[i].elementType === ElementRenderType.undefined) {
+
+                regionElements[i].elementType = getElementRenderType(regionElements[i].element);
+                if(regionElements[i].elementType === ElementRenderType.specialRender) {
+
+                    this.setUpDualRender(regionElements[i]);
+                }
+            }
+
+            if(regionElements[i].elementType === ElementRenderType.specialRender) {
 
                 /**
                  * Now check if this node is missing the original element because
                  * it was moved. If the node is missing we move it back in.
                  */
-                let specialElementContainer = regionElements[i].specialElementContainer;
+                let specialElementContainer = regionElements[i].elementContainer;
 
                 if(specialElementContainer !== null && 
                    specialElementContainer.getElementsByClassName(`.${MultiColumnLayoutCSS.OriginalElementType}`).length === 0) {

@@ -15,7 +15,7 @@ export enum MultiColumnLayoutCSS {
     RegionColumnContent = "columnContent",
     ColumnDualElementContainer = "MultiColumn_DualElementContainer",
     OriginalElementType = "MultiColumn_OriginalElement",
-    ClonedElementType = "MultiColumn_ClonedElement"
+    ClonedElementType = "MultiColumn_ElementContainer"
 }
 
 export enum MultiColumnStyleCSS {
