@@ -266,6 +266,10 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 # Version History
 
+### **0.4.3**
+Updated renderer engine to keep track of and properly render special kinds of content. This change fixes some compatability issues with other plugins where buttons were not properly triggering on click. It also fixes some preview issues causing some content to become out of date, for example an update to a query result in a dataview codeblock.
+- Rendered preview windows are now periodically refreshed. Currently the document is refreshed every 2 seconds but will keep an eye on performance and usability with this timing.
+
 ### **0.4.2**
 - Now allow a single empty ID per document.
 

@@ -7,8 +7,9 @@
  */
 
 import { parseColumnSettings } from '../utilities/textParser';
-import { DOMObject, DOMStartRegionObject, DOMRegionSettingsObject, DOMObjectTag } from './domObject';
+import { DOMObject, DOMRegionSettingsObject, DOMObjectTag } from './domObject';
 import { MultiColumnSettings, ColumnLayout } from "../regionSettings";
+import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../utilities/cssDefinitions';
 
 export class GlobalDOMManager {
     managers: Map<string, FileDOMManager>;
@@ -36,13 +37,18 @@ export class GlobalDOMManager {
 
         return fileManager;
     }
+
+    public getAllFileManagers() {
+        return Array.from(this.managers.values());
+    }
 }
 
 export type FileDOMManager = {
     regionMap: Map<string, RegionDOMManager>,
     hasStartTag: boolean,
-    createRegionalManager: (regionKey: string, errorElement: HTMLElement, regionElement: HTMLElement) => RegionDOMManager
+    createRegionalManager: (regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement) => RegionDOMManager
     getRegionalManager: (regionKey: string) => RegionDOMManager | null,
+    getAllRegionalManagers: () => RegionDOMManager[],
     removeRegion: (regionKey: string) => void,
     setHasStartTag: () => void,
     getHasStartTag: () => boolean,
@@ -68,11 +74,11 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
         }
     }
 
-    function createRegionalManager(regionKey: string, errorElement: HTMLElement, regionElement: HTMLElement) {
+    function createRegionalManager(regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement) {
 
         //TODO: Use the error element whenever there is an error.
 
-        let regonalManager = createRegionalDomManager(this, regionKey, regionElement);
+        let regonalManager = createRegionalDomManager(this, regionKey, rootElement, renderRegionElement);
         regionMap.set(regionKey, regonalManager);
         return regonalManager;
     }
@@ -85,6 +91,11 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
         }
 
         return regonalManager;
+    }
+
+    function getAllRegionalManagers(): RegionDOMManager[] {
+
+        return Array.from(regionMap.values());
     }
 
     function setHasStartTag() {
@@ -106,7 +117,8 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
     return { regionMap: regionMap, 
         hasStartTag: hasStartTag,  
         createRegionalManager: createRegionalManager, 
-        getRegionalManager: getRegionalManager, 
+        getRegionalManager: getRegionalManager,
+        getAllRegionalManagers: getAllRegionalManagers,
         removeRegion: removeRegion, 
         setHasStartTag: setHasStartTag, 
         getHasStartTag: getHasStartTag,
@@ -123,15 +135,16 @@ export type MultiColumnRenderData = {
 
 export type RegionDOMManager = {
 
-    addObject: (siblingsAbove: HTMLDivElement, obj: DOMObject) => number,
+    addObject: (siblingsAbove: HTMLDivElement, siblingsBelow: HTMLDivElement, obj: DOMObject) => number,
     removeObject: (objectKey: string) => void,
     updateElementTag: (objectUID: string, newTag: DOMObjectTag) => void,
     setElementToSettingsBlock: (objectUID: string, settingsText: string) => void,
     getRegionRenderData: () => MultiColumnRenderData,
-    displayOriginalElements: () => void
+    displayOriginalElements: () => void,
+    getRootRegionElement: () => HTMLElement
 }
 
-export function createRegionalDomManager(fileManager: FileDOMManager, regionKey: string, startRegionElement: HTMLElement): RegionDOMManager {
+function createRegionalDomManager(fileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement, renderRegionElement: HTMLElement): RegionDOMManager {
 
     /**
      * We use a list and a map to help keep track of the objects. Requires
@@ -143,16 +156,50 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
      */
     let domList: DOMObject[] = []
     let domObjectMap: Map<string, DOMObject> = new Map();
-    let regionParent: HTMLElement = startRegionElement;
+    let regionParent: HTMLElement = renderRegionElement;
     let regionSettings: DOMRegionSettingsObject[] = [];
 
-    function addObject(siblingsAbove: HTMLDivElement, obj: DOMObject): number {
+    function addObject(siblingsAbove: HTMLDivElement, siblingsBelow: HTMLDivElement, obj: DOMObject): number {
+
+        let prevObj = siblingsAbove.children[siblingsAbove.children.length - 1] as HTMLElement;
+        let nextObj = siblingsBelow.children[0] as HTMLElement;
 
         let addAtIndex = siblingsAbove.children.length;
 
-        // console.log("Attempting to add:", obj, `at index: ${addAtIndex}`);
+        let prevObjText = ""
+        if(prevObj !== undefined) {
+            
+            prevObjText = prevObj.innerText;
 
-        domList.splice(addAtIndex, 0, obj);
+            for(let i = domList.length - 1; i >= 0; i--) {
+                if(domList[i].nodeKey === prevObj.innerText) {
+                    addAtIndex = i + 1;
+                    break;
+                }
+            }
+        }
+
+        let nextElIndex = addAtIndex;
+        let nextObjText = ""
+        if(nextObj !== undefined) {
+            
+            let foundNext = false;
+            nextObjText = nextObj.innerText;
+            
+            for(let i = addAtIndex; i < domList.length; i++) {
+
+                if(domList[i].nodeKey === nextObj.innerText.trim()) {
+    
+                    nextElIndex = i;
+                    foundNext = true
+                    break;
+                }
+            }
+        }
+
+        // console.log(" Prev: ", siblingsAbove.children[siblingsAbove.children.length - 1], "Adding: ", obj.element, " Next: ", siblingsBelow.children[0], "Overwriting:", domList.slice(addAtIndex, nextElIndex));
+
+        domList.splice(addAtIndex, nextElIndex - addAtIndex, obj);
         domObjectMap.set(obj.UID, obj);
 
         // /**
@@ -178,6 +225,10 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
         let obj = domObjectMap.get(objectUID);
         domObjectMap.delete(objectUID);
         
+        if(obj === undefined) {
+            return;
+        }
+
         if(domList.contains(obj)) {
             domList.remove(obj);
         }
@@ -259,13 +310,35 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
      */
     function displayOriginalElements() {
 
+        
         for(let i = 0; i < domList.length; i++) {
 
-            domList[i].element.removeClass("multiColumnDataHidden");
+            if(domList[i].element) {
+                domList[i].element.removeClasses([MultiColumnStyleCSS.RegionEndTag,
+                                                  MultiColumnStyleCSS.ColumnEndTag,
+                                                  MultiColumnStyleCSS.RegionSettings,
+                                                  MultiColumnStyleCSS.RegionContent]);
+                if(domList[i].element.parentElement) {
+                    domList[i].element.parentElement.removeChild(domList[i].element)
+                }                                                  
+            }
         }
         for(let i = 0; i < regionSettings.length; i++) {
-            regionSettings[i].element.removeClass("multiColumnDataHidden");
+            if(regionSettings[i].element) {
+                regionSettings[i].element.removeClasses([MultiColumnStyleCSS.RegionEndTag,
+                                                         MultiColumnStyleCSS.ColumnEndTag,
+                                                         MultiColumnStyleCSS.RegionSettings,
+                                                         MultiColumnStyleCSS.RegionContent]);
+                                                         
+                if(regionSettings[i].element.parentElement) {
+                    regionSettings[i].element.parentElement.removeChild(regionSettings[i].element)
+                }
+            }
         }
+    }
+
+    function getRootRegionElement(): HTMLElement {
+        return rootElement;
     }
 
     return { addObject: addObject, 
@@ -273,6 +346,7 @@ export function createRegionalDomManager(fileManager: FileDOMManager, regionKey:
              updateElementTag: updateElementTag, 
              setElementToSettingsBlock: setElementToSettingsBlock,
              getRegionRenderData: getRegionRenderData,
-             displayOriginalElements: displayOriginalElements
+             displayOriginalElements: displayOriginalElements,
+             getRootRegionElement: getRootRegionElement
     }
 }

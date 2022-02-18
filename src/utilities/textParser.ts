@@ -321,6 +321,42 @@ export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockK
     return { startBlockKey, linesAboveArray };
 }
 
+export function getEndBlockBelow(linesBelow: string[]): string[] {
+
+    // Reduce the array down into a single string so that we can
+    // easily RegEx over the string and find the indicies we're looking for.
+    let linesBelowStr = linesBelow.reduce((prev, current) => {
+        return prev + "\n"  + current;
+    }, "");
+    let endTagSerachData = findEndTag(linesBelowStr);
+    let startTagSearchData = findStartTag(linesBelowStr);
+
+    let sliceEndIndex = -1; // If neither start or end found we return the entire array.
+    if(endTagSerachData.found === true && startTagSearchData.found === false) {
+
+        sliceEndIndex = endTagSerachData.startPosition;
+    }
+    else if(endTagSerachData.found === false && startTagSearchData.found === true) {
+
+        sliceEndIndex = startTagSearchData.startPosition;
+    }
+    else if(endTagSerachData.found === true && startTagSearchData.found === true) {
+
+        sliceEndIndex = endTagSerachData.startPosition;
+        if(startTagSearchData.startPosition < endTagSerachData.startPosition) {
+
+            /**
+             * If we found a start tag before an end tag we want to use the start tag
+             * our current block is not properly ended and we use the next start tag 
+             * as our limit
+             */
+            sliceEndIndex = startTagSearchData.startPosition;
+        }
+    }
+
+    return linesBelow.slice(0, sliceEndIndex);
+}
+
 function getStartTagKey(startTag: string): string | null {
 
     let keySplit = startTag.split(":");

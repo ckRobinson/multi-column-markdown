@@ -9,10 +9,11 @@
 import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { RegionDOMManager, MultiColumnRenderData, GlobalDOMManager } from './dom_manager/domManager';
-import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
+import { DOMObject, DOMObjectTag, ElementType } from './dom_manager/domObject';
 import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
 
 import { getUID } from './utilities/utils';
+import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 
 export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
@@ -112,7 +113,26 @@ ${editor.getDoc().getSelection()}`
                 }
             }
         });
-	}
+
+        this.registerInterval(window.setInterval(() => {
+            
+            this.UpdateOpenFilePreviews();
+        }, 2000));
+    }
+
+    UpdateOpenFilePreviews() {
+
+        let fileManagers = this.globalManager.getAllFileManagers();
+        fileManagers.forEach(element => {
+            
+            let regionalManagers = element.getAllRegionalManagers();
+            regionalManagers.forEach(regionManager => {
+                
+                let parentElementData: MultiColumnRenderData = regionManager.getRegionRenderData();
+                this.updateRenderedMarkdown(parentElementData.domObjects);                
+            });
+        });
+    }
 
     setupMarkdownPostProcessor() {
 
@@ -155,21 +175,17 @@ ${editor.getDoc().getSelection()}`
              * start tag element is parsed above.
              */
             if(fileDOMManager.getHasStartTag() === false) {
-                    return;
+                return;
             }
 
             /**
              * Take the info provided and generate the required variables from 
              * the line start and end values.
              */
-            let linesOfElement = info.text.split("\n").splice(info.lineStart, (info.lineEnd + 1 - info.lineStart));
-            let elementTextSpaced = linesOfElement.reduce((prev, curr) => {
-                return prev + "\n" + curr;
-            });
-            let elementText = linesOfElement.reduce((prev, curr) => { 
-                // TODO: This can probably be removed as it is only used to identify DOMObjects.
-                return prev + curr;
-            });
+            let docLines = info.text.split("\n");
+            let linesAboveArray = docLines.slice(0, info.lineStart)
+            let linesOfElement = docLines.slice(info.lineStart, info.lineEnd + 1);
+            let linesBelowArray = docLines.slice(info.lineEnd + 1)
 
             /**
              * If the current line is a start tag we want to set up the
@@ -178,20 +194,22 @@ ${editor.getDoc().getSelection()}`
              * file manager we got above above takes care of all regional 
              * managers in each file.
              */
+            let elementTextSpaced = linesOfElement.reduce((prev, curr) => {
+                return prev + "\n" + curr;
+            });
             if(multiColumnParser.containsStartTag(el.textContent)) {
 
                 /** 
                  * Set up the current element to act as the parent for the 
                  * multi-column region.
                  */
-                el.id = `TwoColumnContainer-${getUID()}`
                 el.children[0].detach();
-                el.classList.add("multiColumnContainer")
+                el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
                 let renderErrorRegion = el.createDiv({
-                    cls: `multiColumnErrorMessage`,
+                    cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv}, ${MultiColumnStyleCSS.RegionErrorMessage}`,
                 });
                 let renderColumnRegion = el.createDiv({
-                    cls: `RenderColRegion`
+                    cls: MultiColumnLayoutCSS.RegionContentContainerDiv
                 })
 
                 let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
@@ -222,9 +240,10 @@ ${editor.getDoc().getSelection()}`
                         return;
                     }
                 }
+                el.id = `MultiColumnID:${regionKey}`
 
                 let elementMarkdownRenderer = new MarkdownRenderChild(el);
-                fileDOMManager.createRegionalManager(regionKey, renderErrorRegion, renderColumnRegion);
+                fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
                 elementMarkdownRenderer.onunload = () => {
                     if(fileDOMManager) {
     
@@ -241,58 +260,56 @@ ${editor.getDoc().getSelection()}`
             }
 
             /**
-             * Get a list of all of the lines above our current element.
-             * We will use this to determine if the element is within a block so
-             * we can otherwise ignore the element and keep compute time down.
-             */
-            let linesAboveArray = info.text.split("\n").slice(0, info.lineStart)
-            let textAboveArray = linesAboveArray.reduce((prev, curr) => {
-                return prev + "\n" + curr
-            }, "")
-
-            /**
-             * A line above us contains a start tag now see if we're within that
-             * block.
+             * Check if any of the lines above us contain a start block, and if
+             * so get the lines from our current element to the start block.
              */
             let startBockAbove = multiColumnParser.getStartBlockAboveLine(linesAboveArray);
-            if(startBockAbove == null) {
+            if(startBockAbove === null) {
                 return;
             }
-            
             /**
-             * Here we now know we're within a regional block.
+             * We now know we're within a multi-column region, so we update our
+             * list of lines above to just be the items within this region.
              */
-
-            // Now we only want to work with the lines within the current region.
             linesAboveArray = startBockAbove.linesAboveArray;
-            let regionalManager: RegionDOMManager = fileDOMManager.getRegionalManager(startBockAbove.startBlockKey);
 
             /**
-             * If we can not get the start block and this region's dom manager 
-             * we can not continue something has gone wrong.
+             * We use the start block's key to get our regional manager. If this
+             * lookup fails we can not continue processing this element.
              */
+            let regionalManager: RegionDOMManager = fileDOMManager.getRegionalManager(startBockAbove.startBlockKey);
             if(regionalManager === null) {
                 return
             }
-            
+
+            /**
+             * To make sure we're placing the item in the right location (and 
+             * overwrite elements that are now gone) we now want all of the
+             * lines after this element up to the end tag.
+             */
+            linesBelowArray =  multiColumnParser.getEndBlockBelow(linesBelowArray);
+
             /**
              * Now we take the lines above our current element up until the
              * start region tag and render that into an HTML element. We will 
-             * use this element to determine where to place our current element.
+             * use these elements to determine where to place our current element.
              */
-            let siblingsAbove: HTMLDivElement = findSiblingsAboveEl(linesAboveArray, sourcePath);
+            let siblingsAbove: HTMLDivElement = renderMarkdownFromLines(linesAboveArray, sourcePath);
+
+            let siblingsBelow: HTMLDivElement = renderMarkdownFromLines(linesBelowArray, sourcePath);
 
             /**
              * Set up our dom object to be added to the manager.
              */
-            let currentObject: DOMObject = new DOMObject(elementText, el)
+            let currentObject: DOMObject = new DOMObject(el)
+            el.id = currentObject.UID;
 
             /**
              * Now we add the object to the manager and then setup the
              * callback for when the object is removed from view that will remove 
              * the item from the manager.
              */
-            regionalManager.addObject(siblingsAbove, currentObject);
+            regionalManager.addObject(siblingsAbove, siblingsBelow, currentObject);
 
             let elementMarkdownRenderer = new MarkdownRenderChild(el);
             elementMarkdownRenderer.onunload = () => {
@@ -322,28 +339,27 @@ ${editor.getDoc().getSelection()}`
              */
             if(multiColumnParser.containsEndTag(el.textContent) === true) {
 
+                el.addClass(MultiColumnStyleCSS.RegionEndTag)
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
             }
             else if(multiColumnParser.containsColEndTag(elementTextSpaced) === true) {
 
+                el.addClass(MultiColumnStyleCSS.ColumnEndTag)
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
             }
             else if(multiColumnParser.containsColSettingsTag(elementTextSpaced) === true) {
 
+                el.addClass(MultiColumnStyleCSS.RegionSettings)
                 regionalManager.setElementToSettingsBlock(currentObject.UID, elementTextSpaced);
+            }
+            else {
+                el.addClass(MultiColumnStyleCSS.RegionContent)
             }
             
             /**
              * Use our regional manager to get everything needed to render the region.
              */
             let parentElementData: MultiColumnRenderData = regionalManager.getRegionRenderData();
-    
-            /**
-             * We want to hide all of the original elements that are now going to be
-             * rendered within our mutli-column region
-             */
-            el.addClass("multiColumnDataHidden");
-
             this.renderColumnMarkdown(parentElementData.parentRenderElement, parentElementData.domObjects, parentElementData.parentRenderSettings);
 
             return;
@@ -361,10 +377,10 @@ ${editor.getDoc().getSelection()}`
     renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
         let multiColumnParent = createDiv({
-            cls: `multiColumnParent rowC`,
+            cls: MultiColumnLayoutCSS.RegionColumnContainerDiv,
         });
         if(settings.drawShadow === true) {
-            multiColumnParent.addClass("multiColumnParentShadow");
+            multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
         }
 
         /**
@@ -374,11 +390,11 @@ ${editor.getDoc().getSelection()}`
         let columnContentDivs = getColumnContentDivs(settings, multiColumnParent);
         for(let i = 0; i < columnContentDivs.length; i++) {
             if(settings.drawBorder === true) {
-                columnContentDivs[i].addClass("columnBorder");
+                columnContentDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
             }
 
             if(settings.drawShadow === true) {
-                columnContentDivs[i].addClass("columnShadow");
+                columnContentDivs[i].addClass(MultiColumnStyleCSS.ColumnShadow);
             }
         }
 
@@ -400,26 +416,94 @@ ${editor.getDoc().getSelection()}`
         let columnIndex = 0;
         for(let i = 0; i < regionElements.length; i++) {
 
-            // We want to skip column break tags but only if we have columns 
-            // left to enter data for.
-            if(regionElements[i].tag === DOMObjectTag.columnBreak && 
-               (columnIndex + 1) < settings.numberOfColumns) {
-
-                columnIndex++;
-            }
-            else if (regionElements[i].tag !== DOMObjectTag.startRegion && 
-                     regionElements[i].tag !== DOMObjectTag.endRegion && 
-                     regionElements[i].tag !== DOMObjectTag.regionSettings) {
+            if (regionElements[i].tag !== DOMObjectTag.startRegion    ||
+                regionElements[i].tag !== DOMObjectTag.regionSettings ||
+                regionElements[i].tag !== DOMObjectTag.endRegion      ||
+                regionElements[i].tag !== DOMObjectTag.columnBreak ) {
 
                 /**
-                 * Make a deep copy of the element so we can remove the hidden class before
-                 * appending to our column div.
+                 * If our element is of "specialRender" type it *may* need to be rendered
+                 * using the original element rather than a copy. For example, an element
+                 * may have an onClick event that would not get coppied to the clone.
                  */
-                let clonedElement = regionElements[i].element.cloneNode(true) as HTMLElement;
-                clonedElement.removeClass("multiColumnDataHidden");
-                clonedElement.style.display = "block"
+                let element = null
+                if(regionElements[i].elementType === ElementType.specialRender) {
 
-                columnContentDivs[columnIndex].appendChild(clonedElement);
+                    /**
+                     * If we just moved these elements into the region it would get 
+                     * moved back out into the original location in the DOM by obsidian
+                     * when scrolling or on file changes. On the next refresh it
+                     * would be moved back but that can lead to a region jumping
+                     * around as the item is moved in and out. 
+                     * 
+                     * Here we set up a div to contain the element and create
+                     * a visual only clone of it. The clone will only be visible
+                     * when the original is not in the multi-column region so it
+                     * saves us from the visual noise of the region jumping around.
+                     */
+                    element = createDiv({
+                        cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
+                    });
+
+                    regionElements[i].specialElementContainer = element;
+
+                    element.appendChild(regionElements[i].element)                    
+                    regionElements[i].element.addClass(MultiColumnLayoutCSS.OriginalElementType)
+
+                    let clonedNode = regionElements[i].element.cloneNode(true) as HTMLDivElement;
+                    clonedNode.addClass(MultiColumnLayoutCSS.ClonedElementType)
+                    clonedNode.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType])
+                    element.appendChild(clonedNode);
+                }
+                else {
+
+                    // Otherwise we just make a copy of the original element to display.
+                    element = regionElements[i].element.cloneNode(true) as HTMLDivElement;
+                }
+
+                if(element !== null) {
+
+                    columnContentDivs[columnIndex].appendChild(element);
+                }
+
+                /**
+                 * If the tag is a column break we update the column index after
+                 * appending the item to the column div. This keeps the main DOM
+                 * cleaner by removing other items and placing them all within
+                 * a region container.
+                 */
+                if(regionElements[i].tag === DOMObjectTag.columnBreak && 
+                   (columnIndex + 1) < settings.numberOfColumns) {
+     
+                     columnIndex++;
+                 }
+            }
+        }
+    }
+
+    updateRenderedMarkdown(regionElements: DOMObject[]) {
+
+        /**
+            /** 
+        /**
+         * Go through every node of the region looking for the "specialRender" type
+         * which are the elements that may need to be rendered using the original
+         * element rather than a copy.
+         */
+        for(let i = 0; i < regionElements.length; i++) {
+            if(regionElements[i].elementType === ElementType.specialRender) {
+
+                /**
+                 * Now check if this node is missing the original element because
+                 * it was moved. If the node is missing we move it back in.
+                 */
+                let specialElementContainer = regionElements[i].specialElementContainer;
+
+                if(specialElementContainer !== null && 
+                   specialElementContainer.getElementsByClassName(`.${MultiColumnLayoutCSS.OriginalElementType}`).length === 0) {
+    
+                    specialElementContainer.insertBefore(regionElements[i].element, specialElementContainer.children[0]);
+                } 
             }
         }
     }
@@ -537,7 +621,7 @@ export type nearbySiblings = {
     siblingsAbove: HTMLDivElement,
     currentObject: DOMObject, 
 }
-function findSiblingsAboveEl(linesAbove: string[], sourcePath: string): HTMLDivElement {
+function renderMarkdownFromLines(mdLines: string[], sourcePath: string): HTMLDivElement {
 
     /**
      * We re-render all of the items above our element, until the start tag, 
@@ -546,18 +630,18 @@ function findSiblingsAboveEl(linesAbove: string[], sourcePath: string): HTMLDivE
      * TODO: Can reduce the amount needing to be rendered by only rendering to
      * the start tag or a column-break whichever is closer.
      */
-    let siblingsAbove = createDiv();
+    let siblings = createDiv();
     let markdownRenderChild = new MarkdownRenderChild(
-        siblingsAbove
+        siblings
     );
     MarkdownRenderer.renderMarkdown(
-        linesAbove.reduce((prev, current) => {
+        mdLines.reduce((prev, current) => {
             return prev + "\n"  + current;
         }, ""),
-        siblingsAbove,
+        siblings,
         sourcePath,
         markdownRenderChild
     );
 
-    return siblingsAbove;
+    return siblings;
 }
