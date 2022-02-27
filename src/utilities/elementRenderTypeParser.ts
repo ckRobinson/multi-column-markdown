@@ -15,7 +15,8 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      * These may be classes on one of the simple elements (such as a paragraph)
      * that we search for below so need to look for these first.
      */
-    if(hasDiceRoller(element) === true) {
+    if(hasDiceRoller(element) === true ||
+       hasCopyButton(element) === true) {
 
         return ElementRenderType.specialRender
     }
@@ -52,7 +53,8 @@ function hasHeader(element: HTMLElement): boolean {
        element.innerHTML.startsWith("<h2") || 
        element.innerHTML.startsWith("<h3") || 
        element.innerHTML.startsWith("<h4") ||
-       element.innerHTML.startsWith("<h5")) {
+       element.innerHTML.startsWith("<h5") ||
+       element.innerHTML.startsWith("<h6")) {
 
         return true;
     }
@@ -68,6 +70,14 @@ function hasList(element: HTMLElement): boolean {
     }
 
     return false;
+}
+
+function hasCopyButton(element: HTMLElement): boolean {
+    if(element.getElementsByClassName("copy-code-button").length !== 0) {
+        return true;
+    }
+
+    return false
 }
 
 function hasDiceRoller(element: HTMLElement): boolean {
