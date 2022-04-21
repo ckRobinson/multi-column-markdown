@@ -17,7 +17,7 @@ You create a multi-column region by defining the start, settings, column-end, an
 
 Text displayed above.
 
-=== start-multi-column: \<RegionID>\
+=== start-multi-column: ExampleRegion1\
 \```column-settings\
 number of columns: 2\
 largest column: left\
@@ -45,8 +45,8 @@ Text displayed below.
 
 Each multi-column region must start with either:
 
-- === start-multi-column: \<RegionID>
-- === multi-column-start: \<RegionID>
+- === start-multi-column: A_unique_region_ID
+- === multi-column-start: A_unique_region_ID_2
 
 After defining the start tag you must declare an ID for the region. The ID is used to differentiate between different regions if there are multiple in the same document.
 
@@ -65,8 +65,8 @@ You can also use the "Fix Missing IDs" command which will search the currently o
 Each tag type can be defined with the following options:
 
 - Start Multi-Column Region:
-    - === start-multi-column: \<RegionID>
-    - === multi-column-start: \<RegionID>
+    - === start-multi-column: A_unique_region_ID
+    - === multi-column-start: A_unique_region_ID_2
 - End Multi-Column Region:
     - === end-multi-column
     - === multi-column-end
@@ -89,7 +89,7 @@ The column settings block can be omitted which will by default set the region to
 
 The settings block must be define right after the multi-column start tag and each settings tag must be on a separate line. EG:
 
-=== start-multi-column: \<RandomRegionID>\
+=== start-multi-column: ExampleRegion2\
 \```column-settings\
 number of columns: 2\
 largest column: left\
@@ -135,7 +135,7 @@ Shadow:
 ### **Full Examples:**
 ---
 
-=== start-multi-column: \<RandomRegionID>
+=== start-multi-column: ExampleRegion3
 
 \# Column 1
 
@@ -150,7 +150,7 @@ Shadow:
 
 <br>
 
-=== start-multi-column: \<RandomRegionID>\
+=== start-multi-column: ExampleRegion4\
 \```column-settings\
 number of columns: 3\
 border: off\
@@ -173,7 +173,7 @@ border: off\
 
 <br>
 
-=== start-multi-column: \<RandomRegionID>\
+=== start-multi-column: ExampleRegion5\
 \```settings\
 number of columns: 3\
 largest column: center\
