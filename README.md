@@ -270,7 +270,7 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 This release fixes the export to PDF functionality that was missing as well as fixing some other input and render bugs that had slipped by testing.
 - Native Obsidian PDF export now working. To render a multi-column region to a pdf you must export from the preview view and not edit view.
 - Fixed a bug where task list checkboxes were sending their on-click event to the wrong item.
-    - This has been tested with native checkboxes as well as the tasks plugin and seems to work fine as far as I could tell. There may be compatability issues in other locations.
+    - This has been tested with native checkboxes as well as the tasks plugin and seems to work fine as far as I could tell. There may be compatibility issues in other locations.
 - Fixed bug where iFrames within a multi-column region would constantly reload itself causing it to flash.
 
 ### **0.4.3**
