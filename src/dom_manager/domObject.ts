@@ -20,7 +20,8 @@ export enum DOMObjectTag {
 
 export class DOMObject {
     nodeKey: string;
-    element: HTMLElement;
+    originalElement: HTMLElement;
+    clonedElement: HTMLElement;
     UID: string;
     tag: DOMObjectTag;
     usingOriginalElement: boolean
@@ -31,14 +32,14 @@ export class DOMObject {
                 randomID:string = getUID(), 
                 tag: DOMObjectTag = DOMObjectTag.none ) {
         this.nodeKey = element.innerText.trim();
-        this.element = element;
+        this.originalElement = element;
         this.UID = randomID;
         this.tag = tag;
         this.usingOriginalElement = false
     }
 
     setMainDOMElement(domElement: HTMLElement) {
-        this.element = domElement;
+        this.originalElement = domElement;
         this.usingOriginalElement = true
     }
 }
@@ -49,18 +50,17 @@ export class DOMStartRegionObject extends DOMObject {
 
     constructor(baseDOMObject: DOMObject, regionElement: HTMLElement) {
 
-        super(baseDOMObject.element, baseDOMObject.UID, DOMObjectTag.startRegion);
+        super(baseDOMObject.originalElement, baseDOMObject.UID, DOMObjectTag.startRegion);
         this.regionElement = regionElement;
     }
 }
 
-export class DOMRegionSettingsObject extends DOMObject {
+export class TaskListDOMObject extends DOMObject {
 
-    regionSettings: MultiColumnSettings;
+    taskButtonsEnabled: boolean = false
 
-    constructor(baseDOMObject: DOMObject, regionSettings: MultiColumnSettings) {
-        super(baseDOMObject.element, baseDOMObject.UID, DOMObjectTag.regionSettings);
+    constructor(baseDOMObject: DOMObject) {
 
-        this.regionSettings = regionSettings;
+        super(baseDOMObject.originalElement, baseDOMObject.UID, DOMObjectTag.startRegion);
     }
 }

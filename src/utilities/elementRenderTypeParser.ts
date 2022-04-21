@@ -21,7 +21,8 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
         return ElementRenderType.specialRender
     }
 
-    if(hasAdmonition(element) === true) {
+    if(hasAdmonition(element) === true ||
+       isIFrame(element) === true) {
         
         return ElementRenderType.normalRender
     }
@@ -86,4 +87,14 @@ function hasDiceRoller(element: HTMLElement): boolean {
 
 function hasAdmonition(element: HTMLElement): boolean {
     return element.getElementsByClassName("admonition").length !== 0;
+}
+
+function isIFrame(element: HTMLElement): boolean {
+
+    if(element.children.length > 0) {
+
+        return element.firstChild.nodeName.toLowerCase() === "iframe";
+    }
+
+    return false
 }

@@ -8,12 +8,25 @@
 
 import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption } from "../regionSettings";
 
-const START_REGEX_STRS = ["=== *start-multi-column",
-                          "=== *multi-column-start"]
+const START_REGEX_STRS = ["=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
+                          "=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?",
+                          "```multi-column-start",
+                          "```start-multi-column"]
 const START_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < START_REGEX_STRS.length; i++) {
     START_REGEX_ARR.push(new RegExp(START_REGEX_STRS[i]));
 }
+
+const START_REGEX_STRS_WHOLE_LINE = ["^=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?$",
+                                     "^=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?$",
+                                     "^```multi-column-start$",
+                                     "^```start-multi-column$"]
+const START_REGEX_ARR_WHOLE_LINE: RegExp[] = [];
+for(let i = 0; i < START_REGEX_STRS_WHOLE_LINE.length; i++) {
+    START_REGEX_ARR_WHOLE_LINE.push(new RegExp(START_REGEX_STRS_WHOLE_LINE[i]));
+}
+
+
 function findStartTag(text: string): { found: boolean, startPosition: number } {
 
     let found = false;
@@ -21,9 +34,34 @@ function findStartTag(text: string): { found: boolean, startPosition: number } {
     for(let i = 0; i< START_REGEX_ARR.length; i++) {
 
         if(START_REGEX_ARR[i].test(text)) {
-            found = true;
+            
+            // We found a match but is it an actual match or a false positive.
             startPosition = text.search(START_REGEX_STRS[i])
-            break;
+
+            // Take the text and get the line we found.
+            let line = ""
+            if(startPosition > 0) {
+
+                // If we arent at the very begining of the file we step back
+                // one character to see if we find a newline before this line.
+                let lines = text.slice(startPosition - 1).split("\n")
+
+                // if the last char before our match is a newline then we will
+                // end up with an empty string in index 0.
+                if(lines[0] === "" && lines.length > 1) {
+                    line = lines[1]
+                }
+            }
+            else {
+                line = text.slice(startPosition).split("\n")[0]
+            }
+
+            // now we recheck the regex to make sure the found line is 
+            // a true start tag.
+            if(START_REGEX_ARR_WHOLE_LINE[i].test(line)) {
+                found = true;
+                break;
+            }
         }
     }
 
@@ -318,6 +356,19 @@ export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockK
         }
     }
 
+    if(startBlockKey === "") {
+
+        let codeBlockData = parseCodeBlockStart(linesAboveArray)
+        if(codeBlockData !== null) {
+            
+            startBlockKey = codeBlockData.id;
+
+            if(codeBlockData.index > 0) {
+                linesAboveArray = linesAboveArray.slice(codeBlockData.index + 1);
+            }
+        }
+    }
+
     return { startBlockKey, linesAboveArray };
 }
 
@@ -357,7 +408,7 @@ export function getEndBlockBelow(linesBelow: string[]): string[] {
     return linesBelow.slice(0, sliceEndIndex);
 }
 
-function getStartTagKey(startTag: string): string | null {
+export function getStartTagKey(startTag: string): string | null {
 
     let keySplit = startTag.split(":");
     if(keySplit.length > 1){
@@ -365,4 +416,50 @@ function getStartTagKey(startTag: string): string | null {
     }
 
     return null;
+}
+
+
+const TAB_HEADER_END_REGEX_STR = "^```$";
+const TAB_HEADER_END_REGEX: RegExp = new RegExp(TAB_HEADER_END_REGEX_STR);
+export function parseCodeBlockStart(codeBlockLines: string[]): { id: string, index: number} | null {
+
+    let id = null;
+    for(let i = 0; i < codeBlockLines.length; i++) {
+        let line = codeBlockLines[i];
+
+        if(id === null) {
+            let key = line.split(":")[0];
+            if(key.toLowerCase() === "region id") {
+                id = line.split(":")[1].trim()
+            }
+        }
+        else {
+            if(TAB_HEADER_END_REGEX.test(line)) {
+
+                return { id: id, index: i };
+            }
+        }
+    }
+
+    if(id === null) {
+        return null;
+    }
+    else {
+        return { id: id, index: -1 }
+    }
+}
+
+export function parseCodeBlockSettings(codeBlockLines: string[]): string {
+
+    let settingsLines = [];
+    for(let i = 0; i < codeBlockLines.length; i++) {
+        let line = codeBlockLines[i];
+
+        let key = line.split(":")[0];
+        if(key.toLowerCase() !== "region id") {
+            settingsLines.push(line);
+        }
+    }
+
+    return settingsLines.join("\n");
 }

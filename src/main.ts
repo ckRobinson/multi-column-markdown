@@ -9,21 +9,23 @@
 import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { RegionDOMManager, MultiColumnRenderData, GlobalDOMManager } from './dom_manager/domManager';
-import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
+import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObject';
 import { MultiColumnSettings, ColumnLayout } from "./regionSettings";
 
 import { getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType, getElementRenderType } from './utilities/elementRenderTypeParser';
 
+
 export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
 
     globalManager: GlobalDOMManager = new GlobalDOMManager();
-    
+
 	async onload() {
 
         console.log("Loading multi-column markdown");
+
 
         this.setupMarkdownPostProcessor();
 
@@ -118,7 +120,7 @@ ${editor.getDoc().getSelection()}`
         this.registerInterval(window.setInterval(() => {
             
             this.UpdateOpenFilePreviews();
-        }, 2000));
+        }, 500));
     }
 
     UpdateOpenFilePreviews() {
@@ -139,6 +141,99 @@ ${editor.getDoc().getSelection()}`
 
         this.registerMarkdownPostProcessor(async (el, ctx) => {
 
+            const sourcePath = ctx.sourcePath;
+
+            let fileDOMManager = this.globalManager.getFileManager(sourcePath);
+            if(fileDOMManager === null) {
+                console.log("Found null DOM manager. Could not process multi-column markdown.")
+                return;
+            }
+
+            /**
+             * This block of code runs when the export tag is in the frontmatter so
+             * we assume that the user is attempting to export the document.
+             * 
+             * We loop over the elements passed and look for children that would be
+             * within a multi-column region. If we find them we remove them from
+             * the parent so they are not exported to the PDF.
+             */
+            if(this.checkExporting(el)) {
+
+                let docChildren = Array.from(el.childNodes);
+                let childrenToRemove = []
+
+                let inBlock = false
+                for(let i = 0; i < docChildren.length; i++) {
+
+                    let child = docChildren[i];
+                    if(child instanceof HTMLElement) {
+                        let childEl = child as HTMLElement
+                        if(inBlock === false) {
+                            let blockData = multiColumnParser.isStartTagWithID(child.textContent)
+                            if(blockData.isStartTag === true) {
+
+                                inBlock = true;
+
+                                let regionKey = ""
+                                if(blockData.hasKey === true) {
+                                    let foundKey = multiColumnParser.getStartTagKey(child.textContent)
+                                    if(foundKey !== null) {
+                                        regionKey = foundKey;
+                                    }
+                                }
+
+                                for(let i = child.children.length - 1; i >= 0; i--) {
+                                    child.children[i].detach();
+                                }
+                                child.innerText = ""
+
+                                child.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
+                                let renderErrorRegion = child.createDiv({
+                                    cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv}, ${MultiColumnStyleCSS.RegionErrorMessage}`,
+                                });
+                                let renderColumnRegion = child.createDiv({
+                                    cls: MultiColumnLayoutCSS.RegionContentContainerDiv
+                                })
+
+
+                                console.log("getting region from key", regionKey)
+                                let regionalManager: RegionDOMManager = fileDOMManager.getRegionalManager(regionKey);
+                                if(regionalManager === null) {
+
+                                    renderErrorRegion.innerText = "Error rendering multi-column region.\nPlease close and reopen the file, then make sure you are in reading mode before exporting."
+                                }
+                                else {
+                                    console.log("Rendering region?")
+
+                                    let parentElementData: MultiColumnRenderData = regionalManager.getRegionRenderData();
+                                    
+                                    // Default set shadow to off for exporting PDFs
+                                    let renderSettings = parentElementData.parentRenderSettings
+                                    renderSettings.drawShadow = false;
+                                    
+                                    this.renderColumnMarkdown(parentElementData.parentRenderElement, parentElementData.domObjects, renderSettings);
+                    
+                                    this.renderColumnMarkdown(renderColumnRegion, parentElementData.domObjects.slice(), parentElementData.parentRenderSettings);   
+                                }
+                            }
+                        }
+                        else {
+
+                            if(multiColumnParser.containsEndTag(child.textContent) === true) {
+
+                                inBlock = false;
+                            }
+
+                            childrenToRemove.push(child)
+                        }
+                    }
+                }
+
+                childrenToRemove.forEach(child => {
+                    el.removeChild(child);
+                });
+            }
+
             // Get the info for our current context and then check
             // if the entire text contains a start tag. If there is
             // no start tag in the document we can just return and
@@ -151,14 +246,6 @@ ${editor.getDoc().getSelection()}`
              */
             if(!info) {
 
-                return;
-            }
-
-            const sourcePath = ctx.sourcePath;
-
-            let fileDOMManager = this.globalManager.getFileManager(sourcePath);
-            if(fileDOMManager === null) {
-                console.log("Found null DOM manager. Could not process multi-column markdown.")
                 return;
             }
 
@@ -214,6 +301,10 @@ ${editor.getDoc().getSelection()}`
                 })
 
                 let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
+                if(startBlockData === null) {
+                    return;
+                }
+                
                 let regionKey = startBlockData.startBlockKey;
                 if(fileDOMManager.checkKeyExists(regionKey) === true) {
 
@@ -305,6 +396,8 @@ ${editor.getDoc().getSelection()}`
             let currentObject: DOMObject = new DOMObject(el)
             el.id = currentObject.UID;
 
+            currentObject = this.checkSpecialElement(currentObject)
+
             /**
              * Now we add the object to the manager and then setup the
              * callback for when the object is removed from view that will remove 
@@ -351,7 +444,7 @@ ${editor.getDoc().getSelection()}`
             else if(multiColumnParser.containsColSettingsTag(elementTextSpaced) === true) {
 
                 el.addClass(MultiColumnStyleCSS.RegionSettings)
-                regionalManager.setElementToSettingsBlock(currentObject.UID, elementTextSpaced);
+                regionalManager.setRegionalSettings(elementTextSpaced);
             }
             else {
                 el.addClass(MultiColumnStyleCSS.RegionContent)
@@ -427,8 +520,16 @@ ${editor.getDoc().getSelection()}`
                     cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
                 });
                 regionElements[i].elementContainer = element;
+
                 // Otherwise we just make a copy of the original element to display.
-                element.appendChild(regionElements[i].element.cloneNode(true) as HTMLDivElement);
+                let clonedElement = regionElements[i].originalElement.cloneNode(true) as HTMLDivElement;
+                regionElements[i].clonedElement = clonedElement;
+                element.appendChild(clonedElement);
+
+                if(regionElements[i] instanceof TaskListDOMObject) {
+
+                    this.fixClonedCheckListButtons(regionElements[i] as TaskListDOMObject, false);
+                }
 
                 if(element !== null) {
 
@@ -448,6 +549,64 @@ ${editor.getDoc().getSelection()}`
                  }
             }
         }
+    }
+
+    /**
+     * This function takes in the original element and its clone and checks if
+     * the element contains a task-list-item class. If so it loops through all
+     * items in the list and fixes their checkboxes to properly fire an event.
+     * The new checkbox calls the click function on the original checkbox so 
+     * compatability with other plugins *should* remain.
+     * @param domElement 
+     * @param enableCheckboxes This flag determines if the cloned object's onClick event should be set
+     * or if it should remain un-set until the update loop runs.
+     */
+    fixClonedCheckListButtons(domElement: TaskListDOMObject, enableCheckboxes: boolean = true) {
+
+        let element: HTMLElement = domElement.originalElement
+        let clonedElement: HTMLElement = domElement.clonedElement;
+
+        let clonedListCheckboxes = Array.from(clonedElement.getElementsByClassName("task-list-item")) as HTMLElement[];
+        let originalListCheckboxes = Array.from(element.getElementsByClassName("task-list-item")) as HTMLElement[];
+        
+        // console.log(clonedListCheckboxes.slice(), originalListCheckboxes.slice())
+
+        if(domElement.taskButtonsEnabled === false) {
+
+            for(let i = 0; i < clonedListCheckboxes.length; i++) {
+
+                if(i < originalListCheckboxes.length) {
+                    const checkbox = createEl('input');
+    
+                    let originalInput = originalListCheckboxes[i].firstChild as HTMLInputElement
+    
+                    checkbox.checked = originalInput.checked;
+                    clonedListCheckboxes[i].replaceChild(checkbox, clonedListCheckboxes[i].children[0]);
+                    checkbox.addClass('task-list-item-checkbox');
+                    checkbox.type = 'checkbox';
+    
+                    // If the Tasks Plugin is installed on clone creation we disable the input
+                    // so that it can be re-enabled on later update loops
+                    if(enableCheckboxes === true) {
+    
+                        checkbox.onClickEvent(() => {
+                            originalInput.click();
+                        })
+                        domElement.taskButtonsEnabled = true
+                    }
+                }
+            }
+        }
+    }
+
+    checkSpecialElement(domElement: DOMObject) {
+
+        if(domElement.originalElement.getElementsByClassName("task-list-item").length > 0 ) {
+
+            return new TaskListDOMObject(domElement);
+        }
+
+        return domElement;
     }
 
     setUpDualRender(domElement: DOMObject) {
@@ -471,7 +630,7 @@ ${editor.getDoc().getSelection()}`
 
         // Remove the old elements before we set up the dual rendered elements.
         let containerElement: HTMLDivElement = domElement.elementContainer
-        let renderElement: HTMLDivElement = domElement.element as HTMLDivElement
+        let renderElement: HTMLDivElement = domElement.originalElement as HTMLDivElement
         for(let i = containerElement.children.length - 1; i >= 0; i--) {
             containerElement.children[i].detach();
         }
@@ -488,38 +647,68 @@ ${editor.getDoc().getSelection()}`
     updateRenderedMarkdown(regionElements: DOMObject[]) {
 
         /**
-         * Go through every node of the region looking for the "specialRender" type
-         * which are the elements that may need to be rendered using the original
-         * element rather than a copy.
+         * This function acts as the update loop for the multi-column regions.
+         * Here we loop through all of the elements within the rendered region and 
+         * potentially update how things are rendered. We need to do this for
+         * compatability with other plugins. 
+         * 
+         * If the multi-column region is rendered before other plugins that effect
+         * content within the region our rendered data may not properly display
+         * the content from the other plugin. Here we loop through the elements 
+         * after all plugins have had a chance to run and can make changes to the
+         * DOM at this point.
          */
         for(let i = 0; i < regionElements.length; i++) {
             
-
             /**
-             * Here we check every item again to see if they need to be updated.
-             * This could be made slightly more efficient if we can truly determine
-             * wether an item is a normal render item, however it seems like it
-             * may take a bit of extra time in order for the classes we check for
-             * to be added to the elements.
+             * Here we check for special cases 
              */
+            if(regionElements[i] instanceof TaskListDOMObject) {
+
+                this.fixClonedCheckListButtons(regionElements[i] as TaskListDOMObject);
+            }
+
+
             let elementType = regionElements[i].elementType;
 
-            // If the element is not currently a special render element we check again
-            // as the original element may have been updated.
+            /**
+             * If the element is not currently a special render element we check again
+             * as the original element may have been updated.
+             * 
+             * TODO: find a way to "Officially" mark normal elements rather than
+             * continuously search for special render types.
+             */
             if(elementType !== ElementRenderType.specialRender) {
                 
                 // If the new result returns as a special renderer we update so
                 // this wont run again for this item.
-                elementType = getElementRenderType(regionElements[i].element);
+                elementType = getElementRenderType(regionElements[i].originalElement);
             }
 
             if(elementType === ElementRenderType.specialRender) {
                     
                 regionElements[i].elementType = elementType;
-
                 this.setUpDualRender(regionElements[i]);
             }
         }
+    }
+
+
+    checkExporting(element: HTMLElement): boolean {
+
+        if(element === null) {
+            return false;
+        }
+
+        if(element.classList.contains("print")) {
+            return true;
+        }
+
+        if(element.parentNode !== null) {
+            return this.checkExporting(element.parentElement);
+        }
+
+        return false;
     }
 }
 
