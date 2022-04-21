@@ -57,10 +57,19 @@ export class DOMStartRegionObject extends DOMObject {
 
 export class TaskListDOMObject extends DOMObject {
 
-    taskButtonsEnabled: boolean = false
+    originalCheckboxes: HTMLElement[] = [];
 
     constructor(baseDOMObject: DOMObject) {
 
         super(baseDOMObject.originalElement, baseDOMObject.UID, DOMObjectTag.startRegion);
+    }
+
+    checkboxClicked(index: number) {
+
+        if(index < this.originalCheckboxes.length) {
+
+            let originalInput = this.originalCheckboxes[index].firstChild as HTMLInputElement;
+            originalInput.click();
+        }
     }
 }

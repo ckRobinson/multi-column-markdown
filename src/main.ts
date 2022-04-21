@@ -528,7 +528,7 @@ ${editor.getDoc().getSelection()}`
 
                 if(regionElements[i] instanceof TaskListDOMObject) {
 
-                    this.fixClonedCheckListButtons(regionElements[i] as TaskListDOMObject, false);
+                    this.fixClonedCheckListButtons(regionElements[i] as TaskListDOMObject, true);
                 }
 
                 if(element !== null) {
@@ -558,10 +558,9 @@ ${editor.getDoc().getSelection()}`
      * The new checkbox calls the click function on the original checkbox so 
      * compatability with other plugins *should* remain.
      * @param domElement 
-     * @param enableCheckboxes This flag determines if the cloned object's onClick event should be set
-     * or if it should remain un-set until the update loop runs.
+     * @param initalizeCheckboxes 
      */
-    fixClonedCheckListButtons(domElement: TaskListDOMObject, enableCheckboxes: boolean = true) {
+    fixClonedCheckListButtons(domElement: TaskListDOMObject, initalizeCheckboxes: boolean = false) {
 
         let element: HTMLElement = domElement.originalElement
         let clonedElement: HTMLElement = domElement.clonedElement;
@@ -569,32 +568,43 @@ ${editor.getDoc().getSelection()}`
         let clonedListCheckboxes = Array.from(clonedElement.getElementsByClassName("task-list-item")) as HTMLElement[];
         let originalListCheckboxes = Array.from(element.getElementsByClassName("task-list-item")) as HTMLElement[];
         
-        // console.log(clonedListCheckboxes.slice(), originalListCheckboxes.slice())
+        if(initalizeCheckboxes === true) {
 
-        if(domElement.taskButtonsEnabled === false) {
+            // When we initalize we remove the old input checkbox that contains
+            // the weird callback situation causing the bug. Then we create a new
+            // checkbox to replace it and set it up to fire the click event on
+            // the original checkbox so functionality is restored.
+            for(let i = 0; i < originalListCheckboxes.length; i++) {
 
-            for(let i = 0; i < clonedListCheckboxes.length; i++) {
+                const checkbox = createEl('input');
 
-                if(i < originalListCheckboxes.length) {
-                    const checkbox = createEl('input');
-    
-                    let originalInput = originalListCheckboxes[i].firstChild as HTMLInputElement
-    
-                    checkbox.checked = originalInput.checked;
-                    clonedListCheckboxes[i].replaceChild(checkbox, clonedListCheckboxes[i].children[0]);
-                    checkbox.addClass('task-list-item-checkbox');
-                    checkbox.type = 'checkbox';
-    
-                    // If the Tasks Plugin is installed on clone creation we disable the input
-                    // so that it can be re-enabled on later update loops
-                    if(enableCheckboxes === true) {
-    
-                        checkbox.onClickEvent(() => {
-                            originalInput.click();
-                        })
-                        domElement.taskButtonsEnabled = true
-                    }
-                }
+                let originalInput = originalListCheckboxes[i].firstChild as HTMLInputElement
+
+                checkbox.checked = originalInput.checked;
+                clonedListCheckboxes[i].replaceChild(checkbox, clonedListCheckboxes[i].children[0]);
+                checkbox.addClass('task-list-item-checkbox');
+                checkbox.type = 'checkbox';
+                checkbox.onClickEvent(() => {
+                    domElement.checkboxClicked(i)
+                });
+            }
+        }
+        else {
+
+            // Whenever we reach this point we update our list of original checkboxes
+            // that may be different from our cache. This is due to how obsidian
+            // changes the DOM underneath us so we need to constantly update our cache.
+            domElement.originalCheckboxes = originalListCheckboxes;
+        }
+
+        // When the Tasks plugin is installed the cloned copy of the original element contains
+        // an extra element for some reason. If this occurs for other reasons here we adjust
+        // that to keep the clone the same as the original.
+        if(clonedListCheckboxes.length > originalListCheckboxes.length) {
+
+            for(let i = originalListCheckboxes.length; i < clonedListCheckboxes.length; i++) {
+                
+                domElement.clonedElement.removeChild(clonedListCheckboxes[i])
             }
         }
     }
