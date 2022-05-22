@@ -21,6 +21,11 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
         return ElementRenderType.specialRender
     }
 
+    /**
+     * This checks for special types of elements that should be rendered normally. Is
+     * slightly redundant with next check but differentiates between types of ements 
+     * being checked.
+     */
     if(hasAdmonition(element) === true ||
        isIFrame(element) === true) {
         
@@ -35,7 +40,9 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      */
     if(hasParagraph(element) || 
        hasHeader(element)    ||
-       hasList(element)) {
+       hasList(element) ||
+       isHorizontalRule(element) ||
+       isTable(element)) {
 
         return ElementRenderType.normalRender;
     }
@@ -98,3 +105,12 @@ function isIFrame(element: HTMLElement): boolean {
 
     return false
 }
+
+function isHorizontalRule(element: HTMLElement): boolean {
+    return element.innerHTML.startsWith("<hr")
+}
+
+function isTable(element: HTMLElement): boolean {
+    return element.innerHTML.startsWith("<table")
+}
+
