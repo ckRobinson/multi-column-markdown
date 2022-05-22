@@ -175,6 +175,9 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
                 else if(userDefNumberOfCols === 2) {
                     numberOfColumns = 2;
                 }
+                else if(userDefNumberOfCols === 1) {
+                    numberOfColumns = 1;
+                }
             }
 
             break;
