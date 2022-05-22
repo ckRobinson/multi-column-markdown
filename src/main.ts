@@ -9,7 +9,7 @@
 import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
-import { RegionDOMManager, MultiColumnRenderData } from "./dom_manager/RegionDOMManager";
+import { RegionDOMManager, MultiColumnRenderData } from "./dom_manager/regionDOMManager";
 import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
 
 import { getUID } from './utilities/utils';

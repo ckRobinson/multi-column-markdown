@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { RegionDOMManager } from './RegionDOMManager';
+import { RegionDOMManager } from './regionDOMManager';
 
 /**
  * This class handles the global managers keeping track of all open files that
