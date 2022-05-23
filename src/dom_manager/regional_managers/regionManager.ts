@@ -306,7 +306,6 @@ export abstract class RegionManager {
     }
 
     protected setUpDualRender(domElement: DOMObject) {
-        //TODO: Fix this to update previous dual render objects rather than recreating objects.
 
         /**
          * If our element is of "specialRender" type it *may* need to be rendered
@@ -324,20 +323,24 @@ export abstract class RegionManager {
          * when the original is not in the multi-column region so it
          * saves us from the visual noise of the region jumping around.
          */
-        // Remove the old elements before we set up the dual rendered elements.
+
+        // Only clone element once. Possible bug with needing to wait to clone element?
+        if(domElement.clonedElement === null) {
+            domElement.clonedElement = domElement.originalElement.cloneNode(true) as HTMLDivElement;
+        }
+        
+        let originalElement = domElement.originalElement;
+        let clonedElement = domElement.clonedElement;
+        originalElement.addClass(MultiColumnLayoutCSS.OriginalElementType);
+        clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
+        clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
+
         let containerElement: HTMLDivElement = domElement.elementContainer;
-        let renderElement: HTMLDivElement = domElement.originalElement as HTMLDivElement;
         for (let i = containerElement.children.length - 1; i >= 0; i--) {
             containerElement.children[i].detach();
         }
-
-        containerElement.appendChild(renderElement);
-        renderElement.addClass(MultiColumnLayoutCSS.OriginalElementType);
-
-        let clonedNode = renderElement.cloneNode(true) as HTMLDivElement;
-        clonedNode.addClass(MultiColumnLayoutCSS.ClonedElementType);
-        clonedNode.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
-        containerElement.appendChild(clonedNode);
+        containerElement.appendChild(originalElement);
+        containerElement.appendChild(clonedElement);
     }
 
     /**
