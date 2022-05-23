@@ -6,7 +6,8 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { RegionDOMManager } from './regionDOMManager';
+import { RegionManager } from "./regional_managers/regionManager";
+import { RegionManagerContainer } from "./regional_managers/regionManagerContainer";
 
 /**
  * This class handles the global managers keeping track of all open files that
@@ -45,11 +46,11 @@ export class GlobalDOMManager {
 }
 
 export type FileDOMManager = {
-    regionMap: Map<string, RegionDOMManager>,
+    regionMap: Map<string, RegionManagerContainer>,
     hasStartTag: boolean,
-    createRegionalManager: (regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement) => RegionDOMManager
-    getRegionalManager: (regionKey: string) => RegionDOMManager | null,
-    getAllRegionalManagers: () => RegionDOMManager[],
+    createRegionalManager: (regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement) => RegionManager
+    getRegionalContainer: (regionKey: string) => RegionManagerContainer | null,
+    getAllRegionalManagers: () => RegionManager[],
     removeRegion: (regionKey: string) => void,
     setHasStartTag: () => void,
     getHasStartTag: () => boolean,
@@ -58,14 +59,15 @@ export type FileDOMManager = {
 }
 function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string): FileDOMManager {
     
-    let regionMap: Map<string, RegionDOMManager> = new Map();
+    let regionMap: Map<string, RegionManagerContainer> = new Map();
     let hasStartTag: boolean = false;
 
     function removeRegion(regionKey: string): void {
 
-        let regionManager = regionMap.get(regionKey);
-        if(regionManager) {
-            regionManager.displayOriginalElements();
+        let regionContainer = regionMap.get(regionKey);
+        if(regionContainer) {
+            let regionalManager = regionContainer.getRegion();
+            regionalManager.displayOriginalElements();
         }
 
         regionMap.delete(regionKey);
@@ -75,16 +77,16 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
         }
     }
 
-    function createRegionalManager(regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement): RegionDOMManager {
+    function createRegionalManager(regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement): RegionManager {
 
         //TODO: Use the error element whenever there is an error.
 
-        let regonalManager = new RegionDOMManager(this, regionKey, rootElement, renderRegionElement);
-        regionMap.set(regionKey, regonalManager);
-        return regonalManager;
+        let regonalContainer = new RegionManagerContainer(this, regionKey, rootElement, renderRegionElement);
+        regionMap.set(regionKey, regonalContainer);
+        return regonalContainer.getRegion();
     }
 
-    function getRegionalManager(regionKey: string): RegionDOMManager | null {
+    function getRegionalContainer(regionKey: string): RegionManagerContainer | null {
 
         let regonalManager = null;
         if(regionMap.has(regionKey) === true) {
@@ -94,9 +96,11 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
         return regonalManager;
     }
 
-    function getAllRegionalManagers(): RegionDOMManager[] {
+    function getAllRegionalManagers(): RegionManager[] {
 
-        return Array.from(regionMap.values());
+        let containers = Array.from(regionMap.values())
+        let regions: RegionManager[] = containers.map((curr) => { return curr.getRegion() });
+        return regions;
     }
 
     function setHasStartTag() {
@@ -118,7 +122,7 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
     return { regionMap: regionMap, 
         hasStartTag: hasStartTag,  
         createRegionalManager: createRegionalManager, 
-        getRegionalManager: getRegionalManager,
+        getRegionalContainer: getRegionalContainer,
         getAllRegionalManagers: getAllRegionalManagers,
         removeRegion: removeRegion, 
         setHasStartTag: setHasStartTag, 

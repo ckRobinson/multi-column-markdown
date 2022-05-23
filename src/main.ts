@@ -9,7 +9,9 @@
 import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
-import { RegionDOMManager, MultiColumnRenderData } from "./dom_manager/regionDOMManager";
+import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
+import { RegionManager } from "./dom_manager/regional_managers/regionManager";
+import { RegionManagerContainer } from "./dom_manager/regional_managers/regionManagerContainer";
 import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
 
 import { getUID } from './utilities/utils';
@@ -147,12 +149,8 @@ ${editor.getDoc().getSelection()}`
             }
 
             /**
-             * This block of code runs when the export tag is in the frontmatter so
-             * we assume that the user is attempting to export the document.
-             * 
-             * We loop over the elements passed and look for children that would be
-             * within a multi-column region. If we find them we remove them from
-             * the parent so they are not exported to the PDF.
+             * Here we check if the export "print" flag is in the DOM so we can determine if we
+             * are exporting and handle that case.
              */
             if(this.checkExporting(el)) {
 
@@ -294,10 +292,11 @@ ${editor.getDoc().getSelection()}`
              * We use the start block's key to get our regional manager. If this
              * lookup fails we can not continue processing this element.
              */
-            let regionalManager: RegionDOMManager = fileDOMManager.getRegionalManager(startBockAbove.startBlockKey);
-            if(regionalManager === null) {
+            let regionalContainer: RegionManagerContainer = fileDOMManager.getRegionalContainer(startBockAbove.startBlockKey);
+            if(regionalContainer === null) {
                 return
             }
+            let regionalManager: RegionManager = regionalContainer.getRegion();
 
             /**
              * To make sure we're placing the item in the right location (and 
@@ -369,7 +368,7 @@ ${editor.getDoc().getSelection()}`
             else if(multiColumnParser.containsColSettingsTag(elementTextSpaced) === true) {
 
                 el.addClass(MultiColumnStyleCSS.RegionSettings)
-                regionalManager.setRegionalSettings(elementTextSpaced);
+                regionalManager = regionalContainer.setRegionSettings(elementTextSpaced)
             }
             else {
                 el.addClass(MultiColumnStyleCSS.RegionContent)
@@ -418,12 +417,12 @@ ${editor.getDoc().getSelection()}`
                         });
 
 
-                        console.log("getting region from key", regionKey);
-                        let regionalManager: RegionDOMManager = fileDOMManager.getRegionalManager(regionKey);
-                        if (regionalManager === null) {
+                        let regionalContainer: RegionManagerContainer = fileDOMManager.getRegionalContainer(regionKey);
+                        if (regionalContainer === null) {
                             renderErrorRegion.innerText = "Error rendering multi-column region.\nPlease close and reopen the file, then make sure you are in reading mode before exporting.";
                         }
                         else {
+                            let regionalManager: RegionManager = regionalContainer.getRegion();
                             regionalManager.exportRegionElementsToPDF(renderColumnRegion);
                         }
                     }
