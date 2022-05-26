@@ -13,6 +13,7 @@ import { FileDOMManager } from '../domManager';
 import { TwoColumnRegionManager as StandardMultiColumnRegionManager } from './standardMultiColumnRegionManager';
 import { SingleColumnRegionManager } from "./singleColumnRegionManager";
 import { RegionManager } from "./regionManager";
+import { AutoLayoutRegionManager } from './autoLayoutRegionManager';
 
 /**
  * This class acts as an abstraction for the actual regional manager. It is used to update the
@@ -38,6 +39,10 @@ export class RegionManagerContainer {
 
             this.convertToSingleColumn();
         }
+        else if(regionalSettings.autoLayout === true && this.region instanceof AutoLayoutRegionManager === false) {
+
+            this.convertToAutoLayout()
+        }
         else if (regionalSettings.numberOfColumns >= 2 && this.region instanceof StandardMultiColumnRegionManager === false) {
             this.convertToStandardMultiColumn();
         }
@@ -60,6 +65,14 @@ export class RegionManagerContainer {
 
         return this.region as StandardMultiColumnRegionManager;
     }
+
+    private convertToAutoLayout(): AutoLayoutRegionManager {
+
+        let data = this.region.getRegionData();
+        this.region = new AutoLayoutRegionManager(data);
+
+        return this.region as AutoLayoutRegionManager;
+    }
 }
 
 function createDefaultRegionManagerData(regionParent: HTMLElement, fileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement): RegionManagerData {
@@ -69,7 +82,7 @@ function createDefaultRegionManagerData(regionParent: HTMLElement, fileManager: 
         domObjectMap: new Map(),
         regionParent: regionParent,
         fileManager: fileManager,
-        regionalSettings: { numberOfColumns: 2, columnLayout: ColumnLayout.standard, drawBorder: true, drawShadow: true },
+        regionalSettings: { numberOfColumns: 2, columnLayout: ColumnLayout.standard, drawBorder: true, drawShadow: true, autoLayout: false },
         regionKey: regionKey,
         rootElement: rootElement
     };

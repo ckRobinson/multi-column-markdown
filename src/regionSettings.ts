@@ -40,5 +40,6 @@ export type MultiColumnSettings = {
     numberOfColumns: number,
     columnLayout: ColumnLayout,
     drawBorder: boolean,
-    drawShadow: boolean
+    drawShadow: boolean,
+    autoLayout: boolean
 }

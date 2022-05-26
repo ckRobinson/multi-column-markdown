@@ -161,6 +161,7 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     let columnLayout: ColumnLayout = ColumnLayout.standard
     let borderDrawn: boolean = true;
     let shadowDrawn: boolean = true;
+    let autoLayout: boolean = false;
 
     let settingsLines = settingsStr.split("\n");
 
@@ -232,7 +233,18 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
         }
     }
 
-    let settings = { numberOfColumns, columnLayout, drawBorder: borderDrawn, drawShadow: shadowDrawn }
+    for(let i = 0; i < settingsLines.length; i++) {
+        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("autolayout:")) {
+
+            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
+
+            if(setting === "true") {
+                autoLayout = true
+            }
+        }
+    }
+
+    let settings: MultiColumnSettings = { numberOfColumns, columnLayout, drawBorder: borderDrawn, drawShadow: shadowDrawn, autoLayout: autoLayout }
 
     return settings;
 }

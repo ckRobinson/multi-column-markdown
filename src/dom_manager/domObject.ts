@@ -27,7 +27,8 @@ export class DOMObject {
     usingOriginalElement: boolean
     elementType: ElementRenderType = ElementRenderType.undefined;
     elementContainer: HTMLDivElement = null;
-
+    elementRenderedHeight = 0;
+    
     constructor(element: HTMLElement, 
                 randomID:string = getUID(), 
                 tag: DOMObjectTag = DOMObjectTag.none ) {

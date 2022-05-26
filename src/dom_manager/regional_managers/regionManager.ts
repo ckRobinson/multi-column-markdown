@@ -27,7 +27,7 @@ export abstract class RegionManager {
     protected regionParent: HTMLElement;
 
     protected fileManager: FileDOMManager;
-    protected regionalSettings: MultiColumnSettings = { numberOfColumns: 2, columnLayout: ColumnLayout.standard, drawBorder: true, drawShadow: true };
+    protected regionalSettings: MultiColumnSettings;
 
     protected regionKey: string;
     protected rootElement: HTMLElement;
