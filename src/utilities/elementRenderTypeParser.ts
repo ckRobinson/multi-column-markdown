@@ -55,7 +55,7 @@ function hasParagraph(element: HTMLElement): boolean {
     return element.innerHTML.startsWith("<p");
 }
 
-function hasHeader(element: HTMLElement): boolean {
+export function hasHeader(element: HTMLElement): boolean {
 
     if(element.innerHTML.startsWith("<h1") || 
        element.innerHTML.startsWith("<h2") || 

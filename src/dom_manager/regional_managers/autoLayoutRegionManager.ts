@@ -1,5 +1,5 @@
 /**
- * File: /src/dom_manager/regional_managers/autoLayoutRegionManager.ts       *
+ * File: /src/dom_manager/regional_managers/autoLayoutRegionManager.ts         *
  * Created Date: Sunday, May 22nd 2022, 10:23 pm                               *
  * Author: Cameron Robinson                                                    *
  *                                                                             *
@@ -11,6 +11,7 @@ import { MultiColumnSettings, ColumnLayout } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
+import { hasHeader } from 'src/utilities/elementRenderTypeParser';
 
 export class AutoLayoutRegionManager extends RegionManager {
 
@@ -18,7 +19,6 @@ export class AutoLayoutRegionManager extends RegionManager {
     public renderRegionElementsToScreen(): void {
 
          this.renderColumnMarkdown(this.regionParent, this.domList, this.regionalSettings);
-        // this.renderPreLoadedMarkdown(this.regionParent);
     }
     public exportRegionElementsToPDF(pdfParentElement: HTMLElement): void {
 
@@ -26,32 +26,6 @@ export class AutoLayoutRegionManager extends RegionManager {
         let renderSettings = this.regionalSettings;
         renderSettings.drawShadow = false;
         this.renderColumnMarkdown(pdfParentElement, this.domList.slice(), renderSettings);
-    }
-
-
-    private renderPreLoadedMarkdown(parentElement: HTMLElement) {
-
-        let multiColumnParent = createDiv({
-            cls: [MultiColumnLayoutCSS.RegionColumnContainerDiv,
-                  MultiColumnStyleCSS.ColumnBorder],
-
-        });
-        multiColumnParent.innerText = "This is a test"
-        
-        // Create markdown renderer to parse the passed markdown
-        // between the tags.
-        let markdownRenderChild = new MarkdownRenderChild(
-            multiColumnParent
-        );
-
-        // Remove every other child from the parent so 
-        // we dont end up with multiple sets of data. This should
-        // really only need to loop once for i = 0 but loop just
-        // in case.
-        for (let i = parentElement.children.length - 1; i >= 0; i--) {
-            parentElement.children[i].detach();
-        }
-        parentElement.appendChild(markdownRenderChild.containerEl);
     }
 
     /**
@@ -107,6 +81,7 @@ export class AutoLayoutRegionManager extends RegionManager {
     private appendElementsToColumns(regionElements: DOMObject[], columnContentDivs: HTMLDivElement[], settings: MultiColumnSettings) {
 
         let columnIndex = 0;
+        let currentColumnHeight = 0;
 
         let totalHeight = this.domList.map((el: DOMObject, index: number) => { 
 
@@ -126,16 +101,17 @@ export class AutoLayoutRegionManager extends RegionManager {
             return el.elementRenderedHeight 
         }).reduce((prev, curr) => { return prev + curr }, 0);
         let maxColumnContentHeight = Math.trunc(totalHeight / settings.numberOfColumns);
-        console.log(totalHeight, maxColumnContentHeight, regionElements.length)
 
-        if(totalHeight === 0) {
-            console.log("Still 0 height?")
-            // this.renderRegionElementsToScreen()
-            // return;
+        function checkShouldSwitchColumns(nextElementHeight: number) {
+
+            if (currentColumnHeight + nextElementHeight > maxColumnContentHeight &&
+                (columnIndex + 1) < settings.numberOfColumns) {
+
+                columnIndex++;
+                currentColumnHeight = 0;
+            }
         }
 
-        let currentColumnHeight = 0;
-        let columnHeights = []
         for (let i = 0; i < regionElements.length; i++) {
 
             if (regionElements[i].tag !== DOMObjectTag.startRegion ||
@@ -144,22 +120,34 @@ export class AutoLayoutRegionManager extends RegionManager {
                 regionElements[i].tag !== DOMObjectTag.columnBreak) {
 
                 /**
-                 * If the tag is a column break we update the column index after
-                 * appending the item to the column div. This keeps the main DOM
-                 * cleaner by removing other items and placing them all within
-                 * a region container.
+                 * Here we check if we need to swap to the next column for the current element.
+                 * If the user wants to keep headings with the content below it we also make sure
+                 * that the last item in a column is not a header element by using the header and
+                 * the next element's height as the height value. 
                  */
-                if (currentColumnHeight + regionElements[i].elementRenderedHeight > maxColumnContentHeight &&
-                    (columnIndex + 1) < settings.numberOfColumns) {
+                if(hasHeader(regionElements[i].originalElement) === true) { // TODO: Add this as selectable option.
 
-                    columnIndex++;
-                    columnHeights.push(currentColumnHeight)
-                    currentColumnHeight = 0;
+                    let headerAndNextElementHeight = regionElements[i].elementRenderedHeight;
+                    if(i < regionElements.length - 1) {
+
+                        headerAndNextElementHeight += regionElements[i + 1].elementRenderedHeight;
+                    }
+
+                    checkShouldSwitchColumns(headerAndNextElementHeight);
+                }
+                else {
+
+                    checkShouldSwitchColumns(regionElements[i].elementRenderedHeight);
                 }
                 currentColumnHeight += regionElements[i].elementRenderedHeight
 
 
-                // We store the elements in a wrapper container until we determine
+                /**
+                 * We store the elements in a wrapper container until we determine if we want to 
+                 * use the original element or a clone of the element. This helps us by allowing 
+                 * us to create a visual only clone while the update loop moves the original element 
+                 * into the columns.
+                 */
                 let element = createDiv({
                     cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
                 });
@@ -181,13 +169,10 @@ export class AutoLayoutRegionManager extends RegionManager {
                 }
             }
         }
-        console.log(columnHeights)
     }
 
     public updateRenderedMarkdown() {
-        console.log("Updating in loop.")
 
-        let totalHeight = 0;
         for (let i = 0; i < this.domList.length; i++) {
 
             let el = this.domList[i]
@@ -206,10 +191,7 @@ export class AutoLayoutRegionManager extends RegionManager {
             else {
                 this.domList[i].elementRenderedHeight = originalClientHeight;
             }
-
-            totalHeight += this.domList[i].elementRenderedHeight;
         }
-        console.log("Total Height before render", totalHeight);
 
         this.renderColumnMarkdown(this.regionParent, this.domList, this.regionalSettings);
         super.updateRenderedMarkdown();
