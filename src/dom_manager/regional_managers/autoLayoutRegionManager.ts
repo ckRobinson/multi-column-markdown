@@ -114,10 +114,8 @@ export class AutoLayoutRegionManager extends RegionManager {
 
         for (let i = 0; i < regionElements.length; i++) {
 
-            if (regionElements[i].tag !== DOMObjectTag.startRegion ||
-                regionElements[i].tag !== DOMObjectTag.regionSettings ||
-                regionElements[i].tag !== DOMObjectTag.endRegion ||
-                regionElements[i].tag !== DOMObjectTag.columnBreak) {
+            if (regionElements[i].tag === DOMObjectTag.none ||
+                regionElements[i].tag === DOMObjectTag.columnBreak) {
 
                 /**
                  * Here we check if we need to swap to the next column for the current element.

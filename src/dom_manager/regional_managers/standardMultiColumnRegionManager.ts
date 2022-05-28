@@ -83,10 +83,8 @@ export class TwoColumnRegionManager extends RegionManager {
         let columnIndex = 0;
         for (let i = 0; i < regionElements.length; i++) {
 
-            if (regionElements[i].tag !== DOMObjectTag.startRegion ||
-                regionElements[i].tag !== DOMObjectTag.regionSettings ||
-                regionElements[i].tag !== DOMObjectTag.endRegion ||
-                regionElements[i].tag !== DOMObjectTag.columnBreak) {
+            if (regionElements[i].tag === DOMObjectTag.none ||
+                regionElements[i].tag === DOMObjectTag.columnBreak) {
 
                 // We store the elements in a wrapper container until we determine
                 let element = createDiv({
