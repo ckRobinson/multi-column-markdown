@@ -165,6 +165,19 @@ export class AutoLayoutRegionManager extends RegionManager {
 
                     columnContentDivs[columnIndex].appendChild(element);
                 }
+
+                /**
+                 * If the tag is a column break we update the column index after
+                 * appending the item to the column div. This keeps the main DOM
+                 * cleaner by removing other items and placing them all within
+                 * a region container.
+                 */
+                if (regionElements[i].tag === DOMObjectTag.columnBreak &&
+                   (columnIndex + 1) < settings.numberOfColumns) {
+
+                    columnIndex++;
+                    currentColumnHeight = 0;
+                }
             }
         }
     }
