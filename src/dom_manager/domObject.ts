@@ -21,7 +21,7 @@ export enum DOMObjectTag {
 export class DOMObject {
     nodeKey: string;
     originalElement: HTMLElement;
-    clonedElement: HTMLElement;
+    clonedElement: HTMLElement = null;
     UID: string;
     tag: DOMObjectTag;
     usingOriginalElement: boolean
