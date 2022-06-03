@@ -10,7 +10,7 @@ import { parseColumnSettings } from '../../utilities/textParser';
 import { DOMObject } from '../domObject';
 import { MultiColumnSettings, ColumnLayout } from "../../regionSettings";
 import { FileDOMManager } from '../domManager';
-import { TwoColumnRegionManager as StandardMultiColumnRegionManager } from './standardMultiColumnRegionManager';
+import { StandardMultiColumnRegionManager as StandardMultiColumnRegionManager } from './standardMultiColumnRegionManager';
 import { SingleColumnRegionManager } from "./singleColumnRegionManager";
 import { RegionManager } from "./regionManager";
 
