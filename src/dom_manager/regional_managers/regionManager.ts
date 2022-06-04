@@ -8,7 +8,7 @@
 
 import { parseColumnSettings } from '../../utilities/textParser';
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout } from "../../regionSettings";
+import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { FileDOMManager } from '../domManager';
 import { ElementRenderType, getElementRenderType } from 'src/utilities/elementRenderTypeParser';
@@ -27,7 +27,7 @@ export abstract class RegionManager {
     protected regionParent: HTMLElement;
 
     protected fileManager: FileDOMManager;
-    protected regionalSettings: MultiColumnSettings = { numberOfColumns: 2, columnLayout: ColumnLayout.standard, drawBorder: true, drawShadow: true };
+    protected regionalSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
 
     protected regionKey: string;
     protected rootElement: HTMLElement;
@@ -147,8 +147,8 @@ export abstract class RegionManager {
         }
     }
 
-    public setRegionalSettings(settingsText: string): void {
-        this.regionalSettings = parseColumnSettings(settingsText);
+    public setRegionalSettings(regionSettings: MultiColumnSettings): void {
+        this.regionalSettings = regionSettings;
     }
 
     /**

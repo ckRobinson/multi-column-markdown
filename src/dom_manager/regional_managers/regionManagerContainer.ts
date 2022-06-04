@@ -6,9 +6,9 @@
  * Copyright (c) 2022 Cameron Robinson                                         *
  */
 
-import { parseColumnSettings } from '../../utilities/textParser';
+import { parseColumnSettings, parseSingleColumnSettings } from '../../utilities/textParser';
 import { DOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout } from "../../regionSettings";
+import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings } from "../../regionSettings";
 import { FileDOMManager } from '../domManager';
 import { StandardMultiColumnRegionManager as StandardMultiColumnRegionManager } from './standardMultiColumnRegionManager';
 import { SingleColumnRegionManager } from "./singleColumnRegionManager";
@@ -32,7 +32,11 @@ export class RegionManagerContainer {
     public setRegionSettings(settingsText: string): RegionManager {
 
         let regionalSettings = parseColumnSettings(settingsText);
-        this.region.setRegionalSettings(settingsText);
+        if (regionalSettings.numberOfColumns === 1) {
+
+            regionalSettings = parseSingleColumnSettings(settingsText, regionalSettings);
+        }
+        this.region.setRegionalSettings(regionalSettings);
 
         if (regionalSettings.numberOfColumns === 1 && this.region instanceof SingleColumnRegionManager === false) {
 
@@ -69,7 +73,7 @@ function createDefaultRegionManagerData(regionParent: HTMLElement, fileManager: 
         domObjectMap: new Map(),
         regionParent: regionParent,
         fileManager: fileManager,
-        regionalSettings: { numberOfColumns: 2, columnLayout: ColumnLayout.standard, drawBorder: true, drawShadow: true },
+        regionalSettings: getDefaultMultiColumnSettings(),
         regionKey: regionKey,
         rootElement: rootElement
     };
