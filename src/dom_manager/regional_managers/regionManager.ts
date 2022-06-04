@@ -6,7 +6,6 @@
  * Copyright (c) 2022 Cameron Robinson                                         *
  */
 
-import { parseColumnSettings } from '../../utilities/textParser';
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
 import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';

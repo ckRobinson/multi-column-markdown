@@ -6,8 +6,6 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize } from "../regionSettings";
-
 const START_REGEX_STRS = ["=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
                           "=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?",
                           "```multi-column-start",
@@ -152,113 +150,6 @@ export function containsColSettingsTag(text: string): boolean {
     }
 
     return found;
-}
-
-export function parseSingleColumnSettings(settingsStr: string, originalSettings: MultiColumnSettings): MultiColumnSettings {
-
-    let settingsLines = settingsStr.split("\n");
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("columnposition:")) {
-
-            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
-            let userDefLayout: ColumnLayout = (<any>ColumnLayout)[setting]
-
-            console.log("Got position.", userDefLayout)
-            if(userDefLayout !== undefined) {
-                originalSettings.columnPosition = userDefLayout;
-                break;
-            }
-        }
-    }
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("columnsize:")) {
-
-            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
-            let userDefSize: SingleColumnSize = (<any>SingleColumnSize)[setting]
-
-            if(userDefSize !== undefined) {
-                console.log("Got column size", userDefSize)
-                originalSettings.columnSize = userDefSize;
-                break;
-            }
-        }
-    }
-
-    return originalSettings;
-}
-
-export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
-
-    let parsedSettings = getDefaultMultiColumnSettings()
-
-    let settingsLines = settingsStr.split("\n");
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("numberofcolumns:")) {
-            let userDefNumberOfCols = parseInt(settingsLines[i].split(":")[1])
-
-            if(Number.isNaN(userDefNumberOfCols) === false) {
-                if(userDefNumberOfCols >= 1 && userDefNumberOfCols <= 3) {
-                    parsedSettings.numberOfColumns = userDefNumberOfCols
-                }
-            }
-
-            break;
-        }
-    }
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("largestcolumn:")) {
-
-            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
-            let userDefLayout: ColumnLayout = (<any>ColumnLayout)[setting]
-
-            if(userDefLayout !== undefined) {
-                parsedSettings.columnLayout = userDefLayout;
-                parsedSettings.columnPosition = userDefLayout;
-                break;
-            }
-        }
-    }
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("border:")) {
-
-            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
-            let isBorderDrawn: BorderOption = (<any>BorderOption)[setting]
-
-            if(isBorderDrawn !== undefined) {
-                switch(isBorderDrawn){
-                    case(BorderOption.disabled):
-                    case(BorderOption.off):
-                    case(BorderOption.false):
-                        parsedSettings.drawBorder = false;
-                        break;
-                }
-            }
-        }
-    }
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("shadow:")) {
-
-            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
-            let isShadowDrawn: ShadowOption = (<any>ShadowOption)[setting]
-
-            if(isShadowDrawn !== undefined) {
-                switch(isShadowDrawn){
-                    case(ShadowOption.disabled):
-                    case(ShadowOption.off):
-                    case(ShadowOption.false):
-                        parsedSettings.drawShadow = false;
-                        break;
-                }
-            }
-        }
-    }
-
-    return parsedSettings;
 }
 
 export function countStartTags(text: string): { numberOfTags: number, keys: string[] } {

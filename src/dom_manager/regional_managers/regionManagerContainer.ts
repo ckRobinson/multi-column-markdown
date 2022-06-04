@@ -6,9 +6,9 @@
  * Copyright (c) 2022 Cameron Robinson                                         *
  */
 
-import { parseColumnSettings, parseSingleColumnSettings } from '../../utilities/textParser';
+import { parseColumnSettings, parseSingleColumnSettings } from "../../utilities/settingsParser";
 import { DOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings } from "../../regionSettings";
+import { MultiColumnSettings, getDefaultMultiColumnSettings } from "../../regionSettings";
 import { FileDOMManager } from '../domManager';
 import { StandardMultiColumnRegionManager as StandardMultiColumnRegionManager } from './standardMultiColumnRegionManager';
 import { SingleColumnRegionManager } from "./singleColumnRegionManager";
