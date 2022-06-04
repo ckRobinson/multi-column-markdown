@@ -36,11 +36,11 @@ export enum MultiColumnLayoutCSS {
     TwoEqualColumn_LeftCol = "twoEqualColumns_Left",
     TwoEqualColumn_RightCol = "twoEqualColumns_Right",
 
-    TwoColumnHeavyRight_LeftCol = "twoColumnsHeavyLeft_Left",
-    TwoColumnHeavyRight_RightCol = "twoColumnsHeavyLeft_Right",
+    TwoColumnHeavyRight_LeftCol = "twoColumnsHeavyRight_Left",
+    TwoColumnHeavyRight_RightCol = "twoColumnsHeavyRight_Right",
 
-    TwoColumnHeavyLeft_LeftCol = "twoColumnsHeavyRight_Left",
-    TwoColumnHeavyLeft_RightCol = "twoColumnsHeavyRight_Right",
+    TwoColumnHeavyLeft_LeftCol = "twoColumnsHeavyLeft_Left",
+    TwoColumnHeavyLeft_RightCol = "twoColumnsHeavyLeft_Right",
 
     // ------------------------------------------------------ //
 

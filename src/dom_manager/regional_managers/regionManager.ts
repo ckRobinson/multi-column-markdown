@@ -372,7 +372,7 @@ export abstract class RegionManager {
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyLeft_LeftCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyLeft_LeftCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyLeft_RightCol}`
                     }));
                     break;
 
@@ -405,6 +405,7 @@ export abstract class RegionManager {
 
                 case(ColumnLayout.left):
                 case(ColumnLayout.first):
+                    console.log("Setting up 3 columns.")
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyLeft_LeftCol}`
                     }));
