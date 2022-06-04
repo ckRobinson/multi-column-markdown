@@ -36,10 +36,31 @@ export enum ColumnLayout {
     last
 };
 
+export enum SingleColumnSize {
+    small,
+    medium,
+    large
+}
+
 export type MultiColumnSettings = {
     numberOfColumns: number,
     columnLayout: ColumnLayout,
     drawBorder: boolean,
     drawShadow: boolean,
     autoLayout: boolean
+    columnSize: SingleColumnSize,
+    columnPosition: ColumnLayout,
+}
+
+export function getDefaultMultiColumnSettings() {
+
+    return {
+        numberOfColumns: 2,
+        columnLayout: ColumnLayout.standard,
+        drawBorder: true,
+        drawShadow: true,
+        autoLayout: false,
+        columnSize: SingleColumnSize.medium,
+        columnPosition: ColumnLayout.standard
+    }
 }

@@ -6,9 +6,8 @@
  * Copyright (c) 2022 Cameron Robinson                                         *
  */
 
-import { parseColumnSettings } from '../../utilities/textParser';
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout } from "../../regionSettings";
+import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { FileDOMManager } from '../domManager';
 import { ElementRenderType, getElementRenderType } from 'src/utilities/elementRenderTypeParser';
@@ -27,7 +26,7 @@ export abstract class RegionManager {
     protected regionParent: HTMLElement;
 
     protected fileManager: FileDOMManager;
-    protected regionalSettings: MultiColumnSettings;
+    protected regionalSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
 
     protected regionKey: string;
     protected rootElement: HTMLElement;
@@ -147,8 +146,8 @@ export abstract class RegionManager {
         }
     }
 
-    public setRegionalSettings(settingsText: string): void {
-        this.regionalSettings = parseColumnSettings(settingsText);
+    public setRegionalSettings(regionSettings: MultiColumnSettings): void {
+        this.regionalSettings = regionSettings;
     }
 
     /**
@@ -360,20 +359,20 @@ export abstract class RegionManager {
                 case(ColumnLayout.center):
                 case(ColumnLayout.third):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoEqualColumns_Left`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumn_LeftCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoEqualColumns_Right`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumn_RightCol}`
                     }));
                     break;
 
                 case(ColumnLayout.left):
                 case(ColumnLayout.first):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoColumnsHeavyLeft_Left`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyLeft_LeftCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoColumnsHeavyLeft_Right`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyLeft_LeftCol}`
                     }));
                     break;
 
@@ -381,10 +380,10 @@ export abstract class RegionManager {
                 case(ColumnLayout.second):
                 case(ColumnLayout.last):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoColumnsHeavyRight_Left`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyRight_LeftCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent twoColumnsHeavyRight_Right`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyRight_RightCol}`
                     }));
                     break;
             }
@@ -394,26 +393,26 @@ export abstract class RegionManager {
             switch(settings.columnLayout) {
                 case(ColumnLayout.standard):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threeEqualColumns_Left`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsStandard_LeftCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threeEqualColumns_Middle`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsStandard_MiddleCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threeEqualColumns_Right`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsStandard_RightCol}`
                     }));
                     break;
 
                 case(ColumnLayout.left):
                 case(ColumnLayout.first):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyLeft_Left`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyLeft_LeftCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyLeft_Middle`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyLeft_MiddleCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyLeft_Right`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyLeft_RightCol}`
                     }));
                     break;
 
@@ -421,13 +420,13 @@ export abstract class RegionManager {
                 case(ColumnLayout.center):
                 case(ColumnLayout.second):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyMiddle_Left`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyMiddle_LeftCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyMiddle_Middle`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyMiddle_MiddleCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyMiddle_Right`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyMiddle_RightCol}`
                     }));
                     break;
 
@@ -435,13 +434,13 @@ export abstract class RegionManager {
                 case(ColumnLayout.third):
                 case(ColumnLayout.last):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyRight_Left`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyRight_LeftCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyRight_Middle`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyRight_MiddleCol}`
                     }));
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `columnContent threColumnsHeavyRight_Right`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyRight_RightCol}`
                     }));
                     break;
             }

@@ -1,5 +1,5 @@
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout } from "../../regionSettings";
+import { MultiColumnSettings, ColumnLayout, SingleColumnSize } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
@@ -99,41 +99,95 @@ export class SingleColumnRegionManager extends RegionManager {
     createColumnContentDivs(multiColumnParent: HTMLDivElement): HTMLDivElement {
 
         let contentDiv = null;
-        switch (this.regionalSettings.columnLayout) {
-            case (ColumnLayout.standard):
-            case (ColumnLayout.middle):
-            case (ColumnLayout.center):
-            case (ColumnLayout.second):
-                multiColumnParent.createDiv({
-                    cls: `columnContent threColumnsHeavyMiddle_Left`
-                });
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `columnContent threColumnsHeavyMiddle_Middle`
-                });
-                break;
 
-            case (ColumnLayout.left):
-            case (ColumnLayout.first):
+        if(isLeftLayout(this.regionalSettings.columnPosition)){
+            if(this.regionalSettings.columnSize === SingleColumnSize.small) {
                 contentDiv = multiColumnParent.createDiv({
-                    cls: `columnContent threColumnsHeavyLeft_Left`
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnSmallLeft}`
                 });
-                break;
-
-            case (ColumnLayout.right):
-            case (ColumnLayout.third):
-            case (ColumnLayout.last):
-                multiColumnParent.createDiv({
-                    cls: `columnContent threColumnsHeavyRight_Left`
-                });
-                multiColumnParent.createDiv({
-                    cls: `columnContent threColumnsHeavyRight_Middle`
-                });
+            }
+            else if(this.regionalSettings.columnSize === SingleColumnSize.large) {
                 contentDiv = multiColumnParent.createDiv({
-                    cls: `columnContent threColumnsHeavyRight_Right`
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnLargeLeft}`
                 });
-                break;
+            }
+            else {
+                contentDiv = multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnMedLeft}`
+                });
+            }
+        }
+        else if(isRightLayout(this.regionalSettings.columnPosition)) {
+            if(this.regionalSettings.columnSize === SingleColumnSize.small) {
+                contentDiv = multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnSmallRight}`
+                });
+            }
+            else if(this.regionalSettings.columnSize === SingleColumnSize.large) {
+                contentDiv = multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnLargeRight}`
+                });
+            }
+            else {
+                contentDiv = multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnMedRight}`
+                });
+            }
+        }
+        else { // Default to center
+            if(this.regionalSettings.columnSize === SingleColumnSize.small) {
+                contentDiv = multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnSmallCenter}`
+                });
+            }
+            else if(this.regionalSettings.columnSize === SingleColumnSize.large) {
+                contentDiv = multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnLargeCenter}`
+                });
+            }
+            else {
+                contentDiv = multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnMedCenter}`
+                });
+            }
         }
 
         return contentDiv;
     }
+}
+
+function isCentered(layout: ColumnLayout): boolean {
+
+    if(layout === ColumnLayout.standard ||
+       layout === ColumnLayout.middle   ||
+       layout === ColumnLayout.center   ||
+       layout === ColumnLayout.second    ) {
+
+        return true;
+    }
+
+    return false
+}
+
+function isLeftLayout(layout: ColumnLayout): boolean {
+
+    if(layout === ColumnLayout.left ||
+       layout === ColumnLayout.first ) {
+ 
+         return true;
+     }
+ 
+     return false
+}
+
+function isRightLayout(layout: ColumnLayout): boolean {
+
+    if(layout === ColumnLayout.right ||
+       layout === ColumnLayout.third ||
+       layout === ColumnLayout.last ) {
+ 
+         return true;
+     }
+ 
+     return false
 }

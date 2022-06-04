@@ -6,8 +6,6 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption } from "../regionSettings";
-
 const START_REGEX_STRS = ["=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
                           "=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?",
                           "```multi-column-start",
@@ -152,101 +150,6 @@ export function containsColSettingsTag(text: string): boolean {
     }
 
     return found;
-}
-
-export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
-
-    // Set the minimum number of columnds to 2.
-    let numberOfColumns = 2;
-    let columnLayout: ColumnLayout = ColumnLayout.standard
-    let borderDrawn: boolean = true;
-    let shadowDrawn: boolean = true;
-    let autoLayout: boolean = false;
-
-    let settingsLines = settingsStr.split("\n");
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("numberofcolumns:")) {
-            let userDefNumberOfCols = parseInt(settingsLines[i].split(":")[1])
-
-            if(Number.isNaN(userDefNumberOfCols) === false) {
-                if(userDefNumberOfCols === 3) {
-                    numberOfColumns = 3
-                }
-                else if(userDefNumberOfCols === 2) {
-                    numberOfColumns = 2;
-                }
-                else if(userDefNumberOfCols === 1) {
-                    numberOfColumns = 1;
-                }
-            }
-
-            break;
-        }
-    }
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("largestcolumn:")) {
-
-            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
-            let userDefLayout: ColumnLayout = (<any>ColumnLayout)[setting]
-
-            if(userDefLayout !== undefined) {
-                columnLayout = userDefLayout;
-            }
-        }
-    }
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("border:")) {
-
-            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
-            let isBorderDrawn: BorderOption = (<any>BorderOption)[setting]
-
-            if(isBorderDrawn !== undefined) {
-                switch(isBorderDrawn){
-                    case(BorderOption.disabled):
-                    case(BorderOption.off):
-                    case(BorderOption.false):
-                        borderDrawn = false;
-                        break;
-                }
-            }
-        }
-    }
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("shadow:")) {
-
-            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
-            let isShadowDrawn: ShadowOption = (<any>ShadowOption)[setting]
-
-            if(isShadowDrawn !== undefined) {
-                switch(isShadowDrawn){
-                    case(ShadowOption.disabled):
-                    case(ShadowOption.off):
-                    case(ShadowOption.false):
-                        shadowDrawn = false;
-                        break;
-                }
-            }
-        }
-    }
-
-    for(let i = 0; i < settingsLines.length; i++) {
-        if(settingsLines[i].toLowerCase().replace(/\s/g, "").contains("autolayout:")) {
-
-            let setting = settingsLines[i].split(":")[1].trimStart().trimEnd().toLowerCase();
-
-            if(setting === "true") {
-                autoLayout = true
-            }
-        }
-    }
-
-    let settings: MultiColumnSettings = { numberOfColumns, columnLayout, drawBorder: borderDrawn, drawShadow: shadowDrawn, autoLayout: autoLayout }
-
-    return settings;
 }
 
 export function countStartTags(text: string): { numberOfTags: number, keys: string[] } {

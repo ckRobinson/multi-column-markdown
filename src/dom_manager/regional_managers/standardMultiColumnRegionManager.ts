@@ -12,7 +12,7 @@ import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDe
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
 
-export class TwoColumnRegionManager extends RegionManager {
+export class StandardMultiColumnRegionManager extends RegionManager {
 
 
     public renderRegionElementsToScreen(): void {
