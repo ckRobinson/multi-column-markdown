@@ -1,7 +1,8 @@
 export enum ElementRenderType {
     undefined,
     normalRender,
-    specialRender
+    specialRender,
+    unRendered
 }
 
 export function getElementRenderType(element: HTMLElement): ElementRenderType {
@@ -16,7 +17,8 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      * that we search for below so need to look for these first.
      */
     if(hasDiceRoller(element) === true ||
-       hasCopyButton(element) === true) {
+       hasCopyButton(element) === true ||
+       hasAdmonitionFold(element) === true) {
 
         return ElementRenderType.specialRender
     }
@@ -81,11 +83,8 @@ function hasList(element: HTMLElement): boolean {
 }
 
 function hasCopyButton(element: HTMLElement): boolean {
-    if(element.getElementsByClassName("copy-code-button").length !== 0) {
-        return true;
-    }
-
-    return false
+    return element.getElementsByClassName("copy-code-button").length !== 0 || 
+            element.getElementsByClassName("admonition-content-copy").length !== 0;
 }
 
 function hasDiceRoller(element: HTMLElement): boolean {
@@ -112,5 +111,9 @@ function isHorizontalRule(element: HTMLElement): boolean {
 
 function isTable(element: HTMLElement): boolean {
     return element.innerHTML.startsWith("<table")
+}
+
+function hasAdmonitionFold(element: HTMLElement) {
+    return element.getElementsByClassName("callout-fold").length !== 0;
 }
 
