@@ -148,7 +148,6 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
             if (userDefLayout !== undefined) {
                 parsedSettings.columnLayout = userDefLayout;
                 parsedSettings.columnPosition = userDefLayout;
-                break;
             }
         }
 

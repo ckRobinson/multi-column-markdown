@@ -16,6 +16,7 @@ import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
 
 import { getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
+import { ElementRenderType } from './utilities/elementRenderTypeParser';
 
 export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
@@ -120,7 +121,7 @@ ${editor.getDoc().getSelection()}`
         this.registerInterval(window.setInterval(() => {
             
             this.UpdateOpenFilePreviews();
-        }, 2000));
+        }, 500));
     }
 
     UpdateOpenFilePreviews() {
@@ -357,16 +358,19 @@ ${editor.getDoc().getSelection()}`
              */
             if(multiColumnParser.containsEndTag(el.textContent) === true) {
 
+                currentObject.elementType = ElementRenderType.unRendered
                 el.addClass(MultiColumnStyleCSS.RegionEndTag)
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
             }
             else if(multiColumnParser.containsColEndTag(elementTextSpaced) === true) {
 
+                currentObject.elementType = ElementRenderType.unRendered
                 el.addClass(MultiColumnStyleCSS.ColumnEndTag)
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
             }
             else if(multiColumnParser.containsColSettingsTag(elementTextSpaced) === true) {
 
+                currentObject.elementType = ElementRenderType.unRendered
                 el.addClass(MultiColumnStyleCSS.RegionSettings)
                 regionalManager = regionalContainer.setRegionSettings(elementTextSpaced)
             }

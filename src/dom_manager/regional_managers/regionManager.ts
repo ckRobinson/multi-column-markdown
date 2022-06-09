@@ -230,7 +230,8 @@ export abstract class RegionManager {
              * TODO: find a way to "Officially" mark normal elements rather than
              * continuously search for special render types.
              */
-            if (elementType !== ElementRenderType.specialRender) {
+            if (elementType !== ElementRenderType.specialRender && 
+                elementType !== ElementRenderType.unRendered) {
 
                 // If the new result returns as a special renderer we update so
                 // this wont run again for this item.
@@ -328,18 +329,23 @@ export abstract class RegionManager {
             domElement.clonedElement = domElement.originalElement.cloneNode(true) as HTMLDivElement;
         }
         
-        let originalElement = domElement.originalElement;
-        let clonedElement = domElement.clonedElement;
-        originalElement.addClass(MultiColumnLayoutCSS.OriginalElementType);
-        clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
-        clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
+        if(domElement.elementContainer.children.length < 2) {
 
-        let containerElement: HTMLDivElement = domElement.elementContainer;
-        for (let i = containerElement.children.length - 1; i >= 0; i--) {
-            containerElement.children[i].detach();
+            console.log("Updating dual rendering.", domElement.originalElement.parentElement, domElement.originalElement.parentElement.childElementCount);
+            
+            let originalElement = domElement.originalElement;
+            let clonedElement = domElement.clonedElement;
+            originalElement.addClass(MultiColumnLayoutCSS.OriginalElementType);
+            clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
+            clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
+    
+            let containerElement: HTMLDivElement = domElement.elementContainer;
+            for (let i = containerElement.children.length - 1; i >= 0; i--) {
+                containerElement.children[i].detach();
+            }
+            containerElement.appendChild(originalElement);
+            containerElement.appendChild(clonedElement);
         }
-        containerElement.appendChild(originalElement);
-        containerElement.appendChild(clonedElement);
     }
 
     /**
