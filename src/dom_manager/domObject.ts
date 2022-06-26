@@ -8,7 +8,6 @@
 
 import { getUID } from "../utilities/utils";
 import { ElementRenderType } from "../utilities/elementRenderTypeParser";
-import { MultiColumnSettings } from "../regionSettings";
 
 export enum DOMObjectTag {
     none,
@@ -72,5 +71,15 @@ export class TaskListDOMObject extends DOMObject {
             let originalInput = this.originalCheckboxes[index].firstChild as HTMLInputElement;
             originalInput.click();
         }
+    }
+
+    static checkForTaskListElement(domElement: DOMObject) {
+
+        if(domElement.originalElement.getElementsByClassName("task-list-item").length > 0 ) {
+
+            return new TaskListDOMObject(domElement);
+        }
+
+        return domElement;
     }
 }
