@@ -101,7 +101,7 @@ border: enabled\
 ### **Settings Tags:**
 
 Number of Columns: 
-- 2 or 3
+- 1, 2 or 3
 
 Largest Column: 
 - By default all of the columns will be set to equal size
@@ -129,6 +129,21 @@ Shadow:
     - disabled
     - off
     - false
+
+Column size:
+- Only used with the single column option.
+- Valid Options:
+    - Small
+    - Medium
+    - Large
+
+Column Position or Column Location:
+- Only used with the single column option.
+- Valid options:
+    - Left
+    - Right
+    - Center
+    - Middle
 
 <br>
 
@@ -265,6 +280,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 <br><br>
 
 # Version History
+
+### **0.6.0**
+Major refactor of rendering process to make extension more simple. Updated the refresh loop to keep things from being redrawn too frequently. Added single column feature.
 
 ### **0.5.0**
 This release fixes the export to PDF functionality that was missing as well as fixing some other input and render bugs that had slipped by testing.
