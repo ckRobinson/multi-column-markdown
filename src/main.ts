@@ -12,7 +12,7 @@ import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
 import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
 import { RegionManager } from "./dom_manager/regional_managers/regionManager";
 import { RegionManagerContainer } from "./dom_manager/regional_managers/regionManagerContainer";
-import { DOMObject, DOMObjectTag } from './dom_manager/domObject';
+import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObject';
 
 import { getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
@@ -321,7 +321,7 @@ ${editor.getDoc().getSelection()}`
             let currentObject: DOMObject = new DOMObject(el)
             el.id = currentObject.UID;
 
-            // currentObject = this.checkSpecialElement(currentObject)
+            currentObject = TaskListDOMObject.checkForTaskListElement(currentObject)
 
             /**
              * Now we add the object to the manager and then setup the
