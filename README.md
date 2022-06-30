@@ -282,7 +282,10 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 # Version History
 
 ### **0.6.0**
-Major refactor of rendering process to make extension more simple. Updated the refresh loop to keep things from being redrawn too frequently. Added single column feature.
+- Major refactor of rendering process to make extension more simple. 
+- Updated the refresh loop to keep things from being redrawn too frequently. 
+    - This change should help fix some of the flashing issues seen on iframe and other elements. 
+- Added single column feature.
 
 ### **0.5.0**
 This release fixes the export to PDF functionality that was missing as well as fixing some other input and render bugs that had slipped by testing.
