@@ -332,6 +332,12 @@ ${editor.getDoc().getSelection()}`
 
             let elementMarkdownRenderer = new MarkdownRenderChild(el);
             elementMarkdownRenderer.onunload = () => {
+
+                if(regionalContainer === null) {
+                    return
+                }
+                
+                let regionalManager: RegionManager = regionalContainer.getRegion();
                 if(regionalManager) {
                     
                     // We can attempt to update the view here after the item is removed
