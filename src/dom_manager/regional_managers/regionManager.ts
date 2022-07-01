@@ -258,6 +258,10 @@ export abstract class RegionManager {
      */
     protected fixClonedCheckListButtons(domElement: TaskListDOMObject, initalizeCheckboxes: boolean = false) {
 
+        if(domElement.originalElement === null || domElement.clonedElement === null) {
+            return;
+        }
+
         let element: HTMLElement = domElement.originalElement;
         let clonedElement: HTMLElement = domElement.clonedElement;
 
@@ -331,7 +335,7 @@ export abstract class RegionManager {
         
         if(domElement.elementContainer.children.length < 2) {
 
-            console.log("Updating dual rendering.", domElement.originalElement.parentElement, domElement.originalElement.parentElement.childElementCount);
+            // console.log("Updating dual rendering.", domElement.originalElement.parentElement, domElement.originalElement.parentElement.childElementCount);
             
             let originalElement = domElement.originalElement;
             let clonedElement = domElement.clonedElement;
