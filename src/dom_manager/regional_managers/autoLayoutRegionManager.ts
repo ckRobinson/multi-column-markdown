@@ -17,6 +17,9 @@ export class AutoLayoutRegionManager extends RegionManager {
 
     private previousColumnHeights: number[] = []
 
+    private columnParent: HTMLDivElement;
+    private columnDivs: HTMLDivElement[];
+
     public renderRegionElementsToScreen(): void {
 
          this.renderColumnMarkdown(this.regionParent, this.domList, this.regionalSettings);
@@ -42,12 +45,15 @@ export class AutoLayoutRegionManager extends RegionManager {
         let multiColumnParent = createDiv({
             cls: MultiColumnLayoutCSS.RegionColumnContainerDiv,
         });
+        this.columnParent = multiColumnParent;
 
         /**
          * Pass our parent div and settings to parser to create the required
          * column divs as children of the parent.
          */
         let columnContentDivs = this.getColumnContentDivs(settings, multiColumnParent);
+        this.columnDivs = columnContentDivs;
+
         if (settings.drawShadow === true) {
             multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
         }
@@ -255,7 +261,43 @@ export class AutoLayoutRegionManager extends RegionManager {
             }
         }
 
-        this.renderColumnMarkdown(this.regionParent, this.domList, this.regionalSettings);
+        let validColumns = true;
+        if(this.columnParent !== null && this.columnDivs !== null &&
+            this.columnDivs.length === this.regionalSettings.numberOfColumns) {
+
+            let totalHeight = this.domList.map((el: DOMObject, index: number) => { 
+
+                // We only want to attempt to update the elementRenderedHeight if it is 0 and if it is not an unrendered element such as a endregion tag.
+                if(el.elementRenderedHeight === 0 &&
+                    el.tag !== DOMObjectTag.columnBreak &&
+                    el.tag !== DOMObjectTag.endRegion &&
+                    el.tag !== DOMObjectTag.regionSettings &&
+                    el.tag !== DOMObjectTag.startRegion) {
+    
+                    // Add element to rendered div so we can extract the rendered height.
+                    this.columnParent.appendChild(el.originalElement)
+                    el.elementRenderedHeight = el.originalElement.clientHeight
+                    this.columnParent.removeChild(el.originalElement)
+                }
+    
+                return el.elementRenderedHeight 
+            }).reduce((prev: number, curr: number) => { return prev + curr }, 0);
+            let maxColumnContentHeight = Math.trunc(totalHeight / this.regionalSettings.numberOfColumns);
+
+            for(let i = 0; i < this.columnDivs.length; i++) {
+
+                if(this.columnDivs[i].clientHeight > maxColumnContentHeight) {
+                    validColumns = false;
+                    break;
+                }
+            }
+        }
+
+        if(validColumns = false) {
+
+            this.renderColumnMarkdown(this.regionParent, this.domList, this.regionalSettings);
+        }
+
         super.updateRenderedMarkdown();
     }
 }
