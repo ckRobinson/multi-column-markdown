@@ -39,16 +39,29 @@ export class RegionManagerContainer {
         }
         this.region.setRegionalSettings(regionalSettings);
 
-        if (regionalSettings.numberOfColumns === 1 && this.region instanceof SingleColumnRegionManager === false) {
+        if (regionalSettings.numberOfColumns === 1) {
 
-            this.convertToSingleColumn();
-        }
-        else if(regionalSettings.autoLayout === true && this.region instanceof AutoLayoutRegionManager === false) {
+            if(this.region instanceof SingleColumnRegionManager === false) {
 
-            this.convertToAutoLayout()
+                console.debug("Converting region to single column.")
+                this.convertToSingleColumn();
+            }
         }
-        else if (regionalSettings.numberOfColumns >= 2 && this.region instanceof StandardMultiColumnRegionManager === false) {
-            this.convertToStandardMultiColumn();
+        else if(regionalSettings.autoLayout === true) {
+
+            if(this.region instanceof AutoLayoutRegionManager === false) {
+
+                console.debug("Converting region to auto layout.")
+                this.convertToAutoLayout()
+            }
+        }
+        else if (regionalSettings.numberOfColumns >= 2) {
+
+            if(this.region instanceof StandardMultiColumnRegionManager === false) {
+
+                console.debug("Converting region to standard multi-column")
+                this.convertToStandardMultiColumn();
+            }
         }
 
         return this.region;
