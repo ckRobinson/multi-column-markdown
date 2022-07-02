@@ -189,13 +189,15 @@ export class AutoLayoutRegionManager extends RegionManager {
                      * appending the item to the column div. This keeps the main DOM
                      * cleaner by removing other items and placing them all within
                      * a region container.
+                     * 
+                     * Removing the end column tag as an option for now.
                      */
-                    if (regionElements[i].tag === DOMObjectTag.columnBreak &&
-                       (columnIndex + 1) < settings.numberOfColumns) {
+                    // if (regionElements[i].tag === DOMObjectTag.columnBreak &&
+                    //    (columnIndex + 1) < settings.numberOfColumns) {
     
-                        columnIndex++;
-                        currentColumnHeight = 0;
-                    }
+                    //     columnIndex++;
+                    //     currentColumnHeight = 0;
+                    // }
                 }
             }
         }
