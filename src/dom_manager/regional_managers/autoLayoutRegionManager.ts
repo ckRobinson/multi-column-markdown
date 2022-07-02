@@ -7,9 +7,8 @@
  */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout } from "../../regionSettings";
+import { MultiColumnSettings } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
-import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
 import { hasHeader } from 'src/utilities/elementRenderTypeParser';
 
@@ -51,27 +50,20 @@ export class AutoLayoutRegionManager extends RegionManager {
          * Pass our parent div and settings to parser to create the required
          * column divs as children of the parent.
          */
-        let columnContentDivs = this.getColumnContentDivs(settings, multiColumnParent);
-        this.columnDivs = columnContentDivs;
+        this.columnDivs = this.getColumnContentDivs(settings, multiColumnParent);
 
         if (settings.drawShadow === true) {
             multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
         }
-        for (let i = 0; i < columnContentDivs.length; i++) {
+        for (let i = 0; i < this.columnDivs.length; i++) {
             if (settings.drawBorder === true) {
-                columnContentDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
+                this.columnDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
             }
 
             if (settings.drawShadow === true) {
-                columnContentDivs[i].addClass(MultiColumnStyleCSS.ColumnShadow);
+                this.columnDivs[i].addClass(MultiColumnStyleCSS.ColumnShadow);
             }
         }
-
-        // Create markdown renderer to parse the passed markdown
-        // between the tags.
-        let markdownRenderChild = new MarkdownRenderChild(
-            multiColumnParent
-        );
 
         // Remove every other child from the parent so 
         // we dont end up with multiple sets of data. This should
@@ -80,9 +72,9 @@ export class AutoLayoutRegionManager extends RegionManager {
         for (let i = parentElement.children.length - 1; i >= 0; i--) {
             parentElement.children[i].detach();
         }
-        parentElement.appendChild(markdownRenderChild.containerEl);
+        parentElement.appendChild(multiColumnParent);
 
-        this.appendElementsToColumns(regionElements, columnContentDivs, settings);
+        this.appendElementsToColumns(regionElements, this.columnDivs, settings);
     }
 
     private appendElementsToColumns(regionElements: DOMObject[], columnContentDivs: HTMLDivElement[], settings: MultiColumnSettings) {
@@ -286,16 +278,21 @@ export class AutoLayoutRegionManager extends RegionManager {
             }).reduce((prev: number, curr: number) => { return prev + curr }, 0);
             let maxColumnContentHeight = Math.trunc(totalHeight / this.regionalSettings.numberOfColumns);
 
-            for(let i = 0; i < this.columnDivs.length; i++) {
+            for(let i = 0; i < this.columnDivs.length - 1; i++) {
 
-                if(this.columnDivs[i].clientHeight > maxColumnContentHeight) {
+                let columnHeight = 0
+                for(let j = 0; j < this.columnDivs[i].children.length; j++) {
+                    columnHeight += this.columnDivs[i].children[j].clientHeight
+                }
+
+                if(columnHeight > maxColumnContentHeight) {
                     validColumns = false;
                     break;
                 }
             }
         }
 
-        if(validColumns = false) {
+        if(validColumns === false) {
 
             this.renderColumnMarkdown(this.regionParent, this.domList, this.regionalSettings);
         }
