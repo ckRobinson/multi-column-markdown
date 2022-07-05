@@ -8,6 +8,10 @@ creative ways.
 
 <br>
 
+![Preview_1](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Preview_1.png?raw=true)
+
+<br>
+
 # Usage:
 
 
@@ -147,8 +151,16 @@ Column Position or Column Location:
 
 <br>
 
-### **Full Examples:**
+### **Auto Layout**
 ---
+
+Auto layout regions do not use defined column breaks. Instead these type of multi-column regions will attempt to balance all content equally between the columns. Headings are also preserved so that a heading block will not end a column but will instead be moved to the top of the next column with it's coresponding content.
+
+To use this feature set "Auto Layout: true" within the region settings.
+
+<br>
+
+# **Full Examples:**
 
 === start-multi-column: ExampleRegion3
 
@@ -211,6 +223,22 @@ largest column: center\
 
 <br>
 
+=== start-multi-column: ExampleRegion6\
+\```settings\
+number of columns: 1\
+column size: medium\
+column position: left\
+\```
+
+\#### Single Left Aligned Column 
+
+=== end-multi-column
+
+**Rendered as:**
+![Example_4Column_1](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_4Column_1.png?raw=true)
+
+<br>
+
 ### **Things to note:**
 
 ---
@@ -262,19 +290,21 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
     - Potential workarounds: 
         - Shrinking the view width horizontally appears to fix the scrolling problem.
         - Sometimes loading a different file and back can fix the problem but not always.
-
+<br><br>
+- ### **Minor Render Issues**
 - When entering data into a multi-column region the data can sometimes be rendered a line above or below the intended location in the preview window. When the line is near the start or end of a column or region it may be rendered in the wrong column or outside of the region entirely.
+- Copy and pasting text into a new locations within a region may not update in preview view properly.
+- When swapping between auto layout or single column, regions may sometimes become stuck rendering an old layout.
+- Auto layout regions sometimes get stuck in a non-equal state.
     - Workaround:
-        - Swapping to a different file and back will update the preview window and fix the render issue.
+        - Swapping to a different file and back, or closing and reopeing the file will force a reload of the data and fix the render issue.
 
 ### Other
 - Opening large files can cause Obsidian to slow down and lag while the document is being parsed.
     - As of 0.4.0 this should be less of an issue but still keeping an eye on it.
-
-<br>
-
+<br><br>
 - This plugin currently does not support Obsidian's new markdown editor preview rendering, but hopefully that can be added in the future.
-
+<br><br>
 - The Obsidian API and this plugin are both still works in progress and both are subject to change. 
 
 <br><br>
@@ -282,10 +312,29 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 # Version History
 
 ### **0.6.0**
-- Major refactor of rendering process to make extension more simple. 
-- Updated the refresh loop to keep things from being redrawn too frequently. 
-    - This change should help fix some of the flashing issues seen on iframe and other elements. 
-- Added single column feature.
+- ### Auto Layout
+    - New render option added.
+    - An auto layout region does not use defined column breaks but will attempt to keep all content evenly balanced between the columns.
+    - Headings are kept tied to the content below it, meaning a heading shouldn't ever end a column they will instead be moved to the top of the next column.
+        - Allowing this to be turned off is coming.
+    - Set "Auto Layout: true" to use
+
+- ### Single columns
+    - Single column option added as per feature request.
+    - Setting the number of columns to 1 will enable.
+    - You can currently set the column to 3 sizes, small, medium, and large, which are rendered as 25%, 50% and 75% of the window size respectively.
+        - Setting "Column Size: medium"
+    - You can also set a left, right or centered location
+        - Setting "Column Position: center"
+- ### Other Changes
+    - Major refactor of rendering process to make extension more simple. 
+    - Updated the refresh loop to keep things from being redrawn too frequently. 
+        - This change should help fix some of the flashing issues seen on iframe and other elements. 
+- ### Upcoming (In no particular order)
+    - Working / Investigating on Live Preview support
+    - Fixing the scroll jumping issue
+        - Have made progress on this bug, but will require a syntax change and may interfere with live preview.
+    - Adding a settings window to allow for defining custom tag syntax and other options.
 
 ### **0.5.0**
 This release fixes the export to PDF functionality that was missing as well as fixing some other input and render bugs that had slipped by testing.
@@ -328,3 +377,8 @@ Initial release.
 - Documents with multi-column regions are rendered properly in the document preview.
 - Includes custom command to quickly add a multi-column region to a document.
 
+# Support Me:
+
+<a href="https://www.buymeacoffee.com/ckrobinson" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="217" height="60" /></a>
+
+<a href='https://ko-fi.com/ckrobinson' target='_blank'><img height='35' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />

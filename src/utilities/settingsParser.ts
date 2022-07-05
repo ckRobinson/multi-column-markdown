@@ -16,7 +16,9 @@ import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefau
  */
 const COL_POSITION_OPTION_STRS: string[] = [
     "column position",
+    "col position",
     "column location",
+    "col location",
     "single column location",
     "single column position",
 ];
@@ -107,14 +109,12 @@ export function parseSingleColumnSettings(settingsStr: string, originalSettings:
         if (settingsData !== null) {
 
             originalSettings.columnPosition = parseForSingleColumnLocation(settingsData);
-            break;
         }
 
         settingsData = getSettingsDataFromKeys(settingsLine, COL_SIZE_OPTION_REGEX_ARR);
         if (settingsData !== null) {
 
-            originalSettings.columnSize = (<any>SingleColumnSize)[settingsData] | SingleColumnSize.medium;
-            break;
+            originalSettings.columnSize = parseForSingleColumnSize(settingsData)
         }
     }
 
@@ -227,6 +227,23 @@ function parseForSingleColumnLocation(locationString: string): ColumnLayout{
     }
 
     return ColumnLayout.center
+}
+
+function parseForSingleColumnSize(sizeString: string): SingleColumnSize {
+
+    switch (sizeString = sizeString.toLowerCase().trim().replace(" ", "")) {
+        case "small":
+        case "sm":
+            return SingleColumnSize.small;
+        case "medium":
+        case "med":
+            return SingleColumnSize.medium;
+        case "large":
+        case "lg":
+            return SingleColumnSize.large;
+    }
+
+    return SingleColumnSize.medium
 }
 
 function convertStringToSettingsRegex(originalString: String): string {
