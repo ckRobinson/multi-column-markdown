@@ -328,14 +328,27 @@ export abstract class RegionManager {
          * saves us from the visual noise of the region jumping around.
          */
 
-        // Only clone element once. Possible bug with needing to wait to clone element?
-        if(domElement.clonedElement === null) {
+        // Get height of the original element. If the element is not currently rendered
+        // it will have 0 height so we need to temporarily render it to get the height.
+        let originalElementHeight = domElement.originalElement.clientHeight
+        if(originalElementHeight === 0) {
+            domElement.elementContainer.appendChild(domElement.originalElement);
+            originalElementHeight = domElement.originalElement.clientHeight
+            domElement.elementContainer.removeChild(domElement.originalElement);
+        }
+
+        // Only clone element once, unless the cloned element's height is
+        // not equal to the original element, this means the item element has
+        // been updated somewhere else without the dom being refreshed. This can
+        // occur when elements are updated by other plugins, such as Dataview.
+        if(domElement.clonedElement === null  || 
+            domElement.clonedElement.clientHeight !== originalElementHeight) {
             domElement.clonedElement = domElement.originalElement.cloneNode(true) as HTMLDivElement;
         }
         
         if(domElement.elementContainer.children.length < 2) {
 
-            // console.log("Updating dual rendering.", domElement.originalElement.parentElement, domElement.originalElement.parentElement.childElementCount);
+            // console.log("Updating dual rendering.", domElement, domElement.originalElement.parentElement, domElement.originalElement.parentElement?.childElementCount);
             
             let originalElement = domElement.originalElement;
             let clonedElement = domElement.clonedElement;
