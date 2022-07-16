@@ -2,10 +2,20 @@ export enum ElementRenderType {
     undefined,
     normalRender,
     specialRender,
+    specialSingleElementRender,
     unRendered
 }
 
 export function getElementRenderType(element: HTMLElement): ElementRenderType {
+
+    /**
+     * The Dataview plugin needs to be constantly checked if the clone should be
+     * updated but should not always update the "dual render" aspect, so we add
+     * a special case for that plugin and maybe others in the future.
+     */
+    if(hasDataview(element) === true) {
+        return ElementRenderType.specialSingleElementRender;
+    }
 
     /**
      * Look for specific kinds of elements by their CSS class names here. These 
@@ -117,3 +127,8 @@ function hasAdmonitionFold(element: HTMLElement) {
     return element.getElementsByClassName("callout-fold").length !== 0;
 }
 
+function hasDataview(element: HTMLElement) {
+
+    let isDataview = element.getElementsByClassName("dataview").length !== 0;
+    return isDataview;
+}
