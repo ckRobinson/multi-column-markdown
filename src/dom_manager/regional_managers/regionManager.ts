@@ -230,7 +230,8 @@ export abstract class RegionManager {
              * TODO: find a way to "Officially" mark normal elements rather than
              * continuously search for special render types.
              */
-            if (elementType !== ElementRenderType.specialRender && 
+            if (elementType !== ElementRenderType.specialRender &&
+                elementType !== ElementRenderType.specialSingleElementRender && 
                 elementType !== ElementRenderType.unRendered) {
 
                 // If the new result returns as a special renderer we update so
@@ -239,7 +240,8 @@ export abstract class RegionManager {
                 this.domList[i].originalElement.clientHeight;
             }
 
-            if (elementType === ElementRenderType.specialRender) {
+            if (elementType === ElementRenderType.specialRender ||
+                elementType === ElementRenderType.specialSingleElementRender) {
 
                 this.domList[i].elementType = elementType;
                 this.setUpDualRender(this.domList[i]);
@@ -328,35 +330,59 @@ export abstract class RegionManager {
          * saves us from the visual noise of the region jumping around.
          */
 
-        // Get height of the original element. If the element is not currently rendered
-        // it will have 0 height so we need to temporarily render it to get the height.
-        let originalElementHeight = domElement.originalElement.clientHeight
-        if(originalElementHeight === 0) {
-            domElement.elementContainer.appendChild(domElement.originalElement);
-            originalElementHeight = domElement.originalElement.clientHeight
-            domElement.elementContainer.removeChild(domElement.originalElement);
-        }
+         let originalElement = domElement.originalElement;
+         let clonedElement = domElement.clonedElement;
+         let containerElement: HTMLDivElement = domElement.elementContainer;
 
-        // Only clone element once, unless the cloned element's height is
-        // not equal to the original element, this means the item element has
-        // been updated somewhere else without the dom being refreshed. This can
-        // occur when elements are updated by other plugins, such as Dataview.
-        if(domElement.clonedElement === null  || 
-            domElement.clonedElement.clientHeight !== originalElementHeight) {
-            domElement.clonedElement = domElement.originalElement.cloneNode(true) as HTMLDivElement;
+        // Get height of the original and cloned element. If the element is not currently rendered
+        // it will have 0 height so we need to temporarily render it to get the height.
+        let originalElementHeight = getElementClientHeight(originalElement, containerElement);
+        let clonedElementHeight = getElementClientHeight(clonedElement, containerElement);
+
+        /**
+         * We only want to clone the element once to reduce GC. But if the cloned 
+         * element's height is not equal to the original element, this means the
+         * item element has been updated somewhere else without the dom being 
+         * refreshed. This can occur when elements are updated by other plugins, 
+         * such as Dataview.
+         */
+        if(clonedElement === null  || 
+            clonedElementHeight !== originalElementHeight) {
+            
+            // Update clone and reference.
+            domElement.clonedElement = originalElement.cloneNode(true) as HTMLDivElement;
+            clonedElement = domElement.clonedElement;
+
+            /**
+             * If we updated the cloned element, we want to also update the
+             * element rendered in the parent container.
+             */
+            for (let i = containerElement.children.length - 1; i >= 0; i--) {
+                containerElement.children[i].detach();
+            }
+
+            // Update CSS, we add cloned class and remove classes from originalElement that do not apply.
+            clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
+            clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
+            containerElement.appendChild(clonedElement);
         }
         
-        if(domElement.elementContainer.children.length < 2) {
+        /** 
+         * If the container element has less than 2 children we need to move the
+         * original element back into it. However some elements constantly get moved
+         * in and out causing some unwanted behavior. Those element will be tagged
+         * as specialSingleElementRender so we ignore those elements here.
+         */
+        if(domElement.elementContainer.children.length < 2 && 
+            domElement.elementType !== ElementRenderType.specialSingleElementRender) {
 
             // console.log("Updating dual rendering.", domElement, domElement.originalElement.parentElement, domElement.originalElement.parentElement?.childElementCount);
             
-            let originalElement = domElement.originalElement;
-            let clonedElement = domElement.clonedElement;
+            // Make sure our CSS is up to date.
             originalElement.addClass(MultiColumnLayoutCSS.OriginalElementType);
             clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
             clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
     
-            let containerElement: HTMLDivElement = domElement.elementContainer;
             for (let i = containerElement.children.length - 1; i >= 0; i--) {
                 containerElement.children[i].detach();
             }
@@ -475,4 +501,16 @@ export abstract class RegionManager {
 
     public abstract renderRegionElementsToScreen(): void;
     public abstract exportRegionElementsToPDF(pdfParentElement: HTMLElement): void;
+}
+
+
+function getElementClientHeight(element: HTMLElement, parentRenderElement: HTMLDivElement): number {
+
+    let height = element.clientHeight;
+    if(height === 0) {
+        parentRenderElement.appendChild(element);
+        height = element.clientHeight
+        parentRenderElement.removeChild(element);
+    }
+    return height
 }
