@@ -61,7 +61,7 @@ export class TaskListDOMObject extends DOMObject {
 
     constructor(baseDOMObject: DOMObject) {
 
-        super(baseDOMObject.originalElement, baseDOMObject.UID, DOMObjectTag.startRegion);
+        super(baseDOMObject.originalElement, baseDOMObject.UID, DOMObjectTag.none);
     }
 
     checkboxClicked(index: number) {
