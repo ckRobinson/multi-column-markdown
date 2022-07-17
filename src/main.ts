@@ -379,6 +379,7 @@ ${editor.getDoc().getSelection()}`
                 currentObject.elementType = ElementRenderType.unRendered
                 el.addClass(MultiColumnStyleCSS.RegionSettings)
                 regionalManager = regionalContainer.setRegionSettings(elementTextSpaced)
+                regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.regionSettings);
             }
             else {
                 el.addClass(MultiColumnStyleCSS.RegionContent)
