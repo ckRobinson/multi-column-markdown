@@ -311,8 +311,11 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 # Version History
 
+### **0.6.2**
+- Fixed compatibility issue with Tasks caused by update to renderer in 0.6.0.
+
 ### **0.6.1**
-- Fixed compatability issue with Dataview caused by update to renderer in 0.6.0
+- Fixed compatability issue with Dataview caused by update to renderer in 0.6.0.
 
 ### **0.6.0**
 - ### Auto Layout
