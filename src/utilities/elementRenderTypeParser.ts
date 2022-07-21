@@ -1,8 +1,11 @@
+import { searchChildrenForNodeType } from "./utils";
+
 export enum ElementRenderType {
     undefined,
     normalRender,
     specialRender,
     specialSingleElementRender,
+    canvasRenderElement,
     unRendered
 }
 
@@ -15,6 +18,16 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      */
     if(hasDataview(element) === true) {
         return ElementRenderType.specialSingleElementRender;
+    }
+
+    /**
+     * Some types of content are rendered in canvases which are not rendered properly
+     * when we clone the original node. Here we are flagging the element as a canvas
+     * element so we can clone the canvas to a copy element within the region.
+     * 
+     */
+    if( hasDataviewJS(element) === true) {
+        return ElementRenderType.canvasRenderElement;
     }
 
     /**
@@ -131,4 +144,16 @@ function hasDataview(element: HTMLElement) {
 
     let isDataview = element.getElementsByClassName("dataview").length !== 0;
     return isDataview;
+}
+
+function hasDataviewJS(element: HTMLElement) {
+
+    let isDataviewJS = element.getElementsByClassName("block-language-dataviewjs").length !== 0;
+    let canvas = searchChildrenForNodeType(element, "canvas");
+
+    /**
+     * This means only dataviewJS chart canvas elements should be rendered properly. Other canvases will 
+     * need thier own case put in or the restriction removed after testing.
+     */
+    return canvas !== null && isDataviewJS 
 }
