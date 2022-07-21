@@ -12,6 +12,7 @@ import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDe
 import { FileDOMManager } from '../domManager';
 import { ElementRenderType, getElementRenderType } from 'src/utilities/elementRenderTypeParser';
 import { RegionManagerData } from './regionManagerContainer';
+import { searchChildrenForNodeType } from 'src/utilities/utils';
 
 export type MultiColumnRenderData = { 
     parentRenderElement: HTMLElement, 
@@ -241,7 +242,8 @@ export abstract class RegionManager {
             }
 
             if (elementType === ElementRenderType.specialRender ||
-                elementType === ElementRenderType.specialSingleElementRender) {
+                elementType === ElementRenderType.specialSingleElementRender || 
+                elementType === ElementRenderType.canvasRenderElement) {
 
                 this.domList[i].elementType = elementType;
                 this.setUpDualRender(this.domList[i]);
@@ -365,6 +367,44 @@ export abstract class RegionManager {
             clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
             clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
             containerElement.appendChild(clonedElement);
+        }
+
+        if(domElement.elementType === ElementRenderType.canvasRenderElement) {
+
+            containerElement.appendChild(originalElement);
+
+            function cloneCanvas(originalCanvas: HTMLCanvasElement): HTMLCanvasElement {
+
+                //create a new canvas
+                let clonedCanvas: HTMLCanvasElement = originalCanvas.cloneNode(true) as HTMLCanvasElement;
+                let context: CanvasRenderingContext2D = clonedCanvas.getContext('2d');
+            
+                //set dimensions
+                clonedCanvas.width = originalCanvas.width;
+                clonedCanvas.height = originalCanvas.height;
+
+                if(clonedCanvas.width === 0 || clonedCanvas.height === 0){
+                    // Dont want to render if the width is 0 as it throws an error
+                    // would happen if the old canvas hasnt been rendered yet.
+                    return clonedCanvas;
+                } 
+
+                //apply the old canvas to the new one
+                context.drawImage(originalCanvas, 0, 0);
+            
+                //return the new canvas
+                return clonedCanvas;
+            }
+
+            let canvas = searchChildrenForNodeType(originalElement, "canvas");
+            if(canvas !== null) {
+                for (let i = clonedElement.children.length - 1; i >= 0; i--) {
+                    clonedElement.children[i].detach();
+                }
+                clonedElement.appendChild(cloneCanvas(canvas as HTMLCanvasElement))
+            }
+
+            containerElement.removeChild(originalElement);
         }
         
         /** 
