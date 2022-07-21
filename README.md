@@ -311,6 +311,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 # Version History
 
+### **0.6.3**
+- Fixed compatibility issue with Charts plugin using dataviewJS codeblocks.
+
 ### **0.6.2**
 - Fixed compatibility issue with Tasks caused by update to renderer in 0.6.0.
 
