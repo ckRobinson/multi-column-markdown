@@ -92,7 +92,7 @@ function getSettingsDataFromKeys(settingsString: string, validSettingFormatRegEx
 
         let regexSearchData = validSettingFormatRegEx[i].exec(settingsString)
         if(regexSearchData !== null) {
-            return regexSearchData[1]
+            return regexSearchData[1].trim()
         }
     }
 
