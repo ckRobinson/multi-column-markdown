@@ -157,3 +157,19 @@ function hasDataviewJS(element: HTMLElement) {
      */
     return canvas !== null && isDataviewJS 
 }
+
+export function getHeadingCollapseElement(element: HTMLElement): Element | null {
+
+    if(element === null) {
+        return null;
+    }
+
+    let childElements = element.getElementsByClassName("heading-collapse-indicator")
+    if(childElements.length === 1) {
+        return childElements[0];
+    }
+    if(childElements.length > 1) {
+        console.debug("Found multiple heading collapse indicators in element.")
+    }
+    return null;
+}

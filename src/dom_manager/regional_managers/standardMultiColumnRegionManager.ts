@@ -11,6 +11,7 @@ import { MultiColumnSettings, ColumnLayout } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
+import { getHeadingCollapseElement } from 'src/utilities/elementRenderTypeParser';
 
 export class StandardMultiColumnRegionManager extends RegionManager {
 
@@ -94,6 +95,12 @@ export class StandardMultiColumnRegionManager extends RegionManager {
 
                 // Otherwise we just make a copy of the original element to display.
                 let clonedElement = regionElements[i].originalElement.cloneNode(true) as HTMLDivElement;
+                let headingCollapseElement = getHeadingCollapseElement(clonedElement);
+                if(headingCollapseElement !== null) {
+                    // This removes the collapse arrow from the view if it exists.
+                    headingCollapseElement.detach();
+                }
+
                 regionElements[i].clonedElement = clonedElement;
                 element.appendChild(clonedElement);
 

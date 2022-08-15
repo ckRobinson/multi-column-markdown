@@ -10,7 +10,7 @@ import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
 import { MultiColumnSettings } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { RegionManager } from './regionManager';
-import { hasHeader } from 'src/utilities/elementRenderTypeParser';
+import { getHeadingCollapseElement, hasHeader } from 'src/utilities/elementRenderTypeParser';
 
 export class AutoLayoutRegionManager extends RegionManager {
 
@@ -161,6 +161,12 @@ export class AutoLayoutRegionManager extends RegionManager {
                     if(regionElements[i].clonedElement === null) {
 
                         clonedElement = regionElements[i].originalElement.cloneNode(true) as HTMLDivElement;
+                        let headingCollapseElement = getHeadingCollapseElement(clonedElement);
+                        if(headingCollapseElement !== null) {
+                            // This removes the collapse arrow from the view if it exists.
+                            headingCollapseElement.detach();
+                        }
+        
                         regionElements[i].clonedElement = clonedElement;
                     }
                     element.appendChild(clonedElement);
