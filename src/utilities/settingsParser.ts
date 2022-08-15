@@ -251,6 +251,5 @@ function convertStringToSettingsRegex(originalString: String): string {
     originalString = originalString.replace(" ", " *");
     
     let regexString = `(?:${originalString} *: *)(.*)`;
-    console.log(regexString);
     return regexString;
 }

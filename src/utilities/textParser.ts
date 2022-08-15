@@ -25,7 +25,7 @@ for(let i = 0; i < START_REGEX_STRS_WHOLE_LINE.length; i++) {
 }
 
 
-function findStartTag(text: string): { found: boolean, startPosition: number } {
+export function findStartTag(text: string): { found: boolean, startPosition: number } {
 
     let found = false;
     let startPosition = -1;
@@ -90,7 +90,7 @@ const END_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < END_REGEX_STRS.length; i++) {
     END_REGEX_ARR.push(new RegExp(END_REGEX_STRS[i]));
 }
-function findEndTag(text: string): { found: boolean, startPosition: number } {
+export function findEndTag(text: string): { found: boolean, startPosition: number } {
 
     let found = false;
     let startPosition = -1;
@@ -151,6 +151,28 @@ export function containsColSettingsTag(text: string): boolean {
 
     return found;
 }
+export function findColSettingsTag(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+
+    let found = false;
+    let startPosition = -1;
+    let endPosition = -1
+    let matchLength = 0;
+    for(let i = 0; i< COL_SETTINGS_REGEX_ARR.length; i++) {
+
+        console.log(text)
+        let regexData = COL_SETTINGS_REGEX_ARR[i].exec(text)
+        if(regexData !== null && regexData.length > 0) {
+            found = true;
+            startPosition = regexData.index
+            matchLength = regexData[0].length;
+            break;
+        }
+    }
+    endPosition = startPosition + matchLength;
+
+    return { found, startPosition, endPosition, matchLength };
+}
+
 
 export function countStartTags(text: string): { numberOfTags: number, keys: string[] } {
 
@@ -365,6 +387,25 @@ export function parseCodeBlockStart(codeBlockLines: string[]): { id: string, ind
     else {
         return { id: id, index: -1 }
     }
+}
+const CODEBLOCK_END_REGEX_STR = "```";
+const CODEBLOCK_END_REGEX: RegExp = new RegExp(CODEBLOCK_END_REGEX_STR);
+export function findEndOfCodeBlock(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+
+    let found = false;
+    let startPosition = -1;
+    let matchLength = 0;
+    let endPosition = -1;
+
+    let regexData = CODEBLOCK_END_REGEX.exec(text)
+    if(regexData !== null && regexData.length > 0) {
+        found = true;
+        startPosition = regexData.index
+        matchLength = regexData[0].length
+    }
+    endPosition = startPosition + matchLength;
+
+    return { found, startPosition, endPosition, matchLength };
 }
 
 export function parseCodeBlockSettings(codeBlockLines: string[]): string {

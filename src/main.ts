@@ -13,10 +13,10 @@ import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionMan
 import { RegionManager } from "./dom_manager/regional_managers/regionManager";
 import { RegionManagerContainer } from "./dom_manager/regional_managers/regionManagerContainer";
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObject';
-
 import { getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
+import { multiColumnMarkdown_StateField } from './cm6_livePreview';
 
 export default class MultiColumnMarkdown extends Plugin {
 	// settings: SplitColumnMarkdownSettings;
@@ -27,6 +27,7 @@ export default class MultiColumnMarkdown extends Plugin {
 
         console.log("Loading multi-column markdown");
 
+        this.registerEditorExtension(multiColumnMarkdown_StateField)
 
         this.setupMarkdownPostProcessor();
 
