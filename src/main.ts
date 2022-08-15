@@ -207,9 +207,6 @@ ${editor.getDoc().getSelection()}`
              * file manager we got above above takes care of all regional 
              * managers in each file.
              */
-            let elementTextSpaced = linesOfElement.reduce((prev, curr) => {
-                return prev + "\n" + curr;
-            });
             if(multiColumnParser.containsStartTag(el.textContent)) {
 
                 /** 
@@ -319,7 +316,7 @@ ${editor.getDoc().getSelection()}`
             /**
              * Set up our dom object to be added to the manager.
              */
-            let currentObject: DOMObject = new DOMObject(el)
+            let currentObject: DOMObject = new DOMObject(el, linesOfElement)
             el.id = currentObject.UID;
 
             currentObject = TaskListDOMObject.checkForTaskListElement(currentObject)
@@ -359,6 +356,9 @@ ${editor.getDoc().getSelection()}`
             };
             ctx.addChild(elementMarkdownRenderer);
 
+            let elementTextSpaced = linesOfElement.reduce((prev, curr) => {
+                return prev + "\n" + curr;
+            });
             /**
              * Now we check if our current element is a special flag so we can
              * properly set the element tag within the regional manager.
