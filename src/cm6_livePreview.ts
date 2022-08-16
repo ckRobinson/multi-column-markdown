@@ -42,7 +42,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                     return;
                 }
 
-                if(markdownLeaves[0].getViewState().state.source === false) {
+                if(markdownLeaves[0].getViewState().state.source === true) {
                     console.debug("User disabled live preview.")
                     return;
                 }
