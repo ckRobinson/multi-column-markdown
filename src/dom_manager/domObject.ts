@@ -8,7 +8,7 @@
 
 import { getUID } from "../utilities/utils";
 import { ElementRenderType } from "../utilities/elementRenderTypeParser";
-import { containsColEndTag, containsColSettingsTag, containsEndTag } from "src/utilities/textParser";
+import { containsColEndTag, containsColSettingsTag, containsEndTag, containsStartTag, elInnerTextContainsColEndTag } from "src/utilities/textParser";
 
 export enum DOMObjectTag {
     none,
@@ -56,15 +56,26 @@ export class DOMObject {
         let elementTextSpaced = this.linesOfElement.reduce((prev, curr) => {
             return prev + "\n" + curr;
         });
+
         if(containsEndTag(this.originalElement.textContent) === true) {
 
-            this.elementType = ElementRenderType.unRendered
+            this.elementType = ElementRenderType.unRendered;
+            this.tag = DOMObjectTag.endRegion;
             // el.addClass(MultiColumnStyleCSS.RegionEndTag)
             // regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
         }
-        else if(containsColEndTag(elementTextSpaced) === true) {
+        else if(containsColEndTag(this.originalElement.textContent) === true || 
+        (this.originalElement.innerHTML.startsWith("<mark>")) && elInnerTextContainsColEndTag(this.originalElement.textContent)) {
 
             this.elementType = ElementRenderType.unRendered
+            this.tag = DOMObjectTag.columnBreak;
+            // el.addClass(MultiColumnStyleCSS.ColumnEndTag)
+            // regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
+        }
+        else if(containsStartTag(this.originalElement.textContent) === true) {
+
+            this.elementType = ElementRenderType.unRendered
+            this.tag = DOMObjectTag.startRegion;
             // el.addClass(MultiColumnStyleCSS.ColumnEndTag)
             // regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
         }
