@@ -185,7 +185,6 @@ export function findColSettingsTag(text: string): { found: boolean, startPositio
     let matchLength = 0;
     for(let i = 0; i< COL_SETTINGS_REGEX_ARR.length; i++) {
 
-        console.log(text)
         let regexData = COL_SETTINGS_REGEX_ARR[i].exec(text)
         if(regexData !== null && regexData.length > 0) {
             found = true;
