@@ -27,7 +27,10 @@ export class StandardMultiColumnRegionManager extends RegionManager {
         renderSettings.drawShadow = false;
         this.renderColumnMarkdown(pdfParentElement, this.domList.slice(), renderSettings);
     }
+    public renderRegionElementsToLivePreview(parentElement: HTMLElement): void {
 
+        this.renderColumnMarkdown(parentElement, this.domList, this.regionalSettings);
+    }
     /**
      * This function takes in the data for the multi-column region and sets up the 
      * user defined number of children with the proper css classes to be rendered properly.
@@ -109,7 +112,7 @@ export class StandardMultiColumnRegionManager extends RegionManager {
                     this.fixClonedCheckListButtons(regionElements[i] as TaskListDOMObject, true);
                 }
 
-                if (element !== null) {
+                if (element !== null && regionElements[i].tag !== DOMObjectTag.columnBreak) {
 
                     columnContentDivs[columnIndex].appendChild(element);
                 }
