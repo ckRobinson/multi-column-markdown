@@ -90,7 +90,7 @@ const END_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < END_REGEX_STRS.length; i++) {
     END_REGEX_ARR.push(new RegExp(END_REGEX_STRS[i]));
 }
-export function findEndTag(text: string): { found: boolean, startPosition: number } {
+export function findEndTag(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
 
     let found = false;
     let startPosition = -1;
@@ -103,7 +103,21 @@ export function findEndTag(text: string): { found: boolean, startPosition: numbe
         }
     }
 
-    return { found, startPosition };
+    let endPosition = -1
+    let matchLength = 0;
+    for(let i = 0; i< END_REGEX_ARR.length; i++) {
+
+        let regexData = END_REGEX_ARR[i].exec(text)
+        if(regexData !== null && regexData.length > 0) {
+            found = true;
+            startPosition = regexData.index
+            matchLength = regexData[0].length;
+            break;
+        }
+    }
+    endPosition = startPosition + matchLength;
+
+    return { found, startPosition, endPosition, matchLength };
 }
 export function containsEndTag(text: string): boolean {
     return findEndTag(text).found

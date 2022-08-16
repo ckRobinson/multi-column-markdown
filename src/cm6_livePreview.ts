@@ -84,7 +84,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 				let endTagData = findEndTag(workingFileText);
 				let loopIndex = 0;
 				let startIndexOffset = 0;
-				while (startTagData.found === true && endTagData.found === true && loopIndex < 100) { // TODO: Remove loop index when infinite loop fixed?
+				while (startTagData.found === true && endTagData.found === true && loopIndex < 100) {
 
 
 					/**
@@ -92,8 +92,8 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					 * can slice it out of the document.
 					 */
 					let startIndex = startIndexOffset + startTagData.startPosition
-					let endIndex = startIndexOffset + endTagData.startPosition + 20 // Without the +20 will leave the end tag on the screen. // TODO: Calculate the lenght of the tag found instead of hardcoded.
-                    
+					let endIndex = startIndexOffset + endTagData.startPosition + endTagData.matchLength // Without the matchLength will leave the end tag on the screen.
+
 					// This text is the entire region data including the start and end tags.
 					let elementText = docText.slice(startIndex, endIndex)
 
