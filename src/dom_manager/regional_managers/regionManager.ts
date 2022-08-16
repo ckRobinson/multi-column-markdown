@@ -24,13 +24,18 @@ export abstract class RegionManager {
 
     protected domList: DOMObject[] = [];
     protected domObjectMap: Map<string, DOMObject> = new Map();
-    protected regionParent: HTMLElement;
+    private _regionParent: HTMLElement;
+    public get regionParent(): HTMLElement {
+        return this._regionParent;
+    }
+    protected set regionParent(value: HTMLElement) {
+        this._regionParent = value;
+    }
 
     protected fileManager: FileDOMManager;
     protected regionalSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
 
     protected regionKey: string;
-    protected rootElement: HTMLElement;
 
     constructor(data: RegionManagerData) {
 
@@ -42,7 +47,6 @@ export abstract class RegionManager {
         this.regionalSettings = data.regionalSettings;
 
         this.regionKey = data.regionKey;
-        this.rootElement = data.rootElement;
     }
 
     public getRegionData(): RegionManagerData {
@@ -56,7 +60,7 @@ export abstract class RegionManager {
             regionalSettings: this.regionalSettings,
 
             regionKey: this.regionKey,
-            rootElement: this.rootElement
+            rootElement: null
         };
     }
 
@@ -130,7 +134,7 @@ export abstract class RegionManager {
             this.domList.remove(obj);
         }
 
-        if (this.domList.length === 0) {
+        if (this.domList.length === 0 && this.fileManager !== null) {
             this.fileManager.removeRegion(this.regionKey);
         }
 
@@ -189,11 +193,7 @@ export abstract class RegionManager {
             }
         }
     }
-
-    public getRootRegionElement(): HTMLElement {
-        return this.rootElement;
-    }
-
+    
     public getID(): string {
         return this.regionKey;
     }
@@ -541,6 +541,7 @@ export abstract class RegionManager {
 
     public abstract renderRegionElementsToScreen(): void;
     public abstract exportRegionElementsToPDF(pdfParentElement: HTMLElement): void;
+    public abstract renderRegionElementsToLivePreview(parentElement: HTMLElement): void
 }
 
 
