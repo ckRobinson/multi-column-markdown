@@ -7,7 +7,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { MarkdownRenderChild, MarkdownRenderer } from "obsidian";
+import { MarkdownRenderChild, MarkdownRenderer, Workspace, WorkspaceLeaf } from "obsidian";
 import { Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, WidgetType } from "@codemirror/view";
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
@@ -22,6 +22,7 @@ import { DOMObject, DOMObjectTag } from "./dom_manager/domObject";
 import { RegionManager } from "./dom_manager/regional_managers/regionManager";
 import { getHeadingCollapseElement } from "./utilities/elementRenderTypeParser";
 import { SingleColumnRegionManager } from "./dom_manager/regional_managers/singleColumnRegionManager";
+import { AutoLayoutRegionManager } from "./dom_manager/regional_managers/autoLayoutRegionManager";
 
 export function getCMStatePlugin() {
     return multiColumnMarkdown_StateField
@@ -233,13 +234,15 @@ export class MultiColumnMarkdown_Widget extends WidgetType {
             rootElement: createDiv()
         }
 
-        if(this.regionSettings.autoLayout === true) {
-            // this.regionManager = new StandardMultiColumnRegionManager(a)
-        }
-        else if(this.regionSettings.numberOfColumns === 1) {
+        if(this.regionSettings.numberOfColumns === 1) {
 			
 			this.regionSettings = parseSingleColumnSettings(this.settingsText, this.regionSettings)
             this.regionManager = new SingleColumnRegionManager(regionData)
+        }
+        else if(this.regionSettings.autoLayout === true) {
+
+
+            this.regionManager = new AutoLayoutRegionManager(regionData)
         }
         else {
             this.regionManager = new StandardMultiColumnRegionManager(regionData)
@@ -251,9 +254,33 @@ export class MultiColumnMarkdown_Widget extends WidgetType {
 		el.className = "mcm-cm-preview";
 		// let multiColumnParent = el.createDiv()
 
-        if(this.regionManager) {
-            this.regionManager.renderRegionElementsToLivePreview(el);
+        // For situations where we need to know the rendered hight the element
+        // must be rendered onto the screen to get the info, even if only for a moment.
+        // Here we attempt to get a leaf from the app so we can briefly append
+        // our element, check any data if required, and the remove before returning
+        // the element to be rendered properly in the live preview.
+        let leaf: WorkspaceLeaf = null;
+        if(app) {
+            let leaves = app.workspace.getLeavesOfType("markdown");
+            if(leaves.length > 0) {
+                leaf = leaves[0];
+            }
         }
+
+        if(this.regionManager) {
+            
+            if(leaf) {
+                leaf.view.containerEl.appendChild(el);
+            }
+            
+            this.regionManager.renderRegionElementsToLivePreview(el);
+
+            if(leaf) {
+                leaf.view.containerEl.removeChild(el);
+            }
+        }
+
+
 		return el
 	}
 }
