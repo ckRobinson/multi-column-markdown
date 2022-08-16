@@ -1,32 +1,16 @@
 /*
- * Filename: /Users/cameron/Library/Mobile Documents/iCloud~md~obsidian/Documents/LegendKeeper/.obsidian/plugins/multi-column-markdown/src/cm6_livePreview.ts
- * Path: /Users/cameron/Library/Mobile Documents/iCloud~md~obsidian/Documents/LegendKeeper/.obsidian/plugins/multi-column-markdown
+ * Filename: multi-column-markdown/src/live_preview/cm6_livePreview.ts
  * Created Date: Monday, August 1st 2022, 1:51:16 pm
  * Author: Cameron Robinson
  * 
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { MarkdownRenderChild, MarkdownRenderer, Workspace, WorkspaceLeaf } from "obsidian";
 import { Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
-import { Decoration, DecorationSet, EditorView, WidgetType } from "@codemirror/view";
+import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
-import { ColumnLayout, getDefaultMultiColumnSettings, MultiColumnSettings, SingleColumnSize } from "./regionSettings";
-import { containsColSettingsTag, containsStartTag, findColSettingsTag, findEndOfCodeBlock, findEndTag, findStartTag } from "./utilities/textParser";
-import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from "./utilities/cssDefinitions";
-import { parseColumnSettings, parseSingleColumnSettings } from "./utilities/settingsParser";
-import { StandardMultiColumnRegionManager } from "./dom_manager/regional_managers/standardMultiColumnRegionManager";
-import { RegionManagerData } from "./dom_manager/regional_managers/regionManagerContainer";
-import { getUID } from "./utilities/utils";
-import { DOMObject, DOMObjectTag } from "./dom_manager/domObject";
-import { RegionManager } from "./dom_manager/regional_managers/regionManager";
-import { getHeadingCollapseElement } from "./utilities/elementRenderTypeParser";
-import { SingleColumnRegionManager } from "./dom_manager/regional_managers/singleColumnRegionManager";
-import { AutoLayoutRegionManager } from "./dom_manager/regional_managers/autoLayoutRegionManager";
-
-export function getCMStatePlugin() {
-    return multiColumnMarkdown_StateField
-}
+import { containsStartTag, findEndTag, findStartTag } from "../utilities/textParser";
+import { MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
 
 export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	create(state): DecorationSet {
@@ -149,7 +133,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 							startIndex,
 							endIndex,
 							Decoration.replace({
-								widget: new MultiColumnMarkdown_Widget(elementText),
+								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText),
 							})
 						);
                         generated = true;
@@ -211,102 +195,3 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	},
 });
 
-export class MultiColumnMarkdown_Widget extends WidgetType {
-
-	contentData: string;
-    tempParent: HTMLDivElement;
-    domList: DOMObject[] = []
-	settingsText: string
-    regionSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
-	regionManager: RegionManager
-	constructor(contentData: string) {
-		super()
-		this.contentData = contentData;
-
-        let settingsStartData = findColSettingsTag(this.contentData);
-        if(settingsStartData.found === true) {
-
-            let startofBlock = settingsStartData.startPosition;
-            let endOfStart = settingsStartData.endPosition;
-            
-            let endOfBlock = findEndOfCodeBlock(this.contentData.slice(endOfStart));
-            let endOfEnd = endOfBlock.endPosition;
-
-            this.settingsText = this.contentData.slice(startofBlock, endOfStart + endOfEnd)
-            this.contentData = this.contentData.replace(this.settingsText, "")
-
-            this.regionSettings = parseColumnSettings(this.settingsText)
-        }
-
-        this.tempParent = createDiv();
-
-        let elementMarkdownRenderer = new MarkdownRenderChild(this.tempParent);
-
-        MarkdownRenderer.renderMarkdown(this.contentData, this.tempParent, "", elementMarkdownRenderer)
-        let arr = Array.from(this.tempParent.children)
-        for(let i = 0; i < arr.length; i++) {
-            
-            this.domList.push(new DOMObject(arr[i] as HTMLElement, [""]))
-        }
-        
-
-        let regionData: RegionManagerData = {
-            domList: this.domList,
-            domObjectMap: new Map<string, DOMObject>(),
-            regionParent: createDiv(),
-            fileManager: null,
-            regionalSettings: this.regionSettings,
-            regionKey: getUID(),
-            rootElement: createDiv()
-        }
-
-        if(this.regionSettings.numberOfColumns === 1) {
-			
-			this.regionSettings = parseSingleColumnSettings(this.settingsText, this.regionSettings)
-            this.regionManager = new SingleColumnRegionManager(regionData)
-        }
-        else if(this.regionSettings.autoLayout === true) {
-
-
-            this.regionManager = new AutoLayoutRegionManager(regionData)
-        }
-        else {
-            this.regionManager = new StandardMultiColumnRegionManager(regionData)
-        }
-	}
-
-	toDOM() {
-		let el = document.createElement("div");
-		el.className = "mcm-cm-preview";
-		// let multiColumnParent = el.createDiv()
-
-        // For situations where we need to know the rendered hight the element
-        // must be rendered onto the screen to get the info, even if only for a moment.
-        // Here we attempt to get a leaf from the app so we can briefly append
-        // our element, check any data if required, and the remove before returning
-        // the element to be rendered properly in the live preview.
-        let leaf: WorkspaceLeaf = null;
-        if(app) {
-            let leaves = app.workspace.getLeavesOfType("markdown");
-            if(leaves.length > 0) {
-                leaf = leaves[0];
-            }
-        }
-
-        if(this.regionManager) {
-
-            if(leaf) {
-                leaf.view.containerEl.appendChild(el);
-            }
-            
-            this.regionManager.renderRegionElementsToLivePreview(el);
-
-            if(leaf) {
-                leaf.view.containerEl.removeChild(el);
-            }
-        }
-
-
-		return el
-	}
-}

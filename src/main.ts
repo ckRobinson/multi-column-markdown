@@ -16,10 +16,9 @@ import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObj
 import { getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
-import { multiColumnMarkdown_StateField } from './cm6_livePreview';
+import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
 
 export default class MultiColumnMarkdown extends Plugin {
-	// settings: SplitColumnMarkdownSettings;
 
     globalManager: GlobalDOMManager = new GlobalDOMManager();
 
