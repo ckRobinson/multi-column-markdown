@@ -13,8 +13,15 @@ import { Decoration, DecorationSet, EditorView, WidgetType } from "@codemirror/v
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
 import { ColumnLayout, getDefaultMultiColumnSettings, MultiColumnSettings, SingleColumnSize } from "./regionSettings";
 import { containsColSettingsTag, containsStartTag, findColSettingsTag, findEndOfCodeBlock, findEndTag, findStartTag } from "./utilities/textParser";
-import { MultiColumnStyleCSS } from "./utilities/cssDefinitions";
-import { parseColumnSettings } from "./utilities/settingsParser";
+import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from "./utilities/cssDefinitions";
+import { parseColumnSettings, parseSingleColumnSettings } from "./utilities/settingsParser";
+import { StandardMultiColumnRegionManager } from "./dom_manager/regional_managers/standardMultiColumnRegionManager";
+import { RegionManagerData } from "./dom_manager/regional_managers/regionManagerContainer";
+import { getUID } from "./utilities/utils";
+import { DOMObject, DOMObjectTag } from "./dom_manager/domObject";
+import { RegionManager } from "./dom_manager/regional_managers/regionManager";
+import { getHeadingCollapseElement } from "./utilities/elementRenderTypeParser";
+import { SingleColumnRegionManager } from "./dom_manager/regional_managers/singleColumnRegionManager";
 
 export function getCMStatePlugin() {
     return multiColumnMarkdown_StateField
@@ -27,10 +34,18 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	update(oldState: DecorationSet, transaction: Transaction): DecorationSet {
 		const builder = new RangeSetBuilder<Decoration>();
 
-        console.log("Updating CM6")
-
 		syntaxTree(transaction.state).iterate({
 			enter(node) {
+
+                let markdownLeaves = app.workspace.getLeavesOfType("markdown");
+                if(markdownLeaves.length === 0) {
+                    return;
+                }
+
+                if(markdownLeaves[0].getViewState().state.source === false) {
+                    console.debug("User disabled live preview.")
+                    return;
+                }
 
 				// We want to run on the whole file so we dont just look for a single token.
 				const tokenProps = node.type.prop<string>(tokenClassNodeProp);
@@ -47,7 +62,6 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					console.debug("No Start Tag")
 					return;
 				}
-				console.log("Props undefined and contains Start Tag: ", docText)
 
 				// We want to know where the user's cursor is, it can be
 				// selecting multiple regions of text as well so we need to know
@@ -72,7 +86,6 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 
 					// This text is the entire region data including the start and end tags.
 					let elementText = docText.slice(index, endIndex)
-					console.debug(elementText)
 
 					/**
 					 * Update our start offset and the working text of the file so our next 
@@ -81,7 +94,6 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					startIndexOffset = endIndex
 					workingFileText = docText.slice(endIndex);
 
-					console.debug("Remaining Text:\n", docText)
 
 					// Here we check if the cursor is in this specific region.
 					let cursorInRegion = false;
@@ -153,17 +165,13 @@ export class MultiColumnMarkdown_Widget extends WidgetType {
 
 	contentData: string;
     tempParent: HTMLDivElement;
-    renderedElements: Element[];
+    domList: DOMObject[] = []
+	settingsText: string
     regionSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
+	regionManager: RegionManager
 	constructor(contentData: string) {
 		super()
 		this.contentData = contentData;
-        this.tempParent = createDiv();
-
-        let elementMarkdownRenderer = new MarkdownRenderChild(this.tempParent);
-        MarkdownRenderer.renderMarkdown(this.contentData, this.tempParent, "", elementMarkdownRenderer)
-
-        this.renderedElements = Array.from(this.tempParent.children)
 
         let settingsStartData = findColSettingsTag(this.contentData);
         if(settingsStartData.found === true) {
@@ -174,38 +182,55 @@ export class MultiColumnMarkdown_Widget extends WidgetType {
             let endOfBlock = findEndOfCodeBlock(this.contentData.slice(endOfStart));
             let endOfEnd = endOfBlock.endPosition;
 
-            let settingsText = this.contentData.slice(startofBlock, endOfStart + endOfEnd)
+            this.settingsText = this.contentData.slice(startofBlock, endOfStart + endOfEnd)
+            this.contentData = this.contentData.replace(this.settingsText, "")
 
-            this.regionSettings = parseColumnSettings(settingsText)
+            this.regionSettings = parseColumnSettings(this.settingsText)
         }
 
+        this.tempParent = createDiv();
+
+        let elementMarkdownRenderer = new MarkdownRenderChild(this.tempParent);
+
+        MarkdownRenderer.renderMarkdown(this.contentData, this.tempParent, "", elementMarkdownRenderer)
+        let arr = Array.from(this.tempParent.children)
+        for(let i = 0; i < arr.length; i++) {
+            
+            this.domList.push(new DOMObject(arr[i] as HTMLElement, [""]))
+        }
+        
+
+        let regionData: RegionManagerData = {
+            domList: this.domList,
+            domObjectMap: new Map<string, DOMObject>(),
+            regionParent: createDiv(),
+            fileManager: null,
+            regionalSettings: this.regionSettings,
+            regionKey: getUID(),
+            rootElement: createDiv()
+        }
+
+        if(this.regionSettings.autoLayout === true) {
+            // this.regionManager = new StandardMultiColumnRegionManager(a)
+        }
+        else if(this.regionSettings.numberOfColumns === 1) {
+			
+			this.regionSettings = parseSingleColumnSettings(this.settingsText, this.regionSettings)
+            this.regionManager = new SingleColumnRegionManager(regionData)
+        }
+        else {
+            this.regionManager = new StandardMultiColumnRegionManager(regionData)
+        }
 	}
 
 	toDOM() {
 		let el = document.createElement("div");
-		el.className = "";
-		let multiColumnParent = el.createDiv(
-			{ cls: "multiColumnParent" }
-		)
+		el.className = "mcm-cm-preview";
+		// let multiColumnParent = el.createDiv()
 
-		// let columnContentDivs = this.getColumnContentDivs(settings, multiColumnParent);
-		if (this.regionSettings.drawShadow === true) {
-			multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
-		}
-		// for (let i = 0; i < columnContentDivs.length; i++) {
-		// 	if (settings.drawBorder === true) {
-		// 		columnContentDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
-		// 	}
-
-		// 	if (settings.drawShadow === true) {
-		// 		columnContentDivs[i].addClass(MultiColumnStyleCSS.ColumnShadow);
-		// 	}
-		// }
-
-		let elementMarkdownRenderer = new MarkdownRenderChild(el);
-		// MarkdownRenderer.renderMarkdown(this.contentData, columnContentDivs[0], "", elementMarkdownRenderer)
-		// MarkdownRenderer.renderMarkdown("```ad-info\n\n# test\n\n```", columnContentDivs[1], "", elementMarkdownRenderer)
-
-		return el;
+        if(this.regionManager) {
+            this.regionManager.renderRegionElementsToLivePreview(el);
+        }
+		return el
 	}
 }

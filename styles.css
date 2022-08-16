@@ -183,3 +183,10 @@
 .MultiColumn_OriginalElement + .MultiColumn_ClonedElement {
     display: none;
 }
+
+.mcm-cm-preview {
+    line-height: var(--lh);
+    white-space: normal;
+    word-break: keep-all;
+    word-wrap: normal;
+}
