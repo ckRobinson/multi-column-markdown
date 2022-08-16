@@ -1,52 +1,27 @@
-.singleColumnSmallLeft {
-    position: absolute;
+.singleColumnLeft {
     left: 10px;
+}
+.singleColumnRight {
+    right: 10px;
+}
+.singleColumnSmall {
     width: 25%;
 }
-
-.singleColumnMedLeft {
-    position: absolute;
-    left: 10px;
+.singleColumnMedium {
     width: 50%;
 }
-
-.singleColumnLargeLeft {
-    position: absolute;
-    left: 10px;
+.singleColumnLarge {
     width: 75%;
 }
 
-.singleColumnSmallCenter {
-    margin: auto;
-    width: 25%;
+.mcm-singlecol-layout-right {
+    justify-content: right;
 }
-
-.singleColumnMedCenter {
-    margin: auto;
-    width: 50%;
+.mcm-singlecol-layout-left {
+    justify-content: left;
 }
-
-.singleColumnLargeCenter {
-    margin: auto;
-    width: 75%;
-}
-
-.singleColumnSmallRight {
-    position: absolute;
-    right: 10px;
-    width: 25%;
-}
-
-.singleColumnMedRight {
-    position: absolute;
-    right: 10px;
-    width: 50%;
-}
-
-.singleColumnLargeRight {
-    position: absolute;
-    right: 10px;
-    width: 75%;
+.mcm-singlecol-layout-center {
+    justify-content: center;
 }
 
 .twoEqualColumns_Left {
