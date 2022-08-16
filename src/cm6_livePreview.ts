@@ -107,6 +107,19 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 						}
 					}
 
+                    if(transaction.selection){
+                        for (let i = 0; i < transaction.selection.ranges.length; i++) {
+
+                            let range = transaction.selection.ranges[i];
+                            if (range.from >= index && range.from <= endIndex || 
+                                range.to >= index && range.to <= endIndex) {
+    
+                                cursorInRegion = true;
+                                break;
+                            }
+                        }
+                    }
+
 					// At this point if the cursor isnt in the region we pass the data to the
 					// element to be rendered.
 					if(cursorInRegion === false) {
