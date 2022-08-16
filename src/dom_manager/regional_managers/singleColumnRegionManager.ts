@@ -38,6 +38,16 @@ export class SingleColumnRegionManager extends RegionManager {
             cls: MultiColumnLayoutCSS.RegionColumnContainerDiv,
         });
 
+        if(isLeftLayout(this.regionalSettings.columnPosition)){
+            multiColumnParent.addClass(MultiColumnLayoutCSS.SingleColumnLeftLayout)
+        }
+        else if(isRightLayout(this.regionalSettings.columnPosition)) {
+            multiColumnParent.addClass(MultiColumnLayoutCSS.SingleColumnRightLayout)
+        }
+        else {
+            multiColumnParent.addClass(MultiColumnLayoutCSS.SingleColumnCenterLayout)
+        }
+
         /**
          * Pass our parent div and settings to parser to create the required
          * column divs as children of the parent.
@@ -108,58 +118,25 @@ export class SingleColumnRegionManager extends RegionManager {
 
     createColumnContentDivs(multiColumnParent: HTMLDivElement): HTMLDivElement {
 
-        let contentDiv = null;
+        let contentDiv = multiColumnParent.createDiv({
+            cls: `${MultiColumnStyleCSS.ColumnContent}`
+        });
 
         if(isLeftLayout(this.regionalSettings.columnPosition)){
-            if(this.regionalSettings.columnSize === SingleColumnSize.small) {
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnSmallLeft}`
-                });
-            }
-            else if(this.regionalSettings.columnSize === SingleColumnSize.large) {
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnLargeLeft}`
-                });
-            }
-            else {
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnMedLeft}`
-                });
-            }
+            contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnLeft}`)
         }
         else if(isRightLayout(this.regionalSettings.columnPosition)) {
-            if(this.regionalSettings.columnSize === SingleColumnSize.small) {
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnSmallRight}`
-                });
-            }
-            else if(this.regionalSettings.columnSize === SingleColumnSize.large) {
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnLargeRight}`
-                });
-            }
-            else {
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnMedRight}`
-                });
-            }
+            contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnRight}`)
         }
-        else { // Default to center
-            if(this.regionalSettings.columnSize === SingleColumnSize.small) {
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnSmallCenter}`
-                });
-            }
-            else if(this.regionalSettings.columnSize === SingleColumnSize.large) {
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnLargeCenter}`
-                });
-            }
-            else {
-                contentDiv = multiColumnParent.createDiv({
-                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.SingleColumnMedCenter}`
-                });
-            }
+
+        if(this.regionalSettings.columnSize === SingleColumnSize.small) {
+            contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnSmall}`)
+        }
+        else if(this.regionalSettings.columnSize === SingleColumnSize.large) {
+            contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnLarge}`)
+        }
+        else {
+            contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnMed}`)
         }
 
         return contentDiv;

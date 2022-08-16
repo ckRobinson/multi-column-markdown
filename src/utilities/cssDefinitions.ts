@@ -19,17 +19,16 @@ export enum MultiColumnLayoutCSS {
 
     // ------------------------------------------------------ //
 
-    SingleColumnSmallLeft = "singleColumnSmallLeft",
-    SingleColumnMedLeft = "singleColumnMedLeft",
-    SingleColumnLargeLeft = "singleColumnLargeLeft",
+    SingleColumnSmall = "singleColumnSmall",
+    SingleColumnMed = "singleColumnMedium",
+    SingleColumnLarge = "singleColumnLarge",
 
-    SingleColumnSmallRight = "singleColumnSmallRight",
-    SingleColumnMedRight = "singleColumnMedRight",
-    SingleColumnLargeRight = "singleColumnLargeRight",
+    SingleColumnRight = "singleColumnRight",
+    SingleColumnLeft = "singleColumnLeft",
 
-    SingleColumnSmallCenter = "singleColumnSmallCenter",
-    SingleColumnMedCenter = "singleColumnMedCenter",
-    SingleColumnLargeCenter = "singleColumnLargeCenter",
+    SingleColumnLeftLayout = "mcm-singlecol-layout-left",
+    SingleColumnCenterLayout = "mcm-singlecol-layout-center",
+    SingleColumnRightLayout = "mcm-singlecol-layout-right",
 
     // ------------------------------------------------------ //
 
