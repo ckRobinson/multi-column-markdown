@@ -33,9 +33,17 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	},
 	update(oldState: DecorationSet, transaction: Transaction): DecorationSet {
 		const builder = new RangeSetBuilder<Decoration>();
+        let generated = false;
 
 		syntaxTree(transaction.state).iterate({
 			enter(node) {
+
+                // We only want to run the generation once per state change. If
+                // a previous node has sucessfully generated regions we ignore all
+                // other nodes in the state.
+                if(generated === true) {
+                    return;
+                }
 
                 let markdownLeaves = app.workspace.getLeavesOfType("markdown");
                 if(markdownLeaves.length === 0) {
@@ -57,9 +65,10 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 				 * When we have the while file we then get the entire doc text and check if it 
 				 * contains a MCM region so we know to break or not.
 				 */
-				let docText = transaction.state.doc.sliceString(node.from, node.to);
+                let docLength = transaction.state.doc.length
+                let docText = transaction.state.doc.sliceString(0, docLength);
 				if (containsStartTag(docText) === false) {
-					console.debug("No Start Tag")
+					console.debug("No start tag in document.")
 					return;
 				}
 
@@ -83,7 +92,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					 */
 					let index = startIndexOffset + startTagData.startPosition
 					let endIndex = startIndexOffset + endTagData.startPosition + 20 // Without the +20 will leave the end tag on the screen. // TODO: Calculate the lenght of the tag found instead of hardcoded.
-
+                    
 					// This text is the entire region data including the start and end tags.
 					let elementText = docText.slice(index, endIndex)
 
@@ -130,6 +139,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 								widget: new MultiColumnMarkdown_Widget(elementText),
 							})
 						);
+                        generated = true;
 					}
 
 					// ReCalculate additional start tags if there are more in document.
