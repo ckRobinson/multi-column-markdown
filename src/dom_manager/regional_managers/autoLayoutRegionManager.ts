@@ -179,7 +179,9 @@ export class AutoLayoutRegionManager extends RegionManager {
                         this.fixClonedCheckListButtons(regionElements[i] as TaskListDOMObject, true);
                     }
     
-                    if (element !== null && columnContentDivs[columnIndex]) {
+                    if (element !== null && 
+                        columnContentDivs[columnIndex] && 
+                        regionElements[i].tag !== DOMObjectTag.columnBreak) {
     
                         columnContentDivs[columnIndex].appendChild(element);
                         regionElements[i].elementRenderedHeight = element.clientHeight;
