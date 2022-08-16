@@ -112,12 +112,38 @@ export function containsEndTag(text: string): boolean {
 const COL_REGEX_STRS: string[] = ["=== *column-end *===",
                                   "=== *end-column *===",
                                   "=== *column-break *===",
-                                  "=== *break-column *==="];
+                                  "=== *break-column *===",
+                                  "--- *column-end *---",
+                                  "--- *end-column *---",
+                                  "--- *column-break *---",
+                                  "--- *break-column *---"];
 const COL_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < COL_REGEX_STRS.length; i++) {
     COL_REGEX_ARR.push(new RegExp(COL_REGEX_STRS[i]));
 }
 export function containsColEndTag(text: string): boolean {
+
+    let found = false;
+    for(let i = 0; i< COL_REGEX_ARR.length; i++) {
+
+        if(COL_REGEX_ARR[i].test(text)) {
+            found = true;
+            break;
+        }
+    }
+
+    return found;
+}
+
+const COL_ELEMENT_INNER_TEXT_REGEX_STRS: string[] = ["= *column-end *=",
+                                                    "= *end-column *=",
+                                                    "= *column-break *=",
+                                                    "= *break-column *="]
+const COL_ELEMENT_INNER_TEXT_REGEX_ARR: RegExp[] = [];
+for(let i = 0; i < COL_ELEMENT_INNER_TEXT_REGEX_STRS.length; i++) {
+    COL_REGEX_ARR.push(new RegExp(COL_ELEMENT_INNER_TEXT_REGEX_STRS[i]));
+}
+export function elInnerTextContainsColEndTag(text: string): boolean {
 
     let found = false;
     for(let i = 0; i< COL_REGEX_ARR.length; i++) {
