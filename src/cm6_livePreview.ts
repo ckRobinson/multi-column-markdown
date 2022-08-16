@@ -91,11 +91,11 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					 * For the region we found get the start and end position of the tags so we 
 					 * can slice it out of the document.
 					 */
-					let index = startIndexOffset + startTagData.startPosition
+					let startIndex = startIndexOffset + startTagData.startPosition
 					let endIndex = startIndexOffset + endTagData.startPosition + 20 // Without the +20 will leave the end tag on the screen. // TODO: Calculate the lenght of the tag found instead of hardcoded.
                     
 					// This text is the entire region data including the start and end tags.
-					let elementText = docText.slice(index, endIndex)
+					let elementText = docText.slice(startIndex, endIndex)
 
 					/**
 					 * Update our start offset and the working text of the file so our next 
@@ -109,21 +109,33 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					let cursorInRegion = false;
 					for (let i = 0; i < ranges.length; i++) {
 
+                        // TODO: Maybe look into limiting this to the second and second to last line
+                        // of the region as clicking right at the top or bottom of the region
+                        // swaps it to unrendered.
 						let range = ranges[i];
-						if (range.position >= index && range.position <= endIndex) {
-
+                        if(valueIsInRange(range.position, startIndex, endIndex) === true) {
 							cursorInRegion = true;
 							break;
-						}
+                        }
 					}
 
-                    if(transaction.selection){
+                    if(cursorInRegion === false && transaction.selection){
                         for (let i = 0; i < transaction.selection.ranges.length; i++) {
 
                             let range = transaction.selection.ranges[i];
-                            if (range.from >= index && range.from <= endIndex || 
-                                range.to >= index && range.to <= endIndex) {
-    
+
+                            // If either the start or end of the selection is within the
+                            // region range we do not render live preview.
+                            if(valueIsInRange(range.from, startIndex, endIndex) || 
+                               valueIsInRange(range.to, startIndex, endIndex)) {
+                                cursorInRegion = true;
+                                break;
+                            }
+
+                            // Or if the entire region is within the selection range
+                            // we do not render the live preview.
+                            if(valueIsInRange(startIndex, range.from, range.to) && 
+                               valueIsInRange(endIndex, range.from, range.to)) {
                                 cursorInRegion = true;
                                 break;
                             }
@@ -134,7 +146,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					// element to be rendered.
 					if(cursorInRegion === false) {
 						builder.add(
-							index,
+							startIndex,
 							endIndex,
 							Decoration.replace({
 								widget: new MultiColumnMarkdown_Widget(elementText),
@@ -179,6 +191,20 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 
 			return ranges;
 		}
+
+        function valueIsInRange(value: number, minVal: number, maxVal: number, inclusive: boolean = true) {
+
+            if(inclusive === true && (value === minVal || value === maxVal)) {
+                return true;
+            }
+
+            if (minVal < value && value < maxVal) {
+
+                return true;
+            }
+
+            return false;
+        }
 	},
 	provide(field: StateField<DecorationSet>): Extension {
 		return EditorView.decorations.from(field);
@@ -268,7 +294,7 @@ export class MultiColumnMarkdown_Widget extends WidgetType {
         }
 
         if(this.regionManager) {
-            
+
             if(leaf) {
                 leaf.view.containerEl.appendChild(el);
             }
