@@ -9,7 +9,7 @@
 import { MarkdownRenderChild, MarkdownRenderer, WorkspaceLeaf } from "obsidian";
 import { WidgetType } from "@codemirror/view";
 import { getDefaultMultiColumnSettings, MultiColumnSettings } from "../regionSettings";
-import { findColSettingsTag, findEndOfCodeBlock } from "../utilities/textParser";
+import { findSettingsCodeblock, findStartCodeblock } from "../utilities/textParser";
 import { parseColumnSettings, parseSingleColumnSettings } from "../utilities/settingsParser";
 import { StandardMultiColumnRegionManager } from "../dom_manager/regional_managers/standardMultiColumnRegionManager";
 import { RegionManagerData } from "../dom_manager/regional_managers/regionManagerContainer";
@@ -33,16 +33,14 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         this.contentData = contentData;
 
         // Find the settings defined in the content, if it exists.
-        let settingsStartData = findColSettingsTag(this.contentData);
+        // If the settings codeblock isnt defined attempt to get the region codeblock type.
+        let settingsStartData = findSettingsCodeblock(this.contentData);
+        if(settingsStartData.found === false) {
+            settingsStartData = findStartCodeblock(this.contentData);
+        }
         if (settingsStartData.found === true) {
 
-            let startofBlock = settingsStartData.startPosition;
-            let endOfStart = settingsStartData.endPosition;
-
-            let endOfBlock = findEndOfCodeBlock(this.contentData.slice(endOfStart));
-            let endOfEnd = endOfBlock.endPosition;
-
-            this.settingsText = this.contentData.slice(startofBlock, endOfStart + endOfEnd);
+            this.settingsText = this.contentData.slice(settingsStartData.startPosition, settingsStartData.endPosition);
             this.contentData = this.contentData.replace(this.settingsText, "");
 
             // Parse the settings, updating the default settings.

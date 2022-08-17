@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer } from 'obsidian';
+import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, MarkdownPostProcessorContext } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
 import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
@@ -17,6 +17,7 @@ import { getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
+import { parseColumnSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
 
 export default class MultiColumnMarkdown extends Plugin {
 
@@ -139,6 +140,128 @@ ${editor.getDoc().getSelection()}`
 
     setupMarkdownPostProcessor() {
 
+        this.registerMarkdownCodeBlockProcessor("start-multi-column", async (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+
+            console.log(el.classList);
+
+            // To determine what kind of view we are rendering in we need a markdown leaf.
+            // Really this should never return here since rendering is only done in markdown leaves.
+            let markdownLeaves = app.workspace.getLeavesOfType("markdown");
+            if(markdownLeaves.length === 0) {
+                return;
+            }
+
+            const sourcePath = ctx.sourcePath;
+
+            // Check the type of the leaf
+            let abstractFile = app.vault.getAbstractFileByPath(sourcePath);
+            let foundFileLeaf = false;
+            for(let i = 0; i < markdownLeaves.length; i++) {
+
+                if(markdownLeaves[i].getViewState().state.file !== abstractFile.name) {
+                    continue;
+                }
+                foundFileLeaf = true;
+
+                if(markdownLeaves[i].getViewState().state.mode === "source") {
+
+                    console.log("Viewing source");
+                    el.parentElement?.setAttr("style", "height: 0pt")
+                    el.parentElement?.removeClasses(Array.from(el.parentElement.classList));
+                }
+            }
+
+            // If we didnt find the file leaf return. Really should not ever happen.
+            if(foundFileLeaf === false) {
+                return;
+            }
+
+            let fileDOMManager = this.globalManager.getFileManager(sourcePath);
+            if(fileDOMManager === null) {
+                console.log("Found null DOM manager. Could not process multi-column markdown.")
+                return;
+            }
+            
+            // Set file to have start tag.
+            fileDOMManager.setHasStartTag();
+
+            // Get the info for our current context and then check
+            // if the entire text contains a start tag. If there is
+            // no start tag in the document we can just return and
+            // ignore the rest of the parsing.
+            let info = ctx.getSectionInfo(el);
+
+            /**
+             * We need the context info to properly parse so returning here 
+             * info is null. TODO: Set error in view if this occurs.
+             */
+            if(!info) {
+
+                return;
+            }
+
+            /** 
+             * Set up the current element to act as the parent for the 
+             * multi-column region.
+             */
+            el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
+            let renderErrorRegion = el.createDiv({
+                cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv}, ${MultiColumnStyleCSS.RegionErrorMessage}`,
+            });
+            let renderColumnRegion = el.createDiv({
+                cls: MultiColumnLayoutCSS.RegionContentContainerDiv
+            })
+
+            let regionKey = parseStartRegionCodeBlockID(source);
+            console.log(regionKey);
+            if(fileDOMManager.checkKeyExists(regionKey) === true) {
+
+                let { numberOfTags, keys } = multiColumnParser.countStartTags(info.text);
+
+                let numMatches = 0;
+                for(let i = 0; i < numberOfTags; i++) {
+
+                    // Because we checked if key exists one of these has to match.
+                    if(keys[i] === regionKey) {
+                        numMatches++;
+                    }
+                }
+
+                // We only want to display an error if there are more than 2 of the same id across
+                // the whole document. This prevents erros when obsidian reloads the whole document
+                // and there are two of the same key in the map.
+                if(numMatches >= 2) {
+                    if(regionKey === "") {
+                        renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                    }
+                    else {
+                        renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
+                    }
+                    return;
+                }
+            }
+            el.id = `MultiColumnID:${regionKey}`
+
+            let elementMarkdownRenderer = new MarkdownRenderChild(el);
+            fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
+            elementMarkdownRenderer.onunload = () => {
+                if(fileDOMManager) {
+
+                    fileDOMManager.removeRegion(regionKey);
+                }
+            };
+            ctx.addChild(elementMarkdownRenderer);
+
+            let regionalManager = fileDOMManager.getRegionalContainer(regionKey);
+            if(regionalManager !== null) {
+
+                let settings = parseColumnSettings(source)
+                console.log(settings);
+
+                regionalManager.setRegionSettings(source);
+            }
+        })
+
         this.registerMarkdownPostProcessor(async (el, ctx) => {
 
             const sourcePath = ctx.sourcePath;
@@ -173,11 +296,16 @@ ${editor.getDoc().getSelection()}`
                 return;
             }
 
+            let docString = info.text;
+            let docLines = docString.split("\n");
+
             /**
              * If we encounter a start tag on the document we set the flag to start
              * parsing the rest of the document.
              */
-            if(multiColumnParser.containsStartTag(el.textContent)) {
+            if(multiColumnParser.containsStartTag(el.textContent) || 
+               multiColumnParser.containsStartCodeBlock(docString)) {
+
                 fileDOMManager.setHasStartTag();
             }
 
@@ -194,7 +322,6 @@ ${editor.getDoc().getSelection()}`
              * Take the info provided and generate the required variables from 
              * the line start and end values.
              */
-            let docLines = info.text.split("\n");
             let linesAboveArray = docLines.slice(0, info.lineStart)
             let linesOfElement = docLines.slice(info.lineStart, info.lineEnd + 1);
             let linesBelowArray = docLines.slice(info.lineEnd + 1)
@@ -276,7 +403,7 @@ ${editor.getDoc().getSelection()}`
              * Check if any of the lines above us contain a start block, and if
              * so get the lines from our current element to the start block.
              */
-            let startBockAbove = multiColumnParser.getStartBlockAboveLine(linesAboveArray);
+            let startBockAbove = multiColumnParser.getStartBlockOrCodeblockAboveLine(linesAboveArray);
             if(startBockAbove === null) {
                 return;
             }

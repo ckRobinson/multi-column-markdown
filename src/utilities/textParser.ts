@@ -6,64 +6,51 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
+import { parseStartRegionCodeBlockID } from "./settingsParser";
+
 const START_REGEX_STRS = ["=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
-                          "=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?",
-                          "```multi-column-start",
-                          "```start-multi-column"]
+                          "=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?"]
 const START_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < START_REGEX_STRS.length; i++) {
     START_REGEX_ARR.push(new RegExp(START_REGEX_STRS[i]));
 }
 
 const START_REGEX_STRS_WHOLE_LINE = ["^=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?$",
-                                     "^=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?$",
-                                     "^```multi-column-start$",
-                                     "^```start-multi-column$"]
+                                     "^=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?$"]
 const START_REGEX_ARR_WHOLE_LINE: RegExp[] = [];
 for(let i = 0; i < START_REGEX_STRS_WHOLE_LINE.length; i++) {
     START_REGEX_ARR_WHOLE_LINE.push(new RegExp(START_REGEX_STRS_WHOLE_LINE[i]));
 }
 
 
-export function findStartTag(text: string): { found: boolean, startPosition: number } {
+export function findStartTag(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
 
     let found = false;
     let startPosition = -1;
+    let matchLength = 0;
     for(let i = 0; i< START_REGEX_ARR.length; i++) {
 
         if(START_REGEX_ARR[i].test(text)) {
             
-            // We found a match but is it an actual match or a false positive.
-            startPosition = text.search(START_REGEX_STRS[i])
-
-            // Take the text and get the line we found.
-            let line = ""
-            if(startPosition > 0) {
-
-                // If we arent at the very begining of the file we step back
-                // one character to see if we find a newline before this line.
-                let lines = text.slice(startPosition - 1).split("\n")
-
-                // if the last char before our match is a newline then we will
-                // end up with an empty string in index 0.
-                if(lines[0] === "" && lines.length > 1) {
-                    line = lines[1]
-                }
-            }
-            else {
-                line = text.slice(startPosition).split("\n")[0]
-            }
-
-            // now we recheck the regex to make sure the found line is 
-            // a true start tag.
-            if(START_REGEX_ARR_WHOLE_LINE[i].test(line)) {
+            let regexData = START_REGEX_ARR[i].exec(text)
+            if(regexData !== null && regexData.length > 0) {
                 found = true;
-                break;
+                startPosition = regexData.index
+                matchLength = regexData[0].length;
+
+                let line = text.slice(startPosition, startPosition + matchLength);
+                console.log(line)
+                if(START_REGEX_ARR_WHOLE_LINE[i].test(line)) {
+                    console.log("Line matches")
+                    found = true;
+                    break;
+                }
             }
         }
     }
+    let endPosition = startPosition + matchLength;
 
-    return { found, startPosition };
+    return { found, startPosition, endPosition, matchLength };
 }
 export function containsStartTag(text: string): boolean {
     return findStartTag(text).found
@@ -191,7 +178,8 @@ export function containsColSettingsTag(text: string): boolean {
 
     return found;
 }
-export function findColSettingsTag(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+
+export function findSettingsCodeblock(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
 
     let found = false;
     let startPosition = -1;
@@ -201,17 +189,72 @@ export function findColSettingsTag(text: string): { found: boolean, startPositio
 
         let regexData = COL_SETTINGS_REGEX_ARR[i].exec(text)
         if(regexData !== null && regexData.length > 0) {
+
             found = true;
             startPosition = regexData.index
             matchLength = regexData[0].length;
+            endPosition = startPosition + matchLength;
+
+            let remainingText = text.slice(endPosition)
+            regexData = CODEBLOCK_END_REGEX.exec(remainingText)
+            if(regexData !== null && regexData.length > 0) {
+
+                found = true;
+                endPosition += regexData.index + regexData[0].length 
+            }
+
+            console.log(text.slice(startPosition, endPosition))
             break;
         }
     }
-    endPosition = startPosition + matchLength;
 
     return { found, startPosition, endPosition, matchLength };
 }
 
+const START_CODEBLOCK_REGEX_ARR: RegExp[] = [
+"```multi-column-start",
+"```start-multi-column"
+].map((val) => {
+    return new RegExp(val);
+})
+export function findStartCodeblock(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+
+    let found = false;
+    let startPosition = -1;
+    let endPosition = -1
+    let matchLength = 0;
+    for(let i = 0; i< START_CODEBLOCK_REGEX_ARR.length; i++) {
+
+        let regexData = START_CODEBLOCK_REGEX_ARR[i].exec(text)
+        if(regexData !== null && regexData.length > 0) {
+
+            found = true;
+            startPosition = regexData.index
+            matchLength = regexData[0].length;
+            endPosition = startPosition + matchLength;
+
+            let remainingText = text.slice(endPosition)
+            regexData = CODEBLOCK_END_REGEX.exec(remainingText)
+            if(regexData !== null && regexData.length > 0) {
+
+                found = true;
+                endPosition += regexData.index + regexData[0].length 
+            }
+
+            console.log(text.slice(startPosition, endPosition))
+            break;
+        }
+    }
+
+    return { found, startPosition, endPosition, matchLength };
+}
+export function containsStartCodeBlock(text: string): boolean {
+    return findStartCodeblock(text).found
+}
+
+export function containsRegionStart(text: string): boolean {
+    return containsStartCodeBlock(text) || containsStartTag(text);
+}
 
 export function countStartTags(text: string): { numberOfTags: number, keys: string[] } {
 
@@ -241,6 +284,22 @@ export function countStartTags(text: string): { numberOfTags: number, keys: stri
     }
 
     return { numberOfTags: keys.length, keys };
+}
+
+export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[]): { 
+startBlockKey: string, 
+linesAboveArray: string[] } | null {
+
+    let startBlock = getStartBlockAboveLine(linesAboveArray);
+    if(startBlock !== null) {
+        return startBlock;
+    }
+
+    let codeBlock = getStartCodeBlockAboveLine(linesAboveArray)
+    if(codeBlock !== null) {
+        return codeBlock;
+    }
+    return null
 }
 
 /**
@@ -349,6 +408,68 @@ export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockK
     }
 
     return { startBlockKey, linesAboveArray };
+}
+
+export function getStartCodeBlockAboveLine(linesAboveArray: string[]): { 
+    startBlockKey: string, 
+    linesAboveArray: string[] } | null {
+    
+    let linesAboveStr = linesAboveArray.reduce((prev, current) => {
+        return prev + "\n"  + current;
+    }, "");
+
+    /*
+     * First thing we need to do is check if there are any end tags in the
+     * set of strings (which logically would close start tags and therefore
+     * the start tag it closes is not what we want). If there are we want to 
+     * slowly narrow down our set of strings until the last end tag is 
+     * removed. This makes it easier to find the closest open start tag 
+     * in the data.
+     */
+    let endTagSerachData = findEndTag(linesAboveStr);
+    while(endTagSerachData.found === true) {
+
+        // Get the index of where the first regex match in the
+        // string is. then we slice from 0 to index off of the string
+        // split it by newline, cut off the first line (which actually
+        // contains the regex) then reduce back down to a single string.
+        linesAboveStr = linesAboveStr.slice(endTagSerachData.endPosition);
+        endTagSerachData = findEndTag(linesAboveStr);
+    }
+
+    console.log(linesAboveStr);
+
+    let startCodeBlockData = findStartCodeblock(linesAboveStr);
+    let startBlockKey = parseStartRegionCodeBlockID(linesAboveStr)
+    console.log(startBlockKey);
+    
+    if(startCodeBlockData.found === false) {
+        return null;
+    }
+    else {
+
+        /**
+         * Now we know there is at least 1 start key left, however there
+         * may be multiple start keys if the user is not closing their
+         * blocks. We currently dont allow recusive splitting so we 
+         * want to get the last key in our remaining set. Same idea as
+         * above.
+         */
+        while(startCodeBlockData.found === true) {
+
+            // Get the index of where the first regex match in the
+            // string is. then we slice from 0 to index off of the string
+            // split it by newline, cut off the first line (which actually
+            // contains the regex) then reduce back down to a single string.
+
+            startBlockKey = parseStartRegionCodeBlockID(linesAboveStr)
+            linesAboveStr = linesAboveStr.slice(startCodeBlockData.endPosition);
+            startCodeBlockData = findStartCodeblock(linesAboveStr);
+        }
+    }
+
+    let retLinesAboveArray = linesAboveStr.split("\n");
+    return { startBlockKey, linesAboveArray: retLinesAboveArray };
 }
 
 export function getEndBlockBelow(linesBelow: string[]): string[] {

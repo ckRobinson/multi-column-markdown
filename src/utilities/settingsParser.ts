@@ -193,6 +193,31 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     return parsedSettings;
 }
 
+const CODEBLOCK_REGION_ID_REGEX_STRS = [
+    "id",
+    "region id"
+]
+const CODEBLOCK_REGION_ID_REGEX_ARR: RegExp[] = CODEBLOCK_REGION_ID_REGEX_STRS.map(convertStringToSettingsRegex).map((value) => {
+    return new RegExp(value, "i");
+});
+export function parseStartRegionCodeBlockID(settingsStr: string): string {
+
+    let codeBlockRegionID = ""
+    let settingsLines = settingsStr.split("\n");
+
+    for (let i = 0; i < settingsLines.length; i++) {
+        let settingsLine = settingsLines[i];
+
+        let settingsData = getSettingsDataFromKeys(settingsLine, CODEBLOCK_REGION_ID_REGEX_ARR);
+        if (settingsData !== null) {
+
+            codeBlockRegionID = settingsData
+        }
+    }
+
+    return codeBlockRegionID;
+}
+
 function parseForSingleColumnLocation(locationString: string): ColumnLayout{
 
     switch (locationString.toLowerCase().trim().replace(" ", "")) {

@@ -267,7 +267,7 @@ export class AutoLayoutRegionManager extends RegionManager {
         }
 
         let validColumns = true;
-        if(this.columnParent !== null && this.columnDivs !== null &&
+        if(this.columnParent !== null && this.columnDivs !== null && this.columnDivs !== undefined &&
             this.columnDivs.length === this.regionalSettings.numberOfColumns) {
 
             let totalHeight = this.domList.map((el: DOMObject, index: number) => { 

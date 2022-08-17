@@ -9,7 +9,7 @@
 import { Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
-import { containsStartTag, findEndTag, findStartTag } from "../utilities/textParser";
+import { containsRegionStart, containsStartTag, findEndTag, findStartCodeblock, findStartTag } from "../utilities/textParser";
 import { MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
 
 export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
@@ -35,6 +35,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                     return;
                 }
 
+                // TODO: Check other ways to get if source is live preview? editorLivePreviewField
                 if(markdownLeaves[0].getViewState().state.source === true) {
                     console.debug("User disabled live preview.")
                     return;
@@ -52,7 +53,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 				 */
                 let docLength = transaction.state.doc.length
                 let docText = transaction.state.doc.sliceString(0, docLength);
-				if (containsStartTag(docText) === false) {
+				if (containsRegionStart(docText) === false) {
 					console.debug("No start tag in document.")
 					return;
 				}
@@ -65,6 +66,10 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 				// Setup our loop to render the regions as MCM. 
 				let workingFileText = docText;
 				let startTagData = findStartTag(workingFileText);
+				if(startTagData.found === false) {
+					startTagData = findStartCodeblock(workingFileText);
+				}
+
 				let endTagData = findEndTag(workingFileText);
 				let loopIndex = 0;
 				let startIndexOffset = 0;
