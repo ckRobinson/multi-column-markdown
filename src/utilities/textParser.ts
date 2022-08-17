@@ -241,7 +241,6 @@ export function findStartCodeblock(text: string): { found: boolean, startPositio
                 endPosition += regexData.index + regexData[0].length 
             }
 
-            console.log(text.slice(startPosition, endPosition))
             break;
         }
     }
@@ -437,12 +436,9 @@ export function getStartCodeBlockAboveLine(linesAboveArray: string[]): {
         endTagSerachData = findEndTag(linesAboveStr);
     }
 
-    console.log(linesAboveStr);
-
     let startCodeBlockData = findStartCodeblock(linesAboveStr);
-    let startBlockKey = parseStartRegionCodeBlockID(linesAboveStr)
-    console.log(startBlockKey);
-    
+    let codeBlockText = linesAboveStr.slice(startCodeBlockData.startPosition, startCodeBlockData.endPosition)
+    let startBlockKey = ""    
     if(startCodeBlockData.found === false) {
         return null;
     }

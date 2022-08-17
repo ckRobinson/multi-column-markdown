@@ -142,8 +142,6 @@ ${editor.getDoc().getSelection()}`
 
         this.registerMarkdownCodeBlockProcessor("start-multi-column", async (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
 
-            console.log(el.classList);
-
             // To determine what kind of view we are rendering in we need a markdown leaf.
             // Really this should never return here since rendering is only done in markdown leaves.
             let markdownLeaves = app.workspace.getLeavesOfType("markdown");
@@ -154,18 +152,17 @@ ${editor.getDoc().getSelection()}`
             const sourcePath = ctx.sourcePath;
 
             // Check the type of the leaf
-            let abstractFile = app.vault.getAbstractFileByPath(sourcePath);
             let foundFileLeaf = false;
             for(let i = 0; i < markdownLeaves.length; i++) {
 
-                if(markdownLeaves[i].getViewState().state.file !== abstractFile.name) {
+                if(markdownLeaves[i].getViewState().state.file !== sourcePath) {
                     continue;
                 }
                 foundFileLeaf = true;
 
                 if(markdownLeaves[i].getViewState().state.mode === "source") {
 
-                    console.log("Viewing source");
+                    console.debug("Viewing source");
                     el.parentElement?.setAttr("style", "height: 0pt")
                     el.parentElement?.removeClasses(Array.from(el.parentElement.classList));
                 }
@@ -178,7 +175,6 @@ ${editor.getDoc().getSelection()}`
 
             let fileDOMManager = this.globalManager.getFileManager(sourcePath);
             if(fileDOMManager === null) {
-                console.log("Found null DOM manager. Could not process multi-column markdown.")
                 return;
             }
             
@@ -196,7 +192,6 @@ ${editor.getDoc().getSelection()}`
              * info is null. TODO: Set error in view if this occurs.
              */
             if(!info) {
-
                 return;
             }
 
