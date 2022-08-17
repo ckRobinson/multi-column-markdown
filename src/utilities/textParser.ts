@@ -438,6 +438,7 @@ export function getStartCodeBlockAboveLine(linesAboveArray: string[]): {
 
     let startCodeBlockData = findStartCodeblock(linesAboveStr);
     let codeBlockText = linesAboveStr.slice(startCodeBlockData.startPosition, startCodeBlockData.endPosition)
+
     let startBlockKey = ""    
     if(startCodeBlockData.found === false) {
         return null;
@@ -458,7 +459,9 @@ export function getStartCodeBlockAboveLine(linesAboveArray: string[]): {
             // split it by newline, cut off the first line (which actually
             // contains the regex) then reduce back down to a single string.
 
-            startBlockKey = parseStartRegionCodeBlockID(linesAboveStr)
+            codeBlockText = linesAboveStr.slice(startCodeBlockData.startPosition, startCodeBlockData.endPosition)
+            startBlockKey = parseStartRegionCodeBlockID(codeBlockText)
+
             linesAboveStr = linesAboveStr.slice(startCodeBlockData.endPosition);
             startCodeBlockData = findStartCodeblock(linesAboveStr);
         }
