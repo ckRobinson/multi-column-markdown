@@ -119,3 +119,36 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         return el;
     }
 }
+
+export class MultiColumnMarkdown_DefinedSettings_LivePreview_Widget extends WidgetType {
+
+    contentData: string;
+
+    constructor(contentData: string) {
+        super();
+
+        this.contentData = contentData;
+    }
+
+    toDOM() {
+        console.log("Rendering settings block")
+        // Create our element to hold all of the live preview elements.
+        let el = document.createElement("div");
+        el.className = "mcm-cm-settings-preview";
+
+        let labelDiv = el.createDiv()
+        let label = labelDiv.createSpan({
+            cls: "mcm-col-settings-preview"
+        })
+        label.textContent = "Column Settings:";
+
+        let list = el.createEl("ul")
+        let lines = this.contentData.split("\n")
+        for(let i = 1; i < lines.length - 1; i++) {
+            let item = list.createEl("li")
+            item.textContent = lines[i]
+        }
+
+        return el;
+    }
+}
