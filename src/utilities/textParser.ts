@@ -39,9 +39,7 @@ export function findStartTag(text: string): { found: boolean, startPosition: num
                 matchLength = regexData[0].length;
 
                 let line = text.slice(startPosition, startPosition + matchLength);
-                console.log(line)
                 if(START_REGEX_ARR_WHOLE_LINE[i].test(line)) {
-                    console.log("Line matches")
                     found = true;
                     break;
                 }
@@ -202,8 +200,6 @@ export function findSettingsCodeblock(text: string): { found: boolean, startPosi
                 found = true;
                 endPosition += regexData.index + regexData[0].length 
             }
-
-            console.log(text.slice(startPosition, endPosition))
             break;
         }
     }

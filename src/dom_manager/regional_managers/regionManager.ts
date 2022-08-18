@@ -437,7 +437,7 @@ export abstract class RegionManager {
      * @param multiColumnParent The parent object that the column divs will be created under.
      * @returns The list of column divs created under the passed parent element.
      */
-     getColumnContentDivs(settings: MultiColumnSettings, multiColumnParent: HTMLDivElement): HTMLDivElement[] {
+    getColumnContentDivs(settings: MultiColumnSettings, multiColumnParent: HTMLDivElement): HTMLDivElement[] {
 
         let columnContentDivs: HTMLDivElement[] = []
         if(settings.numberOfColumns === 2) {
@@ -494,7 +494,6 @@ export abstract class RegionManager {
 
                 case(ColumnLayout.left):
                 case(ColumnLayout.first):
-                    console.log("Setting up 3 columns.")
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyLeft_LeftCol}`
                     }));
