@@ -9,8 +9,8 @@
 import { Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
-import { containsRegionStart, containsStartTag, findEndTag, findStartCodeblock, findStartTag } from "../utilities/textParser";
-import { MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
+import { containsRegionStart, findEndTag, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
+import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
 
 export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	create(state): DecorationSet {
@@ -73,8 +73,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 				let endTagData = findEndTag(workingFileText);
 				let loopIndex = 0;
 				let startIndexOffset = 0;
-				while (startTagData.found === true && endTagData.found === true && loopIndex < 100) {
-
+				while (startTagData.found === true && endTagData.found === true) {
 
 					/**
 					 * For the region we found get the start and end position of the tags so we 
@@ -95,41 +94,38 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 
 
 					// Here we check if the cursor is in this specific region.
-					let cursorInRegion = false;
-					for (let i = 0; i < ranges.length; i++) {
+					let cursorInRegion = checkCursorInRegion(startIndex, endIndex, ranges);
+					if(cursorInRegion === true) {
+						
+						// If the cursor is within the region we then need to know if
+						// it is within our settings block (if it exists.)
+						let settingsStartData = findStartCodeblock(elementText);
+						if(settingsStartData.found === false) {
+							settingsStartData = findSettingsCodeblock(elementText);
+						}
 
-                        // TODO: Maybe look into limiting this to the second and second to last line
-                        // of the region as clicking right at the top or bottom of the region
-                        // swaps it to unrendered.
-						let range = ranges[i];
-                        if(valueIsInRange(range.position, startIndex, endIndex) === true) {
-							cursorInRegion = true;
-							break;
-                        }
+						if(settingsStartData.found === true) {
+
+							// Since the settings block exists check if the cursor is within that region.
+							let codeblockStartIndex = startIndex + settingsStartData.startPosition;
+							let codeblockEndIndex = startIndex + settingsStartData.endPosition;
+							let settingsText = docText.slice(codeblockStartIndex, codeblockEndIndex )
+
+							let cursorInCodeblock = checkCursorInRegion(codeblockStartIndex, codeblockEndIndex, ranges);
+							if(cursorInCodeblock === false) {
+	
+								// If the cursor is not within the region we pass the data to the
+								// settings view so it can be displayed in the region.
+								builder.add(
+									codeblockStartIndex,
+									codeblockEndIndex + 1,
+									Decoration.replace({
+										widget: new MultiColumnMarkdown_DefinedSettings_LivePreview_Widget(settingsText),
+									})
+								);
+							}
+						}						
 					}
-
-                    if(cursorInRegion === false && transaction.selection){
-                        for (let i = 0; i < transaction.selection.ranges.length; i++) {
-
-                            let range = transaction.selection.ranges[i];
-
-                            // If either the start or end of the selection is within the
-                            // region range we do not render live preview.
-                            if(valueIsInRange(range.from, startIndex, endIndex) || 
-                               valueIsInRange(range.to, startIndex, endIndex)) {
-                                cursorInRegion = true;
-                                break;
-                            }
-
-                            // Or if the entire region is within the selection range
-                            // we do not render the live preview.
-                            if(valueIsInRange(startIndex, range.from, range.to) && 
-                               valueIsInRange(endIndex, range.from, range.to)) {
-                                cursorInRegion = true;
-                                break;
-                            }
-                        }
-                    }
 
 					// At this point if the cursor isnt in the region we pass the data to the
 					// element to be rendered.
@@ -141,8 +137,8 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText),
 							})
 						);
-                        generated = true;
 					}
+					generated = true;
 
 					// ReCalculate additional start tags if there are more in document.
 					startTagData = findStartTag(workingFileText);
@@ -152,9 +148,10 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 
 					endTagData = findEndTag(workingFileText);
 					loopIndex++;
-				}
-				if(loopIndex > 75) {
-					console.warn("Potential issue with rendering Multi-Column Markdown live preview regions. If problem persists please file a bug report with developer.")
+					if(loopIndex > 100) {
+						console.warn("Potential issue with rendering Multi-Column Markdown live preview regions. If problem persists please file a bug report with developer.")
+						break;
+					}
 				}
 			},
 		});
@@ -198,6 +195,49 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 
             return false;
         }
+
+		function checkCursorInRegion(startIndex: number,
+								endIndex: number, 
+								ranges: { line: Line, position: number }[] ): boolean {
+
+			let cursorInRegion = false;
+			for (let i = 0; i < ranges.length; i++) {
+
+				// TODO: Maybe look into limiting this to the second and second to last line
+				// of the region as clicking right at the top or bottom of the region
+				// swaps it to unrendered.
+				let range = ranges[i];
+				if(valueIsInRange(range.position, startIndex, endIndex) === true) {
+					cursorInRegion = true;
+					break;
+				}
+			}
+
+			if(cursorInRegion === false && transaction.selection){
+				for (let i = 0; i < transaction.selection.ranges.length; i++) {
+
+					let range = transaction.selection.ranges[i];
+
+					// If either the start or end of the selection is within the
+					// region range we do not render live preview.
+					if(valueIsInRange(range.from, startIndex, endIndex) || 
+					   valueIsInRange(range.to, startIndex, endIndex)) {
+						cursorInRegion = true;
+						break;
+					}
+
+					// Or if the entire region is within the selection range
+					// we do not render the live preview.
+					if(valueIsInRange(startIndex, range.from, range.to) && 
+					   valueIsInRange(endIndex, range.from, range.to)) {
+						cursorInRegion = true;
+						break;
+					}
+				}
+			}
+
+			return cursorInRegion;
+		}
 	},
 	provide(field: StateField<DecorationSet>): Extension {
 		return EditorView.decorations.from(field);
