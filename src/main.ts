@@ -60,7 +60,7 @@ Largest Column: standard
 
 
 
-=== end-column ===
+--- column-end ---
 
 
 
