@@ -28,7 +28,7 @@ export abstract class RegionManager {
     public get regionParent(): HTMLElement {
         return this._regionParent;
     }
-    protected set regionParent(value: HTMLElement) {
+    public set regionParent(value: HTMLElement) {
         this._regionParent = value;
     }
 
