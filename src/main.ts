@@ -71,7 +71,33 @@ ${editor.getDoc().getSelection()}`
                      * 
                      * Get all of the lines of the document split by newlines.
                      */
-                    let lines = editor.getRange({ line: 0, ch: 0 }, { line: editor.getDoc().lineCount(), ch: 0}).split("\n");
+                    let docText = editor.getRange({ line: 0, ch: 0 }, { line: editor.getDoc().lineCount(), ch: 0});
+                    let lines = docText.split("\n");
+
+                    let startCodeblock = multiColumnParser.findStartCodeblock(docText);
+                    let lineOffset = 0;
+                    let numCodeblocksUpdated = 0;
+                    while(startCodeblock.found === true) {
+
+                        let startReplaceLines = (docText.slice(0, startCodeblock.startPosition).split("\n").length - 1) + lineOffset; // -1 to Zero index the replace line
+
+                        let settingsText = docText.slice(startCodeblock.startPosition, startCodeblock.endPosition);
+                        let settingsID = parseStartRegionCodeBlockID(settingsText);
+
+                        if(settingsID === "") {
+
+                            let replacementText = editor.getRange({ line: startReplaceLines, ch: 0 }, { line: startReplaceLines, ch: startCodeblock.matchLength}) + `\nID: ID_${getUID(4)}`
+                            editor.replaceRange(replacementText, { line: startReplaceLines, ch: 0 }, 
+                                                                 { line: startReplaceLines, ch: startCodeblock.matchLength});
+
+                            startReplaceLines += 1; // we added a line to the doc so update our offset.
+                            numCodeblocksUpdated += 1;
+                        }
+                        lineOffset = startReplaceLines
+
+                        docText = docText.slice(startCodeblock.startPosition + startCodeblock.matchLength);
+                        startCodeblock = multiColumnParser.findStartCodeblock(docText);
+                    }
 
                     /**
                      * Loop through all of the lines checking if the line is a 
@@ -88,7 +114,7 @@ ${editor.getDoc().getSelection()}`
                         }
                     }                    
 
-                    if(linesWithoutIDs.length === 0) {
+                    if(linesWithoutIDs.length === 0 && numCodeblocksUpdated === 0) {
                         new Notice ("Found 0 missing IDs in the current document.");
                         return;
                     }
@@ -110,7 +136,8 @@ ${editor.getDoc().getSelection()}`
                         editor.replaceRange(text, { line: linesWithoutIDs[i], ch: 0 }, 
                                                   { line: linesWithoutIDs[i], ch: originalText.length});
                     }
-                    new Notice (`Replaced ${linesWithoutIDs.length} missing ID(s) in the current document.`);
+
+                    new Notice (`Replaced ${linesWithoutIDs.length + numCodeblocksUpdated} missing ID(s) in the current document.`);
                 } catch (e) {
                     new Notice(
                         "Encountered an error addign IDs to multi-column regions. Please try again later."
