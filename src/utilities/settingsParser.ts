@@ -75,6 +75,12 @@ const AUTO_LAYOUT_REGEX_ARR: RegExp[] = AUTO_LAYOUT_SETTING_STRS.map(convertStri
     return new RegExp(value, "i");
 });
 
+const COLUMN_SPACING_REGEX_ARR: RegExp[] = [
+    "column spacing",
+].map((value) => {
+    return new RegExp(convertStringToSettingsRegex(value), "i");
+});
+
 /**
  * This function searches the settings string through each regex option. If one of the regex
  * values match, it returns the first group found by the regex. This is depended on proper
@@ -188,9 +194,65 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
                 parsedSettings.autoLayout = true
             }
         }
+
+        settingsData = getSettingsDataFromKeys(settingsLine, COLUMN_SPACING_REGEX_ARR);
+        if(settingsData !== null) {
+
+            let parsed = getLengthUnit(settingsData.trim());
+            let spacingStr = "";
+
+            if(parsed.isValid) {
+
+                let noUnitsStr = settingsData.replace(parsed.unitStr, "").trim();
+                let noUnitsNum = parseInt(noUnitsStr);
+                if(isNaN(noUnitsNum) === false) {
+
+                    spacingStr = `${noUnitsStr}${parsed.unitStr}`
+                }
+            }
+            else {
+                
+                let noUnitsNum = parseInt(settingsData.trim());
+                if(isNaN(noUnitsNum) === false) {
+
+                    spacingStr = `${noUnitsNum}pt`
+                }
+            }
+
+            parsedSettings.columnSpacing = spacingStr;
+        }
     }
 
     return parsedSettings;
+}
+
+function getLengthUnit(lengthStr: string): { isValid: boolean, unitStr: string } {
+
+    let lastChar = lengthStr.slice(lengthStr.length - 1);
+    let lastTwoChars = lengthStr.slice(lengthStr.length - 2);
+
+    let unitStr = ""
+    let isValid = false;
+    if(lastChar === "%") {
+        unitStr = lastChar;
+        isValid = true;
+    }
+    else if(lastTwoChars === "cm" ||
+            lastTwoChars === "mm" ||
+            lastTwoChars === "in" ||
+            lastTwoChars === "px" ||
+            lastTwoChars === "pt" ||
+            lastTwoChars === "pc" ||
+            lastTwoChars === "em" ||
+            lastTwoChars === "ex" ||
+            lastTwoChars === "ch" ||
+            lastTwoChars === "vw" ||
+            lastTwoChars === "vh" ) {
+        unitStr = lastTwoChars;
+        isValid = true;
+    }
+
+    return { isValid: isValid, unitStr: unitStr }
 }
 
 const CODEBLOCK_REGION_ID_REGEX_STRS = [
