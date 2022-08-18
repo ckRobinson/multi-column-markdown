@@ -7,7 +7,7 @@
  */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout } from "../../regionSettings";
+import { MultiColumnSettings, ContentOverflowType } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
@@ -94,6 +94,14 @@ export class StandardMultiColumnRegionManager extends RegionManager {
                 let element = createDiv({
                     cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
                 });
+
+                if(settings.contentOverflow === ContentOverflowType.hidden) {
+                    element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden)
+                }
+                else {
+                    element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll)
+                }
+
                 regionElements[i].elementContainer = element;
 
                 // Otherwise we just make a copy of the original element to display.

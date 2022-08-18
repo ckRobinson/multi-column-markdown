@@ -168,3 +168,11 @@
     height: 0pt !important; 
     padding: 0pt !important;
 }
+
+.mcm-content-overflow-hidden {
+    overflow-x: hidden;
+}
+
+.mcm-content-overflow-auto-scroll {
+    overflow-x: auto;
+}

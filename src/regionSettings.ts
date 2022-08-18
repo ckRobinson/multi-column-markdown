@@ -42,6 +42,11 @@ export enum SingleColumnSize {
     large
 }
 
+export enum ContentOverflowType {
+    scroll,
+    hidden
+}
+
 export type MultiColumnSettings = {
     numberOfColumns: number,
     columnLayout: ColumnLayout,
@@ -50,7 +55,8 @@ export type MultiColumnSettings = {
     autoLayout: boolean
     columnSize: SingleColumnSize,
     columnPosition: ColumnLayout,
-    columnSpacing: string
+    columnSpacing: string,
+    contentOverflow: ContentOverflowType
 }
 
 export function getDefaultMultiColumnSettings(): MultiColumnSettings {
@@ -63,6 +69,7 @@ export function getDefaultMultiColumnSettings(): MultiColumnSettings {
         autoLayout: false,
         columnSize: SingleColumnSize.medium,
         columnPosition: ColumnLayout.standard,
-        columnSpacing: ""
+        columnSpacing: "",
+        contentOverflow: ContentOverflowType.scroll
     }
 }
