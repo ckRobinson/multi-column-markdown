@@ -122,13 +122,6 @@ export class SingleColumnRegionManager extends RegionManager {
             cls: `${MultiColumnStyleCSS.ColumnContent}`
         });
 
-        if(isLeftLayout(this.regionalSettings.columnPosition)){
-            contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnLeft}`)
-        }
-        else if(isRightLayout(this.regionalSettings.columnPosition)) {
-            contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnRight}`)
-        }
-
         if(this.regionalSettings.columnSize === SingleColumnSize.small) {
             contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnSmall}`)
         }

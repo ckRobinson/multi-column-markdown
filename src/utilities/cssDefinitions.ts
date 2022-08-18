@@ -8,26 +8,22 @@
 
 export enum MultiColumnLayoutCSS {
 
-    RegionRootContainerDiv = "multiColumnContainer",
-    RegionErrorContainerDiv = "multiColumnErrorContainer",
-    RegionContentContainerDiv = "RenderColRegion",
-    RegionColumnContainerDiv = "multiColumnParent",
-    RegionColumnContent = "columnContent",
-    ColumnDualElementContainer = "MultiColumn_ElementContainer",
-    OriginalElementType = "MultiColumn_OriginalElement",
-    ClonedElementType = "MultiColumn_ClonedElement",
+    RegionRootContainerDiv = "mcm-column-root-container",
+    RegionErrorContainerDiv = "mcm-column-error-region-wrapper",
+    RegionContentContainerDiv = "mcm-column-region-wrapper",
+    RegionColumnContainerDiv = "mcm-column-parent-container",
+    ColumnDualElementContainer = "mcm-column-element-wrapper",
+    OriginalElementType = "mcm-original-column-element",
+    ClonedElementType = "mcm-cloned-column-element",
 
     ContentOverflowAutoScroll = "mcm-content-overflow-auto-scroll",
     ContentOverflowHidden = "mcm-content-overflow-hidden",
 
     // ------------------------------------------------------ //
 
-    SingleColumnSmall = "singleColumnSmall",
-    SingleColumnMed = "singleColumnMedium",
-    SingleColumnLarge = "singleColumnLarge",
-
-    SingleColumnRight = "singleColumnRight",
-    SingleColumnLeft = "singleColumnLeft",
+    SingleColumnSmall = "mcm-single-column-small",
+    SingleColumnMed = "mcm-single-column-medium",
+    SingleColumnLarge = "mcm-single-column-large",
 
     SingleColumnLeftLayout = "mcm-singlecol-layout-left",
     SingleColumnCenterLayout = "mcm-singlecol-layout-center",
@@ -35,43 +31,28 @@ export enum MultiColumnLayoutCSS {
 
     // ------------------------------------------------------ //
 
-    TwoEqualColumn_LeftCol = "twoEqualColumns_Left",
-    TwoEqualColumn_RightCol = "twoEqualColumns_Right",
+    TwoEqualColumns = "mcm-two-equal-columns",
 
-    TwoColumnHeavyRight_LeftCol = "twoColumnsHeavyRight_Left",
-    TwoColumnHeavyRight_RightCol = "twoColumnsHeavyRight_Right",
-
-    TwoColumnHeavyLeft_LeftCol = "twoColumnsHeavyLeft_Left",
-    TwoColumnHeavyLeft_RightCol = "twoColumnsHeavyLeft_Right",
+    TwoColumnSmall = "mcm-two-column-small",
+    TwoColumnLarge = "mcm-two-column-large",
 
     // ------------------------------------------------------ //
 
-    ThreeColumnsStandard_LeftCol = "threeEqualColumns_Left",
-    ThreeColumnsStandard_MiddleCol = "threeEqualColumns_Middle",
-    ThreeColumnsStandard_RightCol = "threeEqualColumns_Right",
+    ThreeEqualColumns = "mcm-three-equal-columns",
 
-    ThreeColumnsHeavyLeft_LeftCol = "threeColumnsHeavyLeft_Left",
-    ThreeColumnsHeavyLeft_MiddleCol = "threeColumnsHeavyLeft_Middle",
-    ThreeColumnsHeavyLeft_RightCol = "threeColumnsHeavyLeft_Right",
-
-    ThreeColumnsHeavyMiddle_LeftCol = "threeColumnsHeavyMiddle_Left",
-    ThreeColumnsHeavyMiddle_MiddleCol = "threeColumnsHeavyMiddle_Middle",
-    ThreeColumnsHeavyMiddle_RightCol = "threeColumnsHeavyMiddle_Right",
-
-    ThreeColumnsHeavyRight_LeftCol = "threeColumnsHeavyRight_Left",
-    ThreeColumnsHeavyRight_MiddleCol = "threeColumnsHeavyRight_Middle",
-    ThreeColumnsHeavyRight_RightCol = "threeColumnsHeavyRight_Right",
+    ThreeColumn_Large = "mcm-three-column-large",
+    ThreeColumn_Small = "mcm-three-column-small",
 }
 
 export enum MultiColumnStyleCSS {
 
-    RegionErrorMessage = "multiColumnErrorMessage",
-    RegionSettings = "multiColumnSettings",
-    RegionContent = "multiColumnContent",
-    RegionEndTag = "multiColumnRegionEndTag",
-    ColumnEndTag = "multiColumnBreak",
-    RegionShadow = "multiColumnParentShadow",
-    ColumnShadow = "columnShadow",
-    ColumnBorder = "columnBorder",
-    ColumnContent = "columnContent"
+    RegionErrorMessage = "mcm-column-error-message",
+    RegionSettings = "mcm-column-settings-wrapper",
+    RegionContent = "mcm-column-content-wrapper",
+    RegionEndTag = "mcm-column-end-tag-wrapper",
+    ColumnEndTag = "mcm-column-break-tag-wrapper",
+    RegionShadow = "mcm-region-shadow",
+    ColumnShadow = "mcm-column-shadow",
+    ColumnBorder = "mcm-column-border",
+    ColumnContent = "mcm-column-div"
 }

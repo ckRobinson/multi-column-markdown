@@ -454,28 +454,28 @@ export abstract class RegionManager {
                 case(ColumnLayout.center):
                 case(ColumnLayout.third):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumn_LeftCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumns}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumn_RightCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumns}`
                     }));
                     break;
 
                 case(ColumnLayout.left):
                 case(ColumnLayout.first):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyLeft_LeftCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnLarge}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyLeft_RightCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnSmall}`
                     }));
                     break;
 
@@ -483,14 +483,14 @@ export abstract class RegionManager {
                 case(ColumnLayout.second):
                 case(ColumnLayout.last):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyRight_LeftCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnSmall}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnHeavyRight_RightCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnLarge}`
                     }));
                     break;
             }
@@ -500,42 +500,42 @@ export abstract class RegionManager {
             switch(settings.columnLayout) {
                 case(ColumnLayout.standard):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsStandard_LeftCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsStandard_MiddleCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsStandard_RightCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
                     }));
                     break;
 
                 case(ColumnLayout.left):
                 case(ColumnLayout.first):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyLeft_LeftCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyLeft_MiddleCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyLeft_RightCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
                     }));
                     break;
 
@@ -543,21 +543,21 @@ export abstract class RegionManager {
                 case(ColumnLayout.center):
                 case(ColumnLayout.second):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyMiddle_LeftCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyMiddle_MiddleCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyMiddle_RightCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
                     }));
                     break;
 
@@ -565,21 +565,21 @@ export abstract class RegionManager {
                 case(ColumnLayout.third):
                 case(ColumnLayout.last):
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyRight_LeftCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyRight_MiddleCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
                         attr: {"style": styleStr}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumnsHeavyRight_RightCol}`
+                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
                     }));
                     break;
             }

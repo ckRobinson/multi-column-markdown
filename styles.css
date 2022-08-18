@@ -1,18 +1,20 @@
-.singleColumnLeft {
+.mcm-single-column-layout-left {
     left: 10px;
 }
-.singleColumnRight {
+.mcm-single-column-layout-right {
     right: 10px;
 }
-.singleColumnSmall {
+.mcm-single-column-small {
     width: 25%;
 }
-.singleColumnMedium {
+.mcm-single-column-medium {
     width: 50%;
 }
-.singleColumnLarge {
+.mcm-single-column-large {
     width: 75%;
 }
+
+/* ----------------------------------- */
 
 .mcm-singlecol-layout-right {
     justify-content: right;
@@ -24,97 +26,68 @@
     justify-content: center;
 }
 
-.twoEqualColumns_Left {
-    width: 49.75%;
-}
+/* ----------------------------------- */
 
 .mcm-column-spacer {
     margin-inline: 0.25%;
 }
 
-.twoEqualColumns_Right {
+/* ----------------------------------- */
+
+.mcm-two-equal-columns {
     width: 49.75%;
 }
 
-.twoColumnsHeavyLeft_Left {
-    width: 66.75%;
-}
-.twoColumnsHeavyLeft_Right {
-    width: 32.75%;
-}
-
-.twoColumnsHeavyRight_Left {
-    width: 32.75%;
-}
-.twoColumnsHeavyRight_Right {
+.mcm-two-column-large {
     width: 66.75%;
 }
 
-.threeEqualColumns_Left {
+.mcm-two-column-small {
     width: 32.75%;
 }
-.threeEqualColumns_Middle {
-    width: 32.5%;
-}
-.threeEqualColumns_Right {
-    width: 33.75%;
+
+/* ----------------------------------- */
+
+.mcm-three-equal-columns {
+    width: 32.75%;
 }
 
-.threeColumnsHeavyLeft_Left {
+/* ----------------------------------- */
+
+.mcm-three-column-large {
     width: 49.75%;
 }
-.threeColumnsHeavyLeft_Middle {
+.mcm-three-column-small {
     width: 24.5%;
 }
-.threeColumnsHeavyLeft_Right {
-    width: 24.75%;
-}
 
-.threeColumnsHeavyMiddle_Left {
-    width: 24.75%;
-}
-.threeColumnsHeavyMiddle_Middle {
-    width: 49.5%;
-}
-.threeColumnsHeavyMiddle_Right {
-    width: 24.75%;
-}
+/* ----------------------------------- */
 
-.threeColumnsHeavyRight_Left {
-    width: 24.75%;
-}
-.threeColumnsHeavyRight_Middle {
-    width: 24.5%;
-}
-.threeColumnsHeavyRight_Right {
-    width: 49.75%;
-}
-
-.columnContent {
+.mcm-column-div {
     padding-inline: 10px;
 }
 
-.columnBorder {
+.mcm-column-border {
     border: grey;
     border-style: solid;
     border-width: 0.5px;
 }
 
-.columnShadow {
+.mcm-column-shadow {
     box-shadow: 0 0.2rem 0.5rem var(--background-modifier-box-shadow);
 }
 
-.multiColumnErrorMessage {
+.mcm-column-error-message {
     margin-bottom: 10px;
-    color: #dc3545;
+    color: var(--text-error);
     text-align: center;
 }
 
-.multiColumnContainer {
+.mcm-column-root-container {
     margin: 1.5625em 0;
 }
 
-.multiColumnParent {
+.mcm-column-parent-container {
     padding: 0;
     overflow: hidden;
     color: var(--text-normal);
@@ -126,30 +99,30 @@
     flex-direction:row;
 }
 
-.multiColumnParentShadow {
+.mcm-region-shadow {
     box-shadow: 0 0.2rem 0.5rem var(--background-modifier-box-shadow);
 }
 
-.multiColumnRegionEndTag,
-.multiColumnBreak,
-.multiColumnSettings,
-.multiColumnContent {
+.mcm-column-end-tag-wrapper,
+.mcm-column-break-tag-wrapper,
+.mcm-column-settings-wrapper,
+.mcm-column-content-wrapper {
     opacity: 0;
 }
 
-.columnContent .multiColumnContent {
+.mcm-column-div .mcm-column-content-wrapper {
     opacity: 100;
 }
 
-.markdown-preview-section > .multiColumnContent, 
-                            .multiColumnBreak, 
-                            .multiColumnRegionEndTag,
-                            .multiColumnSettings {
+.markdown-preview-section > .mcm-column-content-wrapper, 
+                            .mcm-column-break-tag-wrapper, 
+                            .mcm-column-end-tag-wrapper,
+                            .mcm-column-settings-wrapper {
     height: 0px !important;
     overflow: hidden;
 }
 
-.MultiColumn_OriginalElement + .MultiColumn_ClonedElement {
+.mcm-original-column-element + .mcm-cloned-column-element {
     display: none;
 }
 
