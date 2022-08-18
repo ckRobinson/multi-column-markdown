@@ -197,7 +197,7 @@ ${editor.getDoc().getSelection()}`
              */
             el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
             let renderErrorRegion = el.createDiv({
-                cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv}, ${MultiColumnStyleCSS.RegionErrorMessage}`,
+                cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
             });
             let renderColumnRegion = el.createDiv({
                 cls: MultiColumnLayoutCSS.RegionContentContainerDiv
@@ -327,6 +327,7 @@ ${editor.getDoc().getSelection()}`
              */
             let linesAboveArray = docLines.slice(0, info.lineStart)
             let linesOfElement = docLines.slice(info.lineStart, info.lineEnd + 1);
+            let textOfElement = linesOfElement.join("\n")
             let linesBelowArray = docLines.slice(info.lineEnd + 1)
 
             //#region Depreciated Start Tag
@@ -337,7 +338,7 @@ ${editor.getDoc().getSelection()}`
              * file manager we got above above takes care of all regional 
              * managers in each file.
              */
-            if(multiColumnParser.containsStartTag(el.textContent)) {
+            if(multiColumnParser.containsStartTag(textOfElement)) {
 
                 /** 
                  * Set up the current element to act as the parent for the 
@@ -346,7 +347,7 @@ ${editor.getDoc().getSelection()}`
                 el.children[0].detach();
                 el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
                 let renderErrorRegion = el.createDiv({
-                    cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv}, ${MultiColumnStyleCSS.RegionErrorMessage}`,
+                    cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
                 });
                 let renderColumnRegion = el.createDiv({
                     cls: MultiColumnLayoutCSS.RegionContentContainerDiv
