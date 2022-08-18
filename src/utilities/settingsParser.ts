@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson                                         
  */
 
-import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize } from "../regionSettings";
+import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType } from "../regionSettings";
 
 /**
  * Here we define all of the valid settings strings that the user can enter for each setting type.
@@ -80,6 +80,13 @@ const COLUMN_SPACING_REGEX_ARR: RegExp[] = [
 ].map((value) => {
     return new RegExp(convertStringToSettingsRegex(value), "i");
 });
+
+const CONTENT_OVERFLOW_REGEX_ARR: RegExp[] = [
+    "overflow",
+    "content overflow"
+].map((value) => {
+    return new RegExp(convertStringToSettingsRegex(value), "i")
+})
 
 /**
  * This function searches the settings string through each regex option. If one of the regex
@@ -220,6 +227,19 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
             }
 
             parsedSettings.columnSpacing = spacingStr;
+        }
+
+        settingsData = getSettingsDataFromKeys(settingsLine, CONTENT_OVERFLOW_REGEX_ARR);
+        if(settingsData !== null) {
+
+            let overflowType = ContentOverflowType.scroll;
+
+            settingsData = settingsData.toLowerCase().trim();
+            if(settingsData === "hidden") {
+                overflowType = ContentOverflowType.hidden;
+            }
+
+            parsedSettings.contentOverflow = overflowType;
         }
     }
 
