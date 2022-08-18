@@ -30,13 +30,14 @@ export default class MultiColumnMarkdown extends Plugin {
 	async onload() {
 
         console.log("Loading multi-column markdown");
+        this.globalManager = new GlobalDOMManager();
 
         this.registerEditorExtension(multiColumnMarkdown_StateField)
 
         for(let i = 0; i < CODEBLOCK_START_STRS.length; i++) {
 
             let startStr = CODEBLOCK_START_STRS[i]
-            this.registerMarkdownCodeBlockProcessor(startStr, setupStartRegionFromCodeblock)
+            this.setupMarkdownCodeblockPostProcessor(startStr);
         }
         this.setupMarkdownPostProcessor();
 
@@ -525,6 +526,140 @@ ${editor.getDoc().getSelection()}`
 
         return false;
     }
+
+    setupMarkdownCodeblockPostProcessor(startStr: string) {
+
+        this.registerMarkdownCodeBlockProcessor(startStr, (source, el, ctx) => {
+
+            const sourcePath = ctx.sourcePath;
+        
+            // Set up our CSS so that the codeblock only renders this data in reading mode
+            // source/live preview mode is handled by the CM6 implementation.
+            el.parentElement?.addClass("preivew-mcm-start-block");
+        
+            // To determine what kind of view we are rendering in we need a markdown leaf.
+            // Really this should never return here since rendering is only done in markdown leaves.
+            let markdownLeaves = app.workspace.getLeavesOfType("markdown");
+            if(markdownLeaves.length === 0) {
+                return;
+            }
+        
+            // Check the type of the leaf
+            let foundFileLeaf = false;
+            for(let i = 0; i < markdownLeaves.length; i++) {
+        
+                let fileLeaf = getFileLeaf(sourcePath);
+                if(fileLeaf === null) {
+                    continue;
+                }
+                foundFileLeaf = true;
+        
+                if(getLeafSourceMode(fileLeaf) === "source") {
+                    return;
+                }
+            }
+        
+            if(this.globalManager === null || this.globalManager === undefined) {
+                console.log("Global manager is undefined?");
+                return;
+            }
+
+            let fileDOMManager = this.globalManager.getFileManager(sourcePath);
+            if(fileDOMManager === null) {
+                return;
+            }
+            
+            // Set file to have start tag.
+            fileDOMManager.setHasStartTag();
+        
+            // Get the info for our current context and then check
+            // if the entire text contains a start tag. If there is
+            // no start tag in the document we can just return and
+            // ignore the rest of the parsing.
+            let info = ctx.getSectionInfo(el);
+        
+            /**
+             * We need the context info to properly parse so returning here 
+             * info is null. TODO: Set error in view if this occurs.
+             */
+            if(!info) {
+                return;
+            }
+        
+            /** 
+             * Set up the current element to act as the parent for the 
+             * multi-column region.
+             */
+            el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
+            let renderErrorRegion = el.createDiv({
+                cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
+            });
+            let renderColumnRegion = el.createDiv({
+                cls: MultiColumnLayoutCSS.RegionContentContainerDiv
+            })
+        
+            let regionKey = parseStartRegionCodeBlockID(source);
+        
+            let createNewRegionManager = true;
+            if(fileDOMManager.checkKeyExists(regionKey) === true) {
+                
+                createNewRegionManager = false;
+                let { numberOfTags, keys } = multiColumnParser.countStartTags(info.text);
+        
+                let numMatches = 0;
+                for(let i = 0; i < numberOfTags; i++) {
+        
+                    // Because we checked if key exists one of these has to match.
+                    if(keys[i] === regionKey) {
+                        numMatches++;
+                    }
+                }
+        
+                // We only want to display an error if there are more than 2 of the same id across
+                // the whole document. This prevents erros when obsidian reloads the whole document
+                // and there are two of the same key in the map.
+                if(numMatches >= 2) {
+                    if(regionKey === "") {
+                        renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                    }
+                    else {
+                        renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
+                    }
+                    return;
+                }
+            }
+            el.id = `MultiColumnID:${regionKey}`
+        
+            // If something changes in the codeblock we dont necessarily want to update our
+            // old reference to the region manager. This could be a potential bug area.
+            if(createNewRegionManager === true) {
+        
+                // Create a new regional manager.
+                let elementMarkdownRenderer = new MarkdownRenderChild(el);
+                fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
+        
+                // Set up the on unload callback. This can be called if the user changes
+                // the start/settings codeblock in any way. We only want to unload
+                // if the file is being removed from view.
+                elementMarkdownRenderer.onunload = () => {
+        
+                    if(fileDOMManager && fileStillInView(sourcePath) === false) {
+        
+                        console.debug("File not in any markdown leaf. Removing region from dom manager.")
+                        fileDOMManager.removeRegion(regionKey);
+                    }
+                };
+                ctx.addChild(elementMarkdownRenderer);
+            }
+        
+            let regionalManagerContainer = fileDOMManager.getRegionalContainer(regionKey);
+            if(regionalManagerContainer !== null) {
+        
+                let regionalManager = regionalManagerContainer.setRegionSettings(source);
+                regionalManager.regionParent = el;
+            }
+        })
+    }
 }
 
 
@@ -555,130 +690,4 @@ function renderMarkdownFromLines(mdLines: string[], sourcePath: string): HTMLDiv
     );
 
     return siblings;
-}
-
-function setupStartRegionFromCodeblock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-
-    const sourcePath = ctx.sourcePath;
-
-    // Set up our CSS so that the codeblock only renders this data in reading mode
-    // source/live preview mode is handled by the CM6 implementation.
-    el.parentElement?.addClass("preivew-mcm-start-block");
-
-    // To determine what kind of view we are rendering in we need a markdown leaf.
-    // Really this should never return here since rendering is only done in markdown leaves.
-    let markdownLeaves = app.workspace.getLeavesOfType("markdown");
-    if(markdownLeaves.length === 0) {
-        return;
-    }
-
-    // Check the type of the leaf
-    let foundFileLeaf = false;
-    for(let i = 0; i < markdownLeaves.length; i++) {
-
-        let fileLeaf = getFileLeaf(sourcePath);
-        if(fileLeaf === null) {
-            continue;
-        }
-        foundFileLeaf = true;
-
-        if(getLeafSourceMode(fileLeaf) === "source") {
-            return;
-        }
-    }
-
-    let fileDOMManager = this.globalManager.getFileManager(sourcePath);
-    if(fileDOMManager === null) {
-        return;
-    }
-    
-    // Set file to have start tag.
-    fileDOMManager.setHasStartTag();
-
-    // Get the info for our current context and then check
-    // if the entire text contains a start tag. If there is
-    // no start tag in the document we can just return and
-    // ignore the rest of the parsing.
-    let info = ctx.getSectionInfo(el);
-
-    /**
-     * We need the context info to properly parse so returning here 
-     * info is null. TODO: Set error in view if this occurs.
-     */
-    if(!info) {
-        return;
-    }
-
-    /** 
-     * Set up the current element to act as the parent for the 
-     * multi-column region.
-     */
-    el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
-    let renderErrorRegion = el.createDiv({
-        cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
-    });
-    let renderColumnRegion = el.createDiv({
-        cls: MultiColumnLayoutCSS.RegionContentContainerDiv
-    })
-
-    let regionKey = parseStartRegionCodeBlockID(source);
-
-    let createNewRegionManager = true;
-    if(fileDOMManager.checkKeyExists(regionKey) === true) {
-        
-        createNewRegionManager = false;
-        let { numberOfTags, keys } = multiColumnParser.countStartTags(info.text);
-
-        let numMatches = 0;
-        for(let i = 0; i < numberOfTags; i++) {
-
-            // Because we checked if key exists one of these has to match.
-            if(keys[i] === regionKey) {
-                numMatches++;
-            }
-        }
-
-        // We only want to display an error if there are more than 2 of the same id across
-        // the whole document. This prevents erros when obsidian reloads the whole document
-        // and there are two of the same key in the map.
-        if(numMatches >= 2) {
-            if(regionKey === "") {
-                renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
-            }
-            else {
-                renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
-            }
-            return;
-        }
-    }
-    el.id = `MultiColumnID:${regionKey}`
-
-    // If something changes in the codeblock we dont necessarily want to update our
-    // old reference to the region manager. This could be a potential bug area.
-    if(createNewRegionManager === true) {
-
-        // Create a new regional manager.
-        let elementMarkdownRenderer = new MarkdownRenderChild(el);
-        fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
-
-        // Set up the on unload callback. This can be called if the user changes
-        // the start/settings codeblock in any way. We only want to unload
-        // if the file is being removed from view.
-        elementMarkdownRenderer.onunload = () => {
-
-            if(fileDOMManager && fileStillInView(sourcePath) === false) {
-
-                console.debug("File not in any markdown leaf. Removing region from dom manager.")
-                fileDOMManager.removeRegion(regionKey);
-            }
-        };
-        ctx.addChild(elementMarkdownRenderer);
-    }
-
-    let regionalManagerContainer = fileDOMManager.getRegionalContainer(regionKey);
-    if(regionalManagerContainer !== null) {
-
-        let regionalManager = regionalManagerContainer.setRegionSettings(source);
-        regionalManager.regionParent = el;
-    }
 }
