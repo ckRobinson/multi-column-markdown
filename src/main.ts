@@ -13,11 +13,11 @@ import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionMan
 import { RegionManager } from "./dom_manager/regional_managers/regionManager";
 import { RegionManagerContainer } from "./dom_manager/regional_managers/regionManagerContainer";
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObject';
-import { getUID } from './utilities/utils';
+import { fileStillInView, getFileLeaf, getLeafSourceMode, getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
-import { parseColumnSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
+import { parseStartRegionCodeBlockID } from './utilities/settingsParser';
 
 export default class MultiColumnMarkdown extends Plugin {
 
@@ -139,8 +139,13 @@ ${editor.getDoc().getSelection()}`
     }
 
     setupMarkdownPostProcessor() {
+        this.registerMarkdownCodeBlockProcessor("start-multi-column", (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
 
-        this.registerMarkdownCodeBlockProcessor("start-multi-column", async (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+            const sourcePath = ctx.sourcePath;
+
+            // Set up our CSS so that the codeblock only renders this data in reading mode
+            // source/live preview mode is handled by the CM6 implementation.
+            el.parentElement?.addClass("preivew-mcm-start-block");
 
             // To determine what kind of view we are rendering in we need a markdown leaf.
             // Really this should never return here since rendering is only done in markdown leaves.
@@ -149,28 +154,19 @@ ${editor.getDoc().getSelection()}`
                 return;
             }
 
-            const sourcePath = ctx.sourcePath;
-
             // Check the type of the leaf
             let foundFileLeaf = false;
             for(let i = 0; i < markdownLeaves.length; i++) {
 
-                if(markdownLeaves[i].getViewState().state.file !== sourcePath) {
+                let fileLeaf = getFileLeaf(sourcePath);
+                if(fileLeaf === null) {
                     continue;
                 }
                 foundFileLeaf = true;
 
-                if(markdownLeaves[i].getViewState().state.mode === "source") {
-
-                    console.debug("Viewing source");
-                    el.parentElement?.setAttr("style", "height: 0pt")
-                    el.parentElement?.removeClasses(Array.from(el.parentElement.classList));
+                if(getLeafSourceMode(fileLeaf) === "source") {
+                    return;
                 }
-            }
-
-            // If we didnt find the file leaf return. Really should not ever happen.
-            if(foundFileLeaf === false) {
-                return;
             }
 
             let fileDOMManager = this.globalManager.getFileManager(sourcePath);
@@ -208,9 +204,11 @@ ${editor.getDoc().getSelection()}`
             })
 
             let regionKey = parseStartRegionCodeBlockID(source);
-            console.log(regionKey);
-            if(fileDOMManager.checkKeyExists(regionKey) === true) {
 
+            let createNewRegionManager = true;
+            if(fileDOMManager.checkKeyExists(regionKey) === true) {
+                
+                createNewRegionManager = false;
                 let { numberOfTags, keys } = multiColumnParser.countStartTags(info.text);
 
                 let numMatches = 0;
@@ -237,23 +235,33 @@ ${editor.getDoc().getSelection()}`
             }
             el.id = `MultiColumnID:${regionKey}`
 
-            let elementMarkdownRenderer = new MarkdownRenderChild(el);
-            fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
-            elementMarkdownRenderer.onunload = () => {
-                if(fileDOMManager) {
+            // If something changes in the codeblock we dont necessarily want to update our
+            // old reference to the region manager. This could be a potential bug area.
+            if(createNewRegionManager === true) {
 
-                    fileDOMManager.removeRegion(regionKey);
-                }
-            };
-            ctx.addChild(elementMarkdownRenderer);
+                // Create a new regional manager.
+                let elementMarkdownRenderer = new MarkdownRenderChild(el);
+                fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
 
-            let regionalManager = fileDOMManager.getRegionalContainer(regionKey);
-            if(regionalManager !== null) {
+                // Set up the on unload callback. This can be called if the user changes
+                // the start/settings codeblock in any way. We only want to unload
+                // if the file is being removed from view.
+                elementMarkdownRenderer.onunload = () => {
+    
+                    if(fileDOMManager && fileStillInView(sourcePath) === false) {
 
-                let settings = parseColumnSettings(source)
-                console.log(settings);
+                        console.debug("File not in any markdown leaf. Removing region from dom manager.")
+                        fileDOMManager.removeRegion(regionKey);
+                    }
+                };
+                ctx.addChild(elementMarkdownRenderer);
+            }
 
-                regionalManager.setRegionSettings(source);
+            let regionalManagerContainer = fileDOMManager.getRegionalContainer(regionKey);
+            if(regionalManagerContainer !== null) {
+
+                let regionalManager = regionalManagerContainer.setRegionSettings(source);
+                regionalManager.regionParent = el;
             }
         })
 
@@ -321,6 +329,7 @@ ${editor.getDoc().getSelection()}`
             let linesOfElement = docLines.slice(info.lineStart, info.lineEnd + 1);
             let linesBelowArray = docLines.slice(info.lineEnd + 1)
 
+            //#region Depreciated Start Tag
             /**
              * If the current line is a start tag we want to set up the
              * region manager. The regional manager takes care
@@ -393,6 +402,7 @@ ${editor.getDoc().getSelection()}`
                  */
                 return
             }
+            //#endregion Depreciated Start Tag
 
             /**
              * Check if any of the lines above us contain a start block, and if

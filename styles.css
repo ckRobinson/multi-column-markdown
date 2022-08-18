@@ -148,11 +148,19 @@
 .multiColumnBreak,
 .multiColumnSettings,
 .multiColumnContent {
-    display: none;
+    opacity: 0;
 }
 
 .columnContent .multiColumnContent {
-    display: block;
+    opacity: 100;
+}
+
+.markdown-preview-section > .multiColumnContent, 
+                            .multiColumnBreak, 
+                            .multiColumnRegionEndTag,
+                            .multiColumnSettings {
+    height: 0px !important;
+    overflow: hidden;
 }
 
 .MultiColumn_OriginalElement + .MultiColumn_ClonedElement {
@@ -164,4 +172,9 @@
     white-space: normal;
     word-break: keep-all;
     word-wrap: normal;
+}
+
+.cm-preview-code-block.preivew-mcm-start-block {
+    height: 0pt !important; 
+    padding: 0pt !important;
 }
