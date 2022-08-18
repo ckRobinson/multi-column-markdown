@@ -50,9 +50,10 @@ export type MultiColumnSettings = {
     autoLayout: boolean
     columnSize: SingleColumnSize,
     columnPosition: ColumnLayout,
+    columnSpacing: string
 }
 
-export function getDefaultMultiColumnSettings() {
+export function getDefaultMultiColumnSettings(): MultiColumnSettings {
 
     return {
         numberOfColumns: 2,
@@ -61,6 +62,7 @@ export function getDefaultMultiColumnSettings() {
         drawShadow: true,
         autoLayout: false,
         columnSize: SingleColumnSize.medium,
-        columnPosition: ColumnLayout.standard
+        columnPosition: ColumnLayout.standard,
+        columnSpacing: ""
     }
 }
