@@ -251,9 +251,10 @@ export function containsRegionStart(text: string): boolean {
     return containsStartCodeBlock(text) || containsStartTag(text);
 }
 
-export function countStartTags(text: string): { numberOfTags: number, keys: string[] } {
+export function countStartTags(initialText: string): { numberOfTags: number, keys: string[] } {
 
     let keys: string[] = [];
+    let text = initialText
     let startTagData = findStartTag(text);
     while(startTagData.found) {
         
@@ -276,6 +277,23 @@ export function countStartTags(text: string): { numberOfTags: number, keys: stri
 
         // Search again for another tag before looping.
         startTagData = findStartTag(text);
+    }
+
+    text = initialText;
+    startTagData = findStartCodeblock(text);
+    while(startTagData.found) {
+        
+        let settingsText = text.slice(startTagData.startPosition, startTagData.endPosition);
+        text = text.slice(startTagData.endPosition);
+
+        let key = parseStartRegionCodeBlockID(settingsText);
+        if(key === null) {
+            key = ""
+        }
+        keys.push(key);
+
+        // Search again for another tag before looping.
+        startTagData = findStartCodeblock(text);
     }
 
     return { numberOfTags: keys.length, keys };
