@@ -6,6 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
+import { WorkspaceLeaf } from "obsidian";
 
 export function getUID(length: number = 10): string {
 
@@ -45,6 +46,45 @@ export function searchChildrenForNodeType(root: HTMLElement, nodeTypeName: strin
             for(let i = 0; i < node.children.length; i++) {
                 queue.push(node.children[i] as HTMLElement)
             }
+        }
+    }
+
+    return null;
+}
+
+export function getFileSourceMode(sourcePath: string): string {
+
+    let fileLeaf = getFileLeaf(sourcePath);
+    if(fileLeaf === null) {
+        return "";
+    }
+    return fileLeaf.getViewState().state.mode;
+}
+export function getLeafSourceMode(fileLeaf: WorkspaceLeaf): string {
+
+    return fileLeaf.getViewState().state.mode;
+}
+
+export function fileStillInView(sourcePath: string):boolean {
+
+    let fileLeaf = getFileLeaf(sourcePath);
+    if(fileLeaf === null) {
+        return false;
+    }
+    return true;
+}
+
+export function getFileLeaf(sourcePath: string): WorkspaceLeaf | null {
+
+    let markdownLeaves = app.workspace.getLeavesOfType("markdown");
+    if(markdownLeaves.length === 0) {
+        return null;
+    }
+
+    for(let i = 0; i < markdownLeaves.length; i++) {
+
+        if(markdownLeaves[i].getViewState().state.file === sourcePath) {
+            return markdownLeaves[i];
         }
     }
 
