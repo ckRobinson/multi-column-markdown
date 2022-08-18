@@ -38,20 +38,31 @@ export default class MultiColumnMarkdown extends Plugin {
             editorCallback: (editor, view) => {
 
                 try {
+                    let cursorStartPosition = editor.getCursor("from");
+
                     editor.getDoc().replaceSelection(
 `
-=== multi-column-start: ID_${getUID(4)}
-\`\`\`column-settings
+\`\`\`start-multi-column
+ID: ID_${getUID(4)}
 Number of Columns: 2
 Largest Column: standard
 \`\`\`
 
+
+
 === end-column ===
 
-=== multi-column-end
+
+
+=== end-multi-column
 
 ${editor.getDoc().getSelection()}`
                     );
+                    
+                    cursorStartPosition.line = cursorStartPosition.line + 7
+                    cursorStartPosition.ch = 0;
+
+                    editor.setCursor(cursorStartPosition);
                 } catch (e) {
                     new Notice(
                         "Encountered an error inserting a multi-column region. Please try again later."
