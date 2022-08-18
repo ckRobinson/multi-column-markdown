@@ -146,6 +146,10 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 
 					// ReCalculate additional start tags if there are more in document.
 					startTagData = findStartTag(workingFileText);
+					if(startTagData.found === false) {
+						startTagData = findStartCodeblock(workingFileText);
+					}
+
 					endTagData = findEndTag(workingFileText);
 					loopIndex++;
 				}
