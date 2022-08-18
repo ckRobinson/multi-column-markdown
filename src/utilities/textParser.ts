@@ -30,19 +30,15 @@ export function findStartTag(text: string): { found: boolean, startPosition: num
     let matchLength = 0;
     for(let i = 0; i< START_REGEX_ARR.length; i++) {
 
-        if(START_REGEX_ARR[i].test(text)) {
-            
-            let regexData = START_REGEX_ARR[i].exec(text)
-            if(regexData !== null && regexData.length > 0) {
-                found = true;
-                startPosition = regexData.index
-                matchLength = regexData[0].length;
+        let regexData = START_REGEX_ARR[i].exec(text)
+        if(regexData !== null && regexData.length > 0) {
+            startPosition = regexData.index
+            matchLength = regexData[0].length;
 
-                let line = text.slice(startPosition, startPosition + matchLength);
-                if(START_REGEX_ARR_WHOLE_LINE[i].test(line)) {
-                    found = true;
-                    break;
-                }
+            let line = text.slice(startPosition, startPosition + matchLength);
+            if(START_REGEX_ARR_WHOLE_LINE[i].test(line)) {
+                found = true;
+                break;
             }
         }
     }
