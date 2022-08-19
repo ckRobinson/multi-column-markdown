@@ -370,6 +370,8 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 # Version History
 
+### **0.7.2**
+- Finalized 0.7.1 fix to pdf export bug.
 ### **0.7.1**
 - Fixed render bug when exporting columns with new codeblock start syntax to PDF.
 
