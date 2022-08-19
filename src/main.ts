@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, MarkdownPostProcessorContext } from 'obsidian';
+import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
 import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
@@ -203,7 +203,7 @@ ${editor.getDoc().getSelection()}`
              */
             if(this.checkExporting(el)) {
 
-                this.exportDocumentToPDF(el, fileDOMManager);
+                this.exportDocumentToPDF(el, fileDOMManager, sourcePath);
             }
 
             // Get the info for our current context and then check
@@ -445,9 +445,50 @@ ${editor.getDoc().getSelection()}`
         });
     }
 
-    private exportDocumentToPDF(el: HTMLElement, fileDOMManager: FileDOMManager) {
+    private isStartCodeblockInExport(node: HTMLElement): boolean {
+
+        for(let i = 0; i < CODEBLOCK_START_STRS.length; i++) {
+
+            if(node.hasClass(`block-language-${CODEBLOCK_START_STRS[i]}`)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private async exportDocumentToPDF(el: HTMLElement, fileDOMManager: FileDOMManager, sourcePath: string) {
+
+        // A true export will be passed an element with all other items in the doc as children. 
+        // So if there are no children we can just return
         let docChildren = Array.from(el.childNodes);
+        if(docChildren.length === 0) {
+            return;
+        }
+
         let childrenToRemove = [];
+        
+        // To export codeblocks we need to get the IDs so we can get the data from our managers.
+        // however since the ID isnt being stored in the element yet this means we need to read
+        // all of the IDs out of the full document.
+        let codeblockStartBlocks = []
+        let aFile = this.app.vault.getAbstractFileByPath(sourcePath);
+        if(aFile instanceof TFile) {
+
+            let file = aFile as TFile
+            let fileText = await this.app.vault.cachedRead(file) // Is cached read Ok here? It should be.
+
+            // Once we have our data we search the text for all codeblock start values.
+            // storing them into our queue.
+            let codeBlockData = multiColumnParser.findStartCodeblock(fileText);
+            while(codeBlockData.found === true) {
+
+                let codeblockText = fileText.slice(codeBlockData.startPosition, codeBlockData.endPosition);
+                fileText = fileText.slice(codeBlockData.endPosition);
+                codeblockStartBlocks.push(codeblockText);
+
+                codeBlockData = multiColumnParser.findStartCodeblock(fileText);
+            }
+        }  
 
         let inBlock = false;
         for (let i = 0; i < docChildren.length; i++) {
@@ -456,18 +497,41 @@ ${editor.getDoc().getSelection()}`
             if (child instanceof HTMLElement) {
                 let childEl = child as HTMLElement;
                 if (inBlock === false) {
+                    
+                    let foundBlockData = false;
+                    let regionKey = "";
+
                     let blockData = multiColumnParser.isStartTagWithID(child.textContent);
                     if (blockData.isStartTag === true) {
 
-                        inBlock = true;
-
-                        let regionKey = "";
+                        foundBlockData = true;
                         if (blockData.hasKey === true) {
                             let foundKey = multiColumnParser.getStartTagKey(child.textContent);
                             if (foundKey !== null) {
                                 regionKey = foundKey;
                             }
                         }
+                    }
+                    else if(blockData.isStartTag === false && this.isStartCodeblockInExport(child)) {
+
+                        // If the start tag from the old version is null we then check to see if the element is
+                        // a codeblock start. If it is we use the next available codeblock data to retrieve our ID.
+                        let codeblockText = codeblockStartBlocks.shift();
+                        if(codeblockText === undefined) {
+                            console.error("Found undefined codeblock data when exporting.")
+                            return;
+                        }
+
+                        let id = parseStartRegionCodeBlockID(codeblockText);
+                        if(id !== "") {
+                            foundBlockData = true;
+                            regionKey = id;
+                        }
+                    }
+
+                    if(foundBlockData === true && regionKey !== "") {
+
+                        inBlock = true;
 
                         for (let i = child.children.length - 1; i >= 0; i--) {
                             child.children[i].detach();
