@@ -96,8 +96,8 @@ ID: A_unique_region_ID_2\
 - === multi-column-start: A_unique_region_ID_4
 
 #### **End Multi-Column Region:**
-=== end-multi-column\
-=== multi-column-end
+\=== end-multi-column\
+\=== multi-column-end
 
 #### **End a Column:**
 \--- column-end \---\
