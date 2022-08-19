@@ -21,15 +21,15 @@ You create a multi-column region by defining the start, settings, column-end, an
 
 Text displayed above.
 
-=== start-multi-column: ExampleRegion1\
-\```column-settings\
+\```start-multi-column\
+ID: ExampleRegion1\
 number of columns: 2\
 largest column: left\
 \```
 
 Text displayed in column 1.
 
-\=== end-column ===
+\--- end-column ---
 
 Text displayed in column 2.
 
@@ -80,41 +80,40 @@ You can also use the "Fix Missing IDs" command which will search the currently o
 Each tag type can be defined with the following options:
 
 #### **Start Multi-Column Region:**
-> **Codeblock Syntax:**
->
-> \```start-multi-column\
-> ID: A_unique_region_ID\
-> *Any Additional Settings (see below)*\
-> \```
->   
-> \```multi-column-start\
-> ID: A_unique_region_ID_2\
-> *Any Additional Settings (see below)*\
-> \```
-> 
-> **Old Syntax (Currently still supported.):**
-> - === start-multi-column: A_unique_region_ID_3
-> - === multi-column-start: A_unique_region_ID_4
+**Codeblock Syntax:**\
+\```start-multi-column\
+ID: A_unique_region_ID\
+*Any Additional Settings (see below)*\
+\```
+
+\```multi-column-start\
+ID: A_unique_region_ID_2\
+*Any Additional Settings (see below)*\
+\```
+
+**Old Syntax (Currently still supported.):**
+- === start-multi-column: A_unique_region_ID_3
+- === multi-column-start: A_unique_region_ID_4
 
 #### **End Multi-Column Region:**
-> === end-multi-column\
-> === multi-column-end
+=== end-multi-column\
+=== multi-column-end
 
 #### **End a Column:**
-> \--- column-end \---\
-> \--- end-column \---\
-> \--- column-break \---\
-> \--- break-column \---
->
-> **Old Syntax (Currently still supported.):**
->   - \=== column-end ===
->   - \=== end-column ===
->   - \=== column-break ===
->   - \=== break-column ===
+\--- column-end \---\
+\--- end-column \---\
+\--- column-break \---\
+\--- break-column \---
+
+**Old Syntax (Currently still supported.):**
+- \=== column-end ===
+- \=== end-column ===
+- \=== column-break ===
+- \=== break-column ===
 #### **Settings Region: (Old Syntax, Currently still supported. Not used if using codeblock start tag syntax above)**
-> \```settings\```\
-> \```column-settings\```\
-> \```multi-column-settings\```
+\```settings\```\
+\```column-settings\```\
+\```multi-column-settings\```
 
 <br>
 
@@ -137,9 +136,9 @@ border: enabled\
 ### **Settings Tags:**
 
 #### **ID: (Only used in codeblock start regions. Old style starts must define ID on the same line as listed above.)**
-> - Any string of characters.
-> - The ID is used to differentiate between different regions if there are multiple in the same document.
-> - Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
+- Any string of characters.
+- The ID is used to differentiate between different regions if there are multiple in the same document.
+- Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
 
 #### **Number of Columns:**
 - 1, 2 or 3
@@ -242,11 +241,11 @@ border: off\
 
 \# Column 1
 
-\=== end-column ===
+\--- end-column ---
 
 \# Column 2
 
-\=== end-column ===
+\--- end-column ---
 
 \# Column 3
 
@@ -265,11 +264,11 @@ largest column: center\
 
 \#### Column 1
 
-\=== end-column ===
+\--- end-column ---
 
 \# Column 2
 
-\=== end-column ===
+\--- end-column ---
 
 \#### Column 3
 
@@ -310,12 +309,12 @@ You can not nest a multi-column region within another multi-column region.
 You can access the command pallet with ctrl/command - P. 
 
 #### **Insert Multi-Column Region**
-> Will create a two column region where the cursor is located with a randomly generated ID and a default settings block created. Anything currently selected will be moved outside the end of the inserted region as to not overwrite any data.
+Will create a two column region where the cursor is located with a randomly generated ID and a default settings block created. Anything currently selected will be moved outside the end of the inserted region as to not overwrite any data.
 
 <br>
 
 #### **Fix Missing IDs For Multi-Column Regions**
-> Will search the current document for any region start tags that are missing IDs and randomly generate new IDs for each region.
+Will search the current document for any region start tags that are missing IDs and randomly generate new IDs for each region.
 
 <br><br>
 
