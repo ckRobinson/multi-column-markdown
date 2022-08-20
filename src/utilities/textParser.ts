@@ -73,17 +73,28 @@ for(let i = 0; i < END_REGEX_STRS.length; i++) {
 }
 export function findEndTag(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
 
-    let found = false;
-    let startPosition = -1;
-    for(let i = 0; i< END_REGEX_ARR.length; i++) {
+    // We want to find the first end tag in the text.
+    // So here we loop backwards, slicing off the tail until
+    // there are no more end tags available
+    let lastValidData = getEndTagData(text);
+    let workingRegexData = lastValidData;
+    while(workingRegexData.found === true) {
 
-        if(END_REGEX_ARR[i].test(text)) {
-            found = true;
-            startPosition = text.search(END_REGEX_STRS[i])
-            break;
-        }
+        lastValidData = workingRegexData;
+        text = text.slice(0, workingRegexData.startPosition);
+        workingRegexData = getEndTagData(text);
     }
 
+    return lastValidData;
+}
+export function containsEndTag(text: string): boolean {
+    return findEndTag(text).found
+}
+
+function getEndTagData(text: string) {
+
+    let found = false;
+    let startPosition = -1;
     let endPosition = -1
     let matchLength = 0;
     for(let i = 0; i< END_REGEX_ARR.length; i++) {
@@ -99,9 +110,6 @@ export function findEndTag(text: string): { found: boolean, startPosition: numbe
     endPosition = startPosition + matchLength;
 
     return { found, startPosition, endPosition, matchLength };
-}
-export function containsEndTag(text: string): boolean {
-    return findEndTag(text).found
 }
 
 const COL_REGEX_STRS: string[] = ["=== *column-end *===",
