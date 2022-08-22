@@ -176,6 +176,7 @@ Only used with the single column option.
     - Small
     - Medium
     - Large
+    - Full
 
 #### **Column Position or Column Location:**
 Only used with the single column option.
@@ -369,6 +370,11 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 <br><br>
 
 # Version History
+
+### **0.7.3**
+- Added option to create full width single column regions. Use "column size: full" to enable.
+- Fixed bug caused by live preview regions ignoring end tags, when multiple columns in the same document.
+- Fixed bug with Obsidian live preview toggle and Multi-Column regions. 
 
 ### **0.7.2**
 - Finalized 0.7.1 fix to pdf export bug.
