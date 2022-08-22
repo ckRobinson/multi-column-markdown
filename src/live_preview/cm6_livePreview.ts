@@ -6,11 +6,12 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
+import { EditorState, Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
 import { containsRegionStart, findEndTag, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
 import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
+import { editorViewField } from "obsidian";
 
 export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	create(state): DecorationSet {
@@ -30,13 +31,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                     return;
                 }
 
-                let markdownLeaves = app.workspace.getLeavesOfType("markdown");
-                if(markdownLeaves.length === 0) {
-                    return;
-                }
-
-                // TODO: Check other ways to get if source is live preview? editorLivePreviewField
-                if(markdownLeaves[0].getViewState().state.source === true) {
+                if(isEditorInLivePreview(transaction.state) === true) {
                     console.debug("User disabled live preview.")
                     return;
                 }
@@ -244,3 +239,17 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	},
 });
 
+function isEditorInLivePreview(state: EditorState): boolean {
+	
+	let mdView = state.field(editorViewField);
+	let viewState = mdView.leaf.getViewState();
+
+	let stateData = null;
+	if(viewState.state) {
+		stateData = viewState.state;
+	}
+
+	return (
+		stateData && stateData.mode == "source" && stateData.source == true
+	);
+}
