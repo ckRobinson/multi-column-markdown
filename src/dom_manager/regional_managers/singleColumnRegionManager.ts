@@ -128,6 +128,9 @@ export class SingleColumnRegionManager extends RegionManager {
         else if(this.regionalSettings.columnSize === SingleColumnSize.large) {
             contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnLarge}`)
         }
+        else if(this.regionalSettings.columnSize === SingleColumnSize.full) {
+            contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnFull}`)
+        }
         else {
             contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnMed}`)
         }

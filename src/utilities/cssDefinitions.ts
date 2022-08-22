@@ -24,6 +24,7 @@ export enum MultiColumnLayoutCSS {
     SingleColumnSmall = "mcm-single-column-small",
     SingleColumnMed = "mcm-single-column-medium",
     SingleColumnLarge = "mcm-single-column-large",
+    SingleColumnFull = "mcm-single-column-full",
 
     SingleColumnLeftLayout = "mcm-singlecol-layout-left",
     SingleColumnCenterLayout = "mcm-singlecol-layout-center",

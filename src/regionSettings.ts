@@ -39,7 +39,8 @@ export enum ColumnLayout {
 export enum SingleColumnSize {
     small,
     medium,
-    large
+    large,
+    full
 }
 
 export enum ContentOverflowType {

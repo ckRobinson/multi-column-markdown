@@ -348,6 +348,9 @@ function parseForSingleColumnSize(sizeString: string): SingleColumnSize {
         case "large":
         case "lg":
             return SingleColumnSize.large;
+        case "full":
+        case "full size":
+            return SingleColumnSize.full;
     }
 
     return SingleColumnSize.medium
