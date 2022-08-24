@@ -570,7 +570,9 @@ ${editor.getDoc().getSelection()}`
         }
 
         childrenToRemove.forEach(child => {
-            el.removeChild(child);
+            if(child.parentElement === el) {
+                el.removeChild(child);
+            }
         });
     }
 
