@@ -375,6 +375,7 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 - Added option to create full width single column regions. Use "column size: full" to enable.
 - Fixed bug caused by live preview regions ignoring end tags, when multiple columns in the same document.
 - Fixed bug with Obsidian live preview toggle and Multi-Column regions. 
+- Fixed bug when exporting file to pdf.
 
 ### **0.7.2**
 - Finalized 0.7.1 fix to pdf export bug.
