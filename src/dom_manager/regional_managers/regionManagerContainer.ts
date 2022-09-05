@@ -43,7 +43,7 @@ export class RegionManagerContainer {
 
             if(this.region instanceof SingleColumnRegionManager === false) {
 
-                console.debug("Converting region to single column.")
+                // console.debug("Converting region to single column.")
                 this.convertToSingleColumn();
             }
         }
@@ -51,7 +51,7 @@ export class RegionManagerContainer {
 
             if(this.region instanceof AutoLayoutRegionManager === false) {
 
-                console.debug("Converting region to auto layout.")
+                // console.debug("Converting region to auto layout.")
                 this.convertToAutoLayout()
             }
         }
@@ -59,7 +59,7 @@ export class RegionManagerContainer {
 
             if(this.region instanceof StandardMultiColumnRegionManager === false) {
 
-                console.debug("Converting region to standard multi-column")
+                // console.debug("Converting region to standard multi-column")
                 this.convertToStandardMultiColumn();
             }
         }

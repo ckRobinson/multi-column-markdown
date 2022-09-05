@@ -131,7 +131,6 @@ export class MultiColumnMarkdown_DefinedSettings_LivePreview_Widget extends Widg
     }
 
     toDOM() {
-        console.log("Rendering settings block")
         // Create our element to hold all of the live preview elements.
         let el = document.createElement("div");
         el.className = "mcm-cm-settings-preview";

@@ -626,7 +626,7 @@ ${editor.getDoc().getSelection()}`
             }
         
             if(this.globalManager === null || this.globalManager === undefined) {
-                console.log("Global manager is undefined?");
+                // console.log("Global manager is undefined?");
                 return;
             }
 
@@ -711,7 +711,7 @@ ${editor.getDoc().getSelection()}`
         
                     if(fileDOMManager && fileStillInView(sourcePath) === false) {
         
-                        console.debug("File not in any markdown leaf. Removing region from dom manager.")
+                        // console.debug("File not in any markdown leaf. Removing region from dom manager.")
                         fileDOMManager.removeRegion(regionKey);
                     }
                 };

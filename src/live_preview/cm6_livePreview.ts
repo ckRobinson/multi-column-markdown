@@ -32,7 +32,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                 }
 
                 if(isEditorInLivePreview(transaction.state) === true) {
-                    console.debug("User disabled live preview.")
+                    // console.debug("User disabled live preview.")
                     return;
                 }
 
@@ -49,7 +49,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                 let docLength = transaction.state.doc.length
                 let docText = transaction.state.doc.sliceString(0, docLength);
 				if (containsRegionStart(docText) === false) {
-					console.debug("No start tag in document.")
+					// console.debug("No start tag in document.")
 					return;
 				}
 
