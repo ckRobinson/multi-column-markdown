@@ -46,7 +46,6 @@ Text displayed below.
 <br>
 
 ### **Region Start Tag:**
-
 Each multi-column region must start with either:
 
 \```start-multi-column\
@@ -59,10 +58,6 @@ or
 ID: A_unique_region_ID_1\
 \```
 
-**Old Syntax (Currently still supported.):**
-- === start-multi-column: A_unique_region_ID_2
-- === multi-column-start: A_unique_region_ID_3
-
 After defining the start tag you must declare an ID for the region. The ID is used to differentiate between different regions if there are multiple in the same document.
 
 Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
@@ -73,14 +68,13 @@ You can also use the "Fix Missing IDs" command which will search the currently o
 
 <br>
 
-### **Valid Tags:**
+### **Valid Syntax Tags:**
 
 <br>
 
 Each tag type can be defined with the following options:
 
 #### **Start Multi-Column Region:**
-**Codeblock Syntax:**\
 \```start-multi-column\
 ID: A_unique_region_ID\
 *Any Additional Settings (see below)*\
@@ -91,54 +85,25 @@ ID: A_unique_region_ID_2\
 *Any Additional Settings (see below)*\
 \```
 
-**Old Syntax (Currently still supported.):**
-- === start-multi-column: A_unique_region_ID_3
-- === multi-column-start: A_unique_region_ID_4
-
-#### **End Multi-Column Region:**
-- \=\=\= end-multi-column
-- \=\=\= multi-column-end
-
 #### **End a Column:**
 \--- column-end \---\
 \--- end-column \---\
 \--- column-break \---\
 \--- break-column \---
 
-**Old Syntax (Currently still supported.):**
-- \=== column-end ===
-- \=== end-column ===
-- \=== column-break ===
-- \=== break-column ===
-#### **Settings Region: (Old Syntax, Currently still supported. Not used if using codeblock start tag syntax above)**
-\```settings\```\
-\```column-settings\```\
-\```multi-column-settings\```
+#### **End Multi-Column Region:**
+- \=\=\= end-multi-column
+- \=\=\= multi-column-end
 
 <br>
 
-### **Valid Column Settings: (Old Syntax, Currently still supported. Not used if using codeblock start tag syntax above)**
----
+### **Valid Setting Options:**
 
-The column settings block can be omitted which will by default set the region to two equal sized columns. To change how the region is rendered you must define a settings block. The settings tags and all valid options for each setting are listed below.
-
-The settings block must be defined right after the multi-column start tag and each settings tag must be on a separate line. EG:
-
-=== start-multi-column: ExampleRegion2\
-\```column-settings\
-number of columns: 2\
-largest column: left\
-border: enabled\
-\```
-
-<br>
-
-### **Settings Tags:**
-
-#### **ID: (Only used in codeblock start regions. Old style starts must define ID on the same line as listed above.)**
+#### **ID:**
 - Any string of characters.
 - The ID is used to differentiate between different regions if there are multiple in the same document.
 - Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
+- Can be ommitted if there will only ever be a single column region in the document.
 
 #### **Number of Columns:**
 - 1, 2 or 3
@@ -208,7 +173,7 @@ To use this feature set "Auto Layout: true" within the region settings.
 
 <br>
 
-### **Live Preview**
+## **Live Preview**
 ---
 
 Live preivew is now supported in Multi-Column Markdown, however cross compatibilty with other plugins may or may not be supported in this mode. Due to how custom live preview plugins are implemented within CodeMirror6 and hook into Obsidian, I can not guarentee all plugins will render properly within live preview at this point. Plugins that do not render their content immediatly, such as needing to wait for a dataview query, do not render properly. *Most* plugins retain their cross compatibility when viewing the columns in Reading mode however.
@@ -235,7 +200,7 @@ ID: ExampleRegion3\
 <br>
 
 \```start-multi-column\
-ID: ExampleRegion4
+ID: ExampleRegion4\
 number of columns: 3\
 border: off\
 \```
@@ -257,8 +222,8 @@ border: off\
 
 <br>
 
-=== start-multi-column: ExampleRegion5\
-\```settings\
+\```start-multi-column\
+ID: ExampleRegion5\
 number of columns: 3\
 largest column: center\
 \```
@@ -280,8 +245,8 @@ largest column: center\
 
 <br>
 
-=== start-multi-column: ExampleRegion6\
-\```settings\
+\```start-multi-column\
+ID: ExampleRegion6\
 number of columns: 1\
 column size: medium\
 column position: left\
@@ -368,6 +333,24 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 - The Obsidian API and this plugin are both still works in progress and both are subject to change. 
 
 <br><br>
+
+# Depreciated
+These syntax options are currently still supported but are being depreciated for the newer syntax above.
+
+#### **Start Multi-Column Region:**
+- === start-multi-column: A_unique_region_ID_2
+- === multi-column-start: A_unique_region_ID_3
+
+#### **Settings Regions: 
+\```settings\```\
+\```column-settings\```\
+\```multi-column-settings\```
+
+#### **End a Column:**
+- \=== column-end ===
+- \=== end-column ===
+- \=== column-break ===
+- \=== break-column ===
 
 # Version History
 
