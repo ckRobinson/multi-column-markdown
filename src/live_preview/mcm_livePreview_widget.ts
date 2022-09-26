@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { MarkdownRenderChild, MarkdownRenderer, WorkspaceLeaf } from "obsidian";
+import { MarkdownRenderChild, MarkdownRenderer, TFile, WorkspaceLeaf } from "obsidian";
 import { WidgetType } from "@codemirror/view";
 import { getDefaultMultiColumnSettings, MultiColumnSettings } from "../regionSettings";
 import { findSettingsCodeblock, findStartCodeblock } from "../utilities/textParser";
@@ -56,7 +56,8 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         let arr = Array.from(this.tempParent.children);
         for (let i = 0; i < arr.length; i++) {
 
-            this.domList.push(new DOMObject(arr[i] as HTMLElement, [""]));
+            let el = this.fixElementRender(arr[i]);
+            this.domList.push(new DOMObject(el as HTMLElement, [""]));
         }
 
         // Set up the region manager data before then creating our region manager.
@@ -81,6 +82,12 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         else {
             this.regionManager = new StandardMultiColumnRegionManager(regionData);
         }
+    }
+
+    fixElementRender(el: Element): Element {
+
+        let fixedEl = fixImageRender(el);
+        return fixedEl;
     }
 
     toDOM() {
@@ -150,4 +157,60 @@ export class MultiColumnMarkdown_DefinedSettings_LivePreview_Widget extends Widg
 
         return el;
     }
+}
+
+function fixImageRender(el: Element): Element {
+
+    let fixedEl = el;
+    let items = el.getElementsByClassName("internal-embed");
+    if(items.length === 1) {
+
+        let embed = items[0];
+        let alt = embed.getAttr("alt")
+        let src = embed.getAttr("src")
+
+        let aTFiles = app.vault.getAllLoadedFiles()
+        let resourcePath = ""
+        for(let i = 0; i < aTFiles.length; i++) {
+
+            let abstractFile = aTFiles[i];
+            if(abstractFile instanceof TFile === false) {
+                continue;
+            }
+            let file = abstractFile as TFile;
+
+            if(file.name === src && hasImageExtension(file.extension) === true) {
+                resourcePath = app.vault.getResourcePath(file)
+                break;
+            }
+        }
+
+        if(alt === src && resourcePath !== "") {
+
+            fixedEl = createDiv({
+                cls: "internal-embed image-embed is-loaded",
+            })
+            fixedEl.setAttr("alt", alt);
+
+            let image = fixedEl.createEl("img");
+            image.setAttr("src", resourcePath);
+        }
+    }
+
+    return fixedEl;
+}
+
+function hasImageExtension(extension: string): boolean {
+
+    extension = extension.toLowerCase();
+    switch(extension) {
+        case "png":
+        case "jpg":
+        case "jpeg":
+        case "gif":
+        case "bmp":
+        case "svg":
+            return true;
+    }
+    return false;
 }
