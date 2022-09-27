@@ -121,10 +121,10 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 							}
 						}						
 					}
+					else {
 
-					// At this point if the cursor isnt in the region we pass the data to the
-					// element to be rendered.
-					if(cursorInRegion === false) {
+						// At this point if the cursor isnt in the region we pass the data to the
+						// element to be rendered.
 						builder.add(
 							startIndex,
 							endIndex,
@@ -195,7 +195,6 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 								endIndex: number, 
 								ranges: { line: Line, position: number }[] ): boolean {
 
-			let cursorInRegion = false;
 			for (let i = 0; i < ranges.length; i++) {
 
 				// TODO: Maybe look into limiting this to the second and second to last line
@@ -203,35 +202,32 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 				// swaps it to unrendered.
 				let range = ranges[i];
 				if(valueIsInRange(range.position, startIndex, endIndex) === true) {
-					cursorInRegion = true;
-					break;
+					return true;
 				}
 			}
 
-			if(cursorInRegion === false && transaction.selection){
-				for (let i = 0; i < transaction.selection.ranges.length; i++) {
+			if(transaction.state.selection){
+				for (let i = 0; i < transaction.state.selection.ranges.length; i++) {
 
-					let range = transaction.selection.ranges[i];
+					let range = transaction.state.selection.ranges[i];
 
 					// If either the start or end of the selection is within the
 					// region range we do not render live preview.
 					if(valueIsInRange(range.from, startIndex, endIndex) || 
 					   valueIsInRange(range.to, startIndex, endIndex)) {
-						cursorInRegion = true;
-						break;
+						return true;
 					}
 
-					// Or if the entire region is within the selection range
+					// // Or if the entire region is within the selection range
 					// we do not render the live preview.
 					if(valueIsInRange(startIndex, range.from, range.to) && 
 					   valueIsInRange(endIndex, range.from, range.to)) {
-						cursorInRegion = true;
-						break;
+						return true;
 					}
 				}
 			}
 
-			return cursorInRegion;
+			return false;
 		}
 	},
 	provide(field: StateField<DecorationSet>): Extension {
