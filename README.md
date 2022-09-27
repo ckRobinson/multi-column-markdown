@@ -361,6 +361,7 @@ These syntax options are currently still supported but are being depreciated for
 - Fixed bug with Obsidian live preview toggle and Multi-Column regions. 
 - Fixed bug when exporting file to pdf.
 - Fixed a bug where items after a horizontal line, or other special elements, were not being properly anchored in the DOM.
+- Fixed a bug where dataview and other special content was constantly re-rendering and flashing on the screen.
 
 ### **0.7.2**
 - Finalized 0.7.1 fix to pdf export bug.
