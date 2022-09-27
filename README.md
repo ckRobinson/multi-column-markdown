@@ -358,6 +358,7 @@ These syntax options are currently still supported but are being depreciated for
 - Added option to create full width single column regions. Use "column size: full" to enable.
 - Fixed bug that caused images to not render in live preview.
 - Fixed bug caused by live preview regions ignoring end tags, when multiple columns in the same document.
+- Fixed bug in live-preview rendering when selecting text.
 - Fixed bug with Obsidian live preview toggle and Multi-Column regions. 
 - Fixed bug when exporting file to pdf.
 - Fixed a bug where items after a horizontal line, or other special elements, were not being properly anchored in the DOM.
