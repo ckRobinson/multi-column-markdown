@@ -360,6 +360,7 @@ These syntax options are currently still supported but are being depreciated for
 - Fixed bug caused by live preview regions ignoring end tags, when multiple columns in the same document.
 - Fixed bug with Obsidian live preview toggle and Multi-Column regions. 
 - Fixed bug when exporting file to pdf.
+- Fixed a bug where items after a horizontal line, or other special elements, were not being properly anchored in the DOM.
 
 ### **0.7.2**
 - Finalized 0.7.1 fix to pdf export bug.
