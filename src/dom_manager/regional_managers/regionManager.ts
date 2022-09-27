@@ -66,19 +66,37 @@ export abstract class RegionManager {
 
     public addObject(siblingsAbove: HTMLDivElement, siblingsBelow: HTMLDivElement, obj: DOMObject): number {
 
-        let prevObj = siblingsAbove.children[siblingsAbove.children.length - 1] as HTMLElement;
         let nextObj = siblingsBelow.children[0] as HTMLElement;
 
         let addAtIndex = siblingsAbove.children.length;
 
-        let prevObjText = "";
-        if (prevObj !== undefined) {
+        if (siblingsAbove.children.length > 0) {
 
-            prevObjText = prevObj.innerText;
+            /**
+             * We want to find the first sibling withouth "" for an inner text so we can use that to anchor our
+             * element into the domList. For most items the first element before our new element will have the proper
+             * innerText. Sometimes other elements are empty and were causing issues.
+             * 
+             * Now we loop back through the previous siblings looking for the first one with a valid inner text and using that 
+             * as the anchor and offsetting our addAtIndex by the number of empty string elements we found.
+             */
+            let prevSiblingInnerText = ""
+            let prevSiblingOffset = 0;
+            for(let i = siblingsAbove.children.length - 1; i >= 0; i--) {
+
+                let obj = siblingsAbove.children[i] as HTMLElement;
+                if(obj.innerText !== "") {
+                
+                    prevSiblingInnerText = obj.innerText;
+                    break;
+                }
+
+                prevSiblingOffset++;
+            }
 
             for (let i = this.domList.length - 1; i >= 0; i--) {
-                if (this.domList[i].nodeKey === prevObj.innerText) {
-                    addAtIndex = i + 1;
+                if (this.domList[i].nodeKey === prevSiblingInnerText) {
+                    addAtIndex = i + 1 + prevSiblingOffset;
                     break;
                 }
             }
@@ -102,7 +120,7 @@ export abstract class RegionManager {
             }
         }
 
-        // console.log(" Prev: ", siblingsAbove.children[siblingsAbove.children.length - 1], "Adding: ", obj.element, " Next: ", siblingsBelow.children[0], "Overwriting:", this.domList.slice(addAtIndex, nextElIndex));
+        console.log(" Prev: ", Array.from(siblingsAbove.children).slice(-3), "Adding: ", obj.originalElement, " Next: ", siblingsBelow.children[0], "Overwriting:", this.domList.slice(addAtIndex, nextElIndex));
         this.domList.splice(addAtIndex, nextElIndex - addAtIndex, obj);
         this.domObjectMap.set(obj.UID, obj);
 
