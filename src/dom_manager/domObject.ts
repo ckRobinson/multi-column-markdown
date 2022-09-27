@@ -10,7 +10,7 @@ import { getUID } from "../utilities/utils";
 import { ElementRenderType } from "../utilities/elementRenderTypeParser";
 import { containsColEndTag, containsColSettingsTag, containsEndTag, containsStartTag, elInnerTextContainsColEndTag } from "src/utilities/textParser";
 
-const CLONE_UPDATE_TIMES: number[] = [250, 20000];
+const UPDATE_TIMES: number[] = [250, 20000];
 
 export enum DOMObjectTag {
     none,
@@ -31,6 +31,9 @@ export class DOMObject {
     elementContainer: HTMLDivElement = null;
     elementRenderedHeight = 0;
     linesOfElement: string[]
+
+    canvasElementUpdateTime: number = Date.now();
+    canvasTimerIndex = 0;
 
     lastClonedElementUpdateTime: number = Date.now();
     updateTimerIndex = 0;
@@ -59,8 +62,21 @@ export class DOMObject {
     clonedElementReadyForUpdate(): boolean {
 
         let deltaTime = Date.now() - this.lastClonedElementUpdateTime;
-        if(deltaTime > CLONE_UPDATE_TIMES[this.updateTimerIndex]) {
+        if(deltaTime > UPDATE_TIMES[this.updateTimerIndex]) {
 
+            return true;
+        }
+
+        return false;
+    }
+
+    canvasReadyForUpdate(): boolean {
+
+        let deltaTime = Date.now() - this.canvasElementUpdateTime
+        if(deltaTime > UPDATE_TIMES[this.canvasTimerIndex]) {
+
+            this.canvasElementUpdateTime = Date.now();
+            this.canvasTimerIndex = Math.clamp(this.canvasTimerIndex + 1, 0, UPDATE_TIMES.length - 1);
             return true;
         }
 
@@ -69,10 +85,10 @@ export class DOMObject {
 
     updateClonedElement(newClonedElement: HTMLElement) {
 
-        this. clonedElement = newClonedElement;
+        this.clonedElement = newClonedElement;
 
         this.lastClonedElementUpdateTime = Date.now();
-        this.updateTimerIndex = Math.clamp(this.updateTimerIndex + 1, 0, CLONE_UPDATE_TIMES.length - 1);
+        this.updateTimerIndex = Math.clamp(this.updateTimerIndex + 1, 0, UPDATE_TIMES.length - 1);
     }
 
     private setDomObjectTag() {

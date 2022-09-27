@@ -120,7 +120,7 @@ export abstract class RegionManager {
             }
         }
 
-        console.log(" Prev: ", Array.from(siblingsAbove.children).slice(-3), "Adding: ", obj.originalElement, " Next: ", siblingsBelow.children[0], "Overwriting:", this.domList.slice(addAtIndex, nextElIndex));
+        // console.log(" Prev: ", Array.from(siblingsAbove.children).slice(-3), "Adding: ", obj.originalElement, " Next: ", siblingsBelow.children[0], "Overwriting:", this.domList.slice(addAtIndex, nextElIndex));
         this.domList.splice(addAtIndex, nextElIndex - addAtIndex, obj);
         this.domObjectMap.set(obj.UID, obj);
 
@@ -366,31 +366,20 @@ export abstract class RegionManager {
          * refreshed. This can occur when elements are updated by other plugins, 
          * such as Dataview.
          */
-        if(clonedElement === null  || 
+        if((clonedElement === null  || 
            Math.abs(clonedElementHeight - originalElementHeight) > 10 ||
-           domElement.clonedElementReadyForUpdate() === true) {
+           domElement.clonedElementReadyForUpdate() === true) &&
+           domElement.elementType !== ElementRenderType.canvasRenderElement) {
             
             // console.log("Updating Cloned Element.", clonedElementHeight, originalElementHeight)
             // Update clone and reference.
-            domElement.updateClonedElement(originalElement.cloneNode(true) as HTMLDivElement);
-            clonedElement = domElement.clonedElement;
-
-            /**
-             * If we updated the cloned element, we want to also update the
-             * element rendered in the parent container.
-             */
-            for (let i = containerElement.children.length - 1; i >= 0; i--) {
-                containerElement.children[i].detach();
-            }
-
-            // Update CSS, we add cloned class and remove classes from originalElement that do not apply.
-            clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
-            clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
-            containerElement.appendChild(clonedElement);
+            cloneElement();
         }
 
-        if(domElement.elementType === ElementRenderType.canvasRenderElement) {
+        if(domElement.elementType === ElementRenderType.canvasRenderElement && 
+           domElement.canvasReadyForUpdate()) {
 
+            // console.log("Updating canvas re-render")
             containerElement.appendChild(originalElement);
 
             function cloneCanvas(originalCanvas: HTMLCanvasElement): HTMLCanvasElement {
@@ -418,6 +407,13 @@ export abstract class RegionManager {
 
             let canvas = searchChildrenForNodeType(originalElement, "canvas");
             if(canvas !== null) {
+                
+                domElement.updateClonedElement(originalElement.cloneNode(true) as HTMLDivElement);
+                clonedElement = domElement.clonedElement;
+                clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
+                clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
+                containerElement.appendChild(clonedElement);
+
                 for (let i = clonedElement.children.length - 1; i >= 0; i--) {
                     clonedElement.children[i].detach();
                 }
@@ -434,7 +430,8 @@ export abstract class RegionManager {
          * as specialSingleElementRender so we ignore those elements here.
          */
         if(domElement.elementContainer.children.length < 2 && 
-           domElement.elementType !== ElementRenderType.specialSingleElementRender) {
+           domElement.elementType !== ElementRenderType.specialSingleElementRender &&
+           domElement.elementType !== ElementRenderType.canvasRenderElement) {
 
             // console.log("Updating dual rendering.", domElement, domElement.originalElement.parentElement, domElement.originalElement.parentElement?.childElementCount);
 
@@ -447,6 +444,24 @@ export abstract class RegionManager {
                 containerElement.children[i].detach();
             }
             containerElement.appendChild(originalElement);
+            containerElement.appendChild(clonedElement);
+        }
+
+        function cloneElement() {
+            domElement.updateClonedElement(originalElement.cloneNode(true) as HTMLDivElement);
+            clonedElement = domElement.clonedElement;
+
+            /**
+             * If we updated the cloned element, we want to also update the
+             * element rendered in the parent container.
+             */
+            for (let i = containerElement.children.length - 1; i >= 0; i--) {
+                containerElement.children[i].detach();
+            }
+
+            // Update CSS, we add cloned class and remove classes from originalElement that do not apply.
+            clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
+            clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
             containerElement.appendChild(clonedElement);
         }
     }
