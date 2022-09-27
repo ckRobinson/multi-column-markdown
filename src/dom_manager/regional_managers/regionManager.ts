@@ -367,10 +367,12 @@ export abstract class RegionManager {
          * such as Dataview.
          */
         if(clonedElement === null  || 
-            clonedElementHeight !== originalElementHeight) {
+           Math.abs(clonedElementHeight - originalElementHeight) > 10 ||
+           domElement.clonedElementReadyForUpdate() === true) {
             
+            // console.log("Updating Cloned Element.", clonedElementHeight, originalElementHeight)
             // Update clone and reference.
-            domElement.clonedElement = originalElement.cloneNode(true) as HTMLDivElement;
+            domElement.updateClonedElement(originalElement.cloneNode(true) as HTMLDivElement);
             clonedElement = domElement.clonedElement;
 
             /**
@@ -432,10 +434,10 @@ export abstract class RegionManager {
          * as specialSingleElementRender so we ignore those elements here.
          */
         if(domElement.elementContainer.children.length < 2 && 
-            domElement.elementType !== ElementRenderType.specialSingleElementRender) {
+           domElement.elementType !== ElementRenderType.specialSingleElementRender) {
 
             // console.log("Updating dual rendering.", domElement, domElement.originalElement.parentElement, domElement.originalElement.parentElement?.childElementCount);
-            
+
             // Make sure our CSS is up to date.
             originalElement.addClass(MultiColumnLayoutCSS.OriginalElementType);
             clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
