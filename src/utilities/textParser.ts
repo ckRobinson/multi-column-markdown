@@ -71,7 +71,15 @@ const END_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < END_REGEX_STRS.length; i++) {
     END_REGEX_ARR.push(new RegExp(END_REGEX_STRS[i]));
 }
-export function findEndTag(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+
+type TagPositioningData = {
+    found: boolean;
+    startPosition: number;
+    endPosition: number;
+    matchLength: number;
+};
+
+export function findEndTag(text: string): TagPositioningData {
 
     // We want to find the first end tag in the text.
     // So here we loop backwards, slicing off the tail until

@@ -60,22 +60,47 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 
 				// Setup our loop to render the regions as MCM. 
 				let workingFileText = docText;
-				let startTagData = findStartTag(workingFileText);
-				if(startTagData.found === false) {
-					startTagData = findStartCodeblock(workingFileText);
-				}
 
-				let endTagData = findEndTag(workingFileText);
 				let loopIndex = 0;
 				let startIndexOffset = 0;
-				while (startTagData.found === true && endTagData.found === true) {
+				while (true) {
+
+					// If there are multiple kinds of start blocks, the old way of parsing would cause issues.
+					// Now search for both kinds and determine what to do after search.
+					let startTagData_codeblockStart = findStartCodeblock(workingFileText);
+					let startTagData_depreciatedStart = findStartTag(workingFileText);
+
+					// Default to codeblock Style. Then check, if codeblock was not found and depreciated Start was, set startTag to depreciated.
+					let startTagData = startTagData_codeblockStart;
+					if(startTagData_codeblockStart.found === false && startTagData_depreciatedStart.found === true) {
+						
+						startTagData = startTagData_depreciatedStart
+					}
+					else if(startTagData_codeblockStart.found === true && startTagData_depreciatedStart.found === true) {
+
+						// If both kinds were found we want to start with the one closer to the top of the document as CM6 requires we work in order.
+						if (startTagData_codeblockStart.startPosition > startTagData_depreciatedStart.startPosition) {
+
+							startTagData = startTagData_depreciatedStart
+						}
+					}
+	
+					if(startTagData.found === false) {
+						break;
+					}
+
+					// Search for the first end tag after a start block. (No recursive columns.)
+					let endTagData = findEndTag(workingFileText.slice(startTagData.startPosition));
+					if(endTagData.found === false) {
+						break;
+					}
 
 					/**
 					 * For the region we found get the start and end position of the tags so we 
 					 * can slice it out of the document.
 					 */
 					let startIndex = startIndexOffset + startTagData.startPosition
-					let endIndex = startIndexOffset + endTagData.startPosition + endTagData.matchLength // Without the matchLength will leave the end tag on the screen.
+					let endIndex = startIndex + endTagData.startPosition + endTagData.matchLength // Without the matchLength will leave the end tag on the screen.
 
 					// This text is the entire region data including the start and end tags.
 					let elementText = docText.slice(startIndex, endIndex)
@@ -135,13 +160,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					}
 					generated = true;
 
-					// ReCalculate additional start tags if there are more in document.
-					startTagData = findStartTag(workingFileText);
-					if(startTagData.found === false) {
-						startTagData = findStartCodeblock(workingFileText);
-					}
-
-					endTagData = findEndTag(workingFileText);
+					// Infinite loop protection.
 					loopIndex++;
 					if(loopIndex > 100) {
 						console.warn("Potential issue with rendering Multi-Column Markdown live preview regions. If problem persists please file a bug report with developer.")
