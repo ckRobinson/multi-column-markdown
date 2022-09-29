@@ -306,6 +306,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 # Known Issues
 
+#### **Codeblock Start Tags**
+- Having an edit view and reading view of the same document open at the same time causes render issues when using codeblock start tags.
+
 #### **Live Preview**
 
 - Some cross compatibility with other plugins is not supported and will not render.
