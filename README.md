@@ -162,6 +162,13 @@ Should the columns cut off anything that goes outside the column bounds or shoul
     - Scroll (Default)
     - Hidden
 
+#### **Alignment:**
+Choose the alignment of the content in the columns.
+- Valid Options
+    - Left (Default)
+    - Center
+    - Right
+
 <br>
 
 ### **Auto Layout**

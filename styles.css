@@ -152,3 +152,15 @@
 .mcm-content-overflow-auto-scroll {
     overflow-x: auto;
 }
+
+.mcm-content-alignment-left {
+    text-align: left;
+}
+
+.mcm-content-alignment-center {
+    text-align: center;
+}
+
+.mcm-content-alignment-right {
+    text-align: right;
+}

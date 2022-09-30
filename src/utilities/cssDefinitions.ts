@@ -19,6 +19,10 @@ export enum MultiColumnLayoutCSS {
     ContentOverflowAutoScroll = "mcm-content-overflow-auto-scroll",
     ContentOverflowHidden = "mcm-content-overflow-hidden",
 
+    AlignmentLeft = "mcm-content-alignment-left",
+    AlignmentCenter = "mcm-content-alignment-center",
+    AlignmentRight = "mcm-content-alignment-right",
+
     // ------------------------------------------------------ //
 
     SingleColumnSmall = "mcm-single-column-small",
