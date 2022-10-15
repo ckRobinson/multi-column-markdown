@@ -219,38 +219,31 @@ export function findSettingsCodeblock(text: string): { found: boolean, startPosi
     return { found, startPosition, endPosition, matchLength };
 }
 
-const START_CODEBLOCK_REGEX_ARR: RegExp[] = [
-"```multi-column-start",
-"```start-multi-column"
-].map((val) => {
-    return new RegExp(val);
-})
+const CODEBLOCK_START_REGEX_STR: string = [
+"multi-column-start",
+"start-multi-column"
+].reduce((prev, cur) => {
+    if(prev === "") {
+        return cur;
+    }
+    return `${prev}|${cur}`;
+}, "")
+const START_CODEBLOCK_REGEX: RegExp = new RegExp(`\`\`\`(:?${CODEBLOCK_START_REGEX_STR})(.*?)\`\`\``, "ms");
+
 export function findStartCodeblock(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
 
     let found = false;
     let startPosition = -1;
     let endPosition = -1
     let matchLength = 0;
-    for(let i = 0; i< START_CODEBLOCK_REGEX_ARR.length; i++) {
 
-        let regexData = START_CODEBLOCK_REGEX_ARR[i].exec(text)
-        if(regexData !== null && regexData.length > 0) {
+    let regexData = START_CODEBLOCK_REGEX.exec(text)
+    if(regexData !== null && regexData.length > 0) {
 
-            found = true;
-            startPosition = regexData.index
-            matchLength = regexData[0].length;
-            endPosition = startPosition + matchLength;
-
-            let remainingText = text.slice(endPosition)
-            regexData = CODEBLOCK_END_REGEX.exec(remainingText)
-            if(regexData !== null && regexData.length > 0) {
-
-                found = true;
-                endPosition += regexData.index + regexData[0].length 
-            }
-
-            break;
-        }
+        found = true;
+        startPosition = regexData.index
+        matchLength = regexData[0].length;
+        endPosition = startPosition + matchLength;
     }
 
     return { found, startPosition, endPosition, matchLength };

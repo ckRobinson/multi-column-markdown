@@ -354,6 +354,9 @@ These syntax options are currently still supported but are being depreciated for
 
 # Version History
 
+### **0.7.4**
+- Fixed bug in pdf export caused by using both kinds of codeblock start regions.
+
 ### **0.7.3**
 - Added option to create full width single column regions. Use "column size: full" to enable.
 - Fixed bug that caused images to not render in live preview.

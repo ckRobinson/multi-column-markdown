@@ -488,7 +488,10 @@ ${editor.getDoc().getSelection()}`
 
                 codeBlockData = multiColumnParser.findStartCodeblock(fileText);
             }
-        }  
+        }
+        else {
+            console.error(`Error getting file from source path: ${sourcePath}`)
+        }
 
         let inBlock = false;
         for (let i = 0; i < docChildren.length; i++) {
@@ -504,6 +507,7 @@ ${editor.getDoc().getSelection()}`
                     let blockData = multiColumnParser.isStartTagWithID(child.textContent);
                     if (blockData.isStartTag === true) {
 
+                        // If an old-style start tag.
                         foundBlockData = true;
                         if (blockData.hasKey === true) {
                             let foundKey = multiColumnParser.getStartTagKey(child.textContent);
