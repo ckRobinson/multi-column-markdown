@@ -356,6 +356,7 @@ These syntax options are currently still supported but are being depreciated for
 
 ### **0.7.4**
 - Fixed bug in pdf export caused by using both kinds of codeblock start regions.
+- Fixed bug in Fix Missing ID command when appending new IDs to codeblock start regions.
 
 ### **0.7.3**
 - Added option to create full width single column regions. Use "column size: full" to enable.

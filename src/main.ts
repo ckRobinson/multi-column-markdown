@@ -100,23 +100,31 @@ ${editor.getDoc().getSelection()}`
                     let numCodeblocksUpdated = 0;
                     while(startCodeblock.found === true) {
 
-                        let startReplaceLines = (docText.slice(0, startCodeblock.startPosition).split("\n").length - 1) + lineOffset; // -1 to Zero index the replace line
-
+                        // Get the text of the settings block so we can check if it contains an ID,
+                        // also so we can get the length of the first line, used to calculate where to append a new ID if needed
                         let settingsText = docText.slice(startCodeblock.startPosition, startCodeblock.endPosition);
-                        let settingsID = parseStartRegionCodeBlockID(settingsText);
+                        let firstLineOfCodeblockLength = settingsText.split("\n")[0].length;
+                        
+                        // We need the lines before the block to know where to start replacing text
+                        // and the lines including the block to know where to set our offset to after this iteration.
+                        let linesBefore = docText.slice(0, startCodeblock.startPosition);
+                        let startReplacementLineIndex = (linesBefore.split("\n").length - 1) + lineOffset;
+                        let linesOf = docText.slice(0, startCodeblock.endPosition);
+                        let endReplacementLineIndex =  (linesOf.split("\n").length - 1) + lineOffset;
 
+                        let settingsID = parseStartRegionCodeBlockID(settingsText);
                         if(settingsID === "") {
 
-                            let replacementText = editor.getRange({ line: startReplaceLines, ch: 0 }, { line: startReplaceLines, ch: startCodeblock.matchLength}) + `\nID: ID_${getUID(4)}`
-                            editor.replaceRange(replacementText, { line: startReplaceLines, ch: 0 }, 
-                                                                 { line: startReplaceLines, ch: startCodeblock.matchLength});
-
-                            startReplaceLines += 1; // we added a line to the doc so update our offset.
+                            // copy the first line of the codeblock and append a new ID, then replace the first line of the block
+                            let replacementText = editor.getRange({ line: startReplacementLineIndex, ch: 0 }, { line: startReplacementLineIndex, ch: firstLineOfCodeblockLength}) + `\nID: ID_${getUID(4)}`
+                            editor.replaceRange(replacementText, { line: startReplacementLineIndex, ch: 0 }, 
+                                                                 { line: startReplacementLineIndex, ch: firstLineOfCodeblockLength});
+                            endReplacementLineIndex += 1;
                             numCodeblocksUpdated += 1;
                         }
-                        lineOffset = startReplaceLines
 
-                        docText = docText.slice(startCodeblock.startPosition + startCodeblock.matchLength);
+                        lineOffset = endReplacementLineIndex
+                        docText = docText.slice(startCodeblock.endPosition);
                         startCodeblock = multiColumnParser.findStartCodeblock(docText);
                     }
 
