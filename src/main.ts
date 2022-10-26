@@ -61,7 +61,12 @@ export default class MultiColumnMarkdown extends Plugin {
                 await this.saveSettings();
 
                 console.log("render on mobile:", this.settings.renderOnMobile);
-                new Notice (`Toggled mobile rendering ${this.settings.renderOnMobile ? "on" : "off"}. Please reload any open files for change to take effect.`);
+
+                let noticeString = `Toggled mobile rendering ${this.settings.renderOnMobile ? "on" : "off"}.`
+                if(Platform.isMobile === true) {
+                    noticeString += ` Please reload any open files for change to take effect.`
+                }
+                new Notice (noticeString);
             }
         });
 
