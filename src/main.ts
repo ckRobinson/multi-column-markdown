@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile } from 'obsidian';
+import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
 import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
@@ -19,17 +19,28 @@ import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
 import { parseStartRegionCodeBlockID } from './utilities/settingsParser';
 
+interface MCM_Settings {
+    renderOnMobile: boolean;
+}
+const DEFAULT_SETTINGS: MCM_Settings = {
+    renderOnMobile: true
+};
+
 const CODEBLOCK_START_STRS = [
     "start-multi-column",
     "multi-column-start"
 ]
 export default class MultiColumnMarkdown extends Plugin {
 
+    settings: MCM_Settings = DEFAULT_SETTINGS;
     globalManager: GlobalDOMManager = new GlobalDOMManager();
 
 	async onload() {
 
         console.log("Loading multi-column markdown");
+
+        await this.loadSettings();
+
         this.globalManager = new GlobalDOMManager();
 
         this.registerEditorExtension(multiColumnMarkdown_StateField)
@@ -40,6 +51,19 @@ export default class MultiColumnMarkdown extends Plugin {
             this.setupMarkdownCodeblockPostProcessor(startStr);
         }
         this.setupMarkdownPostProcessor();
+
+        this.addCommand({            
+            id: `toggle-mobile-rendering-mcm`,
+            name: `Toggle Mobile Rendering - Multi-Column Markdown`,
+            callback: async () => {
+
+                this.settings.renderOnMobile = !this.settings.renderOnMobile; 
+                await this.saveSettings();
+
+                console.log("render on mobile:", this.settings.renderOnMobile);
+                new Notice (`Toggled mobile rendering ${this.settings.renderOnMobile ? "on" : "off"}. Please reload any open files for change to take effect.`);
+            }
+        });
 
         //TODO: Set up this as a modal to set settings automatically
         this.addCommand({            
@@ -196,6 +220,11 @@ ${editor.getDoc().getSelection()}`
 
     setupMarkdownPostProcessor() {
         this.registerMarkdownPostProcessor(async (el, ctx) => {
+
+            if(this.settings.renderOnMobile === false &&
+               Platform.isMobile === true) {
+                return;
+            }
 
             const sourcePath = ctx.sourcePath;
 
@@ -609,6 +638,12 @@ ${editor.getDoc().getSelection()}`
 
         this.registerMarkdownCodeBlockProcessor(startStr, (source, el, ctx) => {
 
+            if(this.settings.renderOnMobile === false &&
+                Platform.isMobile === true) {
+ 
+                 return;
+            }
+
             const sourcePath = ctx.sourcePath;
         
             // Set up our CSS so that the codeblock only renders this data in reading mode
@@ -741,6 +776,15 @@ ${editor.getDoc().getSelection()}`
             }
         })
     }
+
+    async loadSettings() {
+
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
 }
 
 

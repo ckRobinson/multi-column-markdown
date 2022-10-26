@@ -282,6 +282,11 @@ Will create a two column region where the cursor is located with a randomly gene
 #### **Fix Missing IDs For Multi-Column Regions**
 Will search the current document for any region start tags that are missing IDs and randomly generate new IDs for each region.
 
+<br>
+
+#### **Toggle Mobile Rendering - Multi-Column Markdown**
+Toggles setting, enabling or disabling column rendering on mobile devices only.
+
 <br><br>
 
 # Installation
@@ -361,6 +366,9 @@ These syntax options are currently still supported but are being depreciated for
     - This fix may cause issues in other areas, will be watching this closely. 
 - Fixed bug where images with custom width were not being rendered in live-preview
     - This only applies to images using the core obsidian \[\[Image|width]] syntax, any other syntax may not render properly.
+- Added option to toggle columns rendering on mobile devices (per feature request). 
+    - Use the new command "Toggle Mobile Rendering - Multi-Column Markdown" to toggle between rendered and un-rendered modes.
+    - Command is available and will toggle setting on desktop but only effects mobile rendering.
 
 ### **0.7.3**
 - Added option to create full width single column regions. Use "column size: full" to enable.
@@ -384,10 +392,11 @@ These syntax options are currently still supported but are being depreciated for
     - The much requested and long awaited live preview support is here! 
     - **Things to note:**
         - Updating to 0.7.0 to enable this feature may require a restart of Obsidian.
-        - The styling of the Live Preview columns is **very** theme dependent as Multi-Column Markdown mostly only handles visual the layout.
+        - The styling of the Live Preview columns is **very** theme dependent as Multi-Column Markdown mostly only handles the layout.
         - All standard markdown syntax is fully supported, however cross compatibility with other plugins may or may not be supported.
             - Due to how custom live preview plugins are implemented within CodeMirror6 and hook into Obsidian I can not guarentee all plugins will render properly within live preview at this point.
             - *Most* plugins retain their cross compatibility when viewing columns in Reading mode.
+
 - ### **New start region syntax**
     - You can now define the start of a multi-column region and it's settings as a single codeblock.
     - The old start tag syntax will begin to be slowly depreciated by this new codeblock syntax.
