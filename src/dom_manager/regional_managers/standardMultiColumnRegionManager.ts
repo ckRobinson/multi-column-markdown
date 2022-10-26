@@ -7,7 +7,7 @@
  */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ContentOverflowType } from "../../regionSettings";
+import { MultiColumnSettings, ContentOverflowType, AlignmentType } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
@@ -100,6 +100,16 @@ export class StandardMultiColumnRegionManager extends RegionManager {
                 }
                 else {
                     element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll)
+                }
+
+                if(settings.alignment === AlignmentType.center) {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentCenter)
+                }
+                else if (settings.alignment === AlignmentType.right) {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentRight)
+                }
+                else {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
                 }
 
                 regionElements[i].elementContainer = element;

@@ -48,6 +48,12 @@ export enum ContentOverflowType {
     hidden
 }
 
+export enum AlignmentType {
+    left,
+    center,
+    right
+}
+
 export type MultiColumnSettings = {
     numberOfColumns: number,
     columnLayout: ColumnLayout,
@@ -57,7 +63,8 @@ export type MultiColumnSettings = {
     columnSize: SingleColumnSize,
     columnPosition: ColumnLayout,
     columnSpacing: string,
-    contentOverflow: ContentOverflowType
+    contentOverflow: ContentOverflowType,
+    alignment: AlignmentType
 }
 
 export function getDefaultMultiColumnSettings(): MultiColumnSettings {
@@ -71,6 +78,7 @@ export function getDefaultMultiColumnSettings(): MultiColumnSettings {
         columnSize: SingleColumnSize.medium,
         columnPosition: ColumnLayout.standard,
         columnSpacing: "",
-        contentOverflow: ContentOverflowType.scroll
+        contentOverflow: ContentOverflowType.scroll,
+        alignment: AlignmentType.left
     }
 }

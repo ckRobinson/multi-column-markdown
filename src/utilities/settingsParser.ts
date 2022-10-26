@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson                                         
  */
 
-import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType } from "../regionSettings";
+import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType, AlignmentType } from "../regionSettings";
 
 /**
  * Here we define all of the valid settings strings that the user can enter for each setting type.
@@ -86,7 +86,18 @@ const CONTENT_OVERFLOW_REGEX_ARR: RegExp[] = [
     "content overflow"
 ].map((value) => {
     return new RegExp(convertStringToSettingsRegex(value), "i")
-})
+});
+
+const ALIGNMENT_REGEX_ARR: RegExp[] = [
+    "alignment",
+    "align",
+    "content align",
+    "align content",
+    "text align",
+    "align text"
+].map((value) => {
+    return new RegExp(convertStringToSettingsRegex(value), "i");
+});
 
 /**
  * This function searches the settings string through each regex option. If one of the regex
@@ -240,6 +251,18 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
             }
 
             parsedSettings.contentOverflow = overflowType;
+        }
+        settingsData = getSettingsDataFromKeys(settingsLine, ALIGNMENT_REGEX_ARR);
+        if (settingsData !== null) {
+            let alignmentType = AlignmentType.left;
+            settingsData = settingsData.toLowerCase().trim();
+            if (settingsData === "center") {
+                alignmentType = AlignmentType.center;
+            }
+            if (settingsData === "right") {
+                alignmentType = AlignmentType.right;
+            }
+            parsedSettings.alignment = alignmentType;
         }
     }
 
