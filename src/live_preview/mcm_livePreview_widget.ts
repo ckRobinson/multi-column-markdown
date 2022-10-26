@@ -166,6 +166,7 @@ function fixImageRender(el: Element): Element {
     if(items.length === 1) {
 
         let embed = items[0];
+        let customWidth = embed.attributes.getNamedItem("width")
         let alt = embed.getAttr("alt")
         let src = embed.getAttr("src")
 
@@ -185,7 +186,7 @@ function fixImageRender(el: Element): Element {
             }
         }
 
-        if(alt === src && resourcePath !== "") {
+        if(resourcePath !== "") {
 
             fixedEl = createDiv({
                 cls: "internal-embed image-embed is-loaded",
@@ -194,6 +195,11 @@ function fixImageRender(el: Element): Element {
 
             let image = fixedEl.createEl("img");
             image.setAttr("src", resourcePath);
+
+            if(customWidth !== null) {
+
+                image.setAttr("width", customWidth.value);
+            }
         }
     }
 

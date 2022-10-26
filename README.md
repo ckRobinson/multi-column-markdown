@@ -359,6 +359,8 @@ These syntax options are currently still supported but are being depreciated for
 - Fixed bug in Fix Missing ID command when appending new IDs to codeblock start regions.
 - Fixed bug where having multiple tabs of the same document open could cause regions to not render properly.
     - This fix may cause issues in other areas, will be watching this closely. 
+- Fixed bug where images with custom width were not being rendered in live-preview
+    - This only applies to images using the core obsidian \[\[Image|width]] syntax, any other syntax may not render properly.
 
 ### **0.7.3**
 - Added option to create full width single column regions. Use "column size: full" to enable.
