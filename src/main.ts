@@ -633,7 +633,10 @@ ${editor.getDoc().getSelection()}`
                 foundFileLeaf = true;
         
                 if(getLeafSourceMode(fileLeaf) === "source") {
-                    return;
+                    // This was added when implementing live preview, but the reason it was originally added appears to no longer be an issue.
+                    // Removing the return from here to fix bug where opening multiple copies of the document causes regions to not render.
+                    console.debug("Leaf of file is in source mode. Should we be ignoring post processing here?")
+                    // return;
                 }
             }
         
