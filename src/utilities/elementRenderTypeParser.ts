@@ -16,7 +16,8 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      * updated but should not always update the "dual render" aspect, so we add
      * a special case for that plugin and maybe others in the future.
      */
-    if(hasDataview(element) === true) {
+    if(hasDataview(element) === true ||
+       isInternalEmbed(element)) {
         return ElementRenderType.specialSingleElementRender;
     }
 
@@ -156,6 +157,11 @@ function hasDataviewJS(element: HTMLElement) {
      * need thier own case put in or the restriction removed after testing.
      */
     return canvas !== null && isDataviewJS 
+}
+
+function isInternalEmbed(element: HTMLElement) {
+    let isEmbed = element.getElementsByClassName("internal-embed").length !== 0;
+    return isEmbed;
 }
 
 export function getHeadingCollapseElement(element: HTMLElement): Element | null {
