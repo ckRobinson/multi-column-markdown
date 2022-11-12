@@ -381,6 +381,7 @@ These syntax options are currently still supported but are being depreciated for
 - Added option to toggle columns rendering on mobile devices (per feature request). 
     - Use the new command "Toggle Mobile Rendering - Multi-Column Markdown" to toggle between rendered and un-rendered modes.
     - Command is available and will toggle setting on desktop but only effects mobile rendering.
+- Fixed a bug that caused internal and external links to not properly open within live preview.
 
 ## Older Changes:
 

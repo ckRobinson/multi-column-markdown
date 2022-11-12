@@ -123,6 +123,8 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             }
         }
 
+        fixExternalLinks(el)
+
         return el;
     }
 }
@@ -163,50 +165,106 @@ function fixImageRender(el: Element): Element {
 
     let fixedEl = el;
     let items = el.getElementsByClassName("internal-embed");
-    if(items.length === 1) {
+    if(items.length !== 1) {
+        return el;
+    }
 
-        let embed = items[0];
-        let customWidth = embed.attributes.getNamedItem("width")
-        let alt = embed.getAttr("alt")
-        let src = embed.getAttr("src")
+    let embed = items[0];
+    let customWidth = embed.attributes.getNamedItem("width")
+    let alt = embed.getAttr("alt")
+    let src = embed.getAttr("src")
+    
+    // If the link source is not an image we dont want to make any adjustments.
+    if(filenameIsImage(src) === false) {
+        return el;
+    }
 
-        let aTFiles = app.vault.getAllLoadedFiles()
-        let resourcePath = ""
-        for(let i = 0; i < aTFiles.length; i++) {
+    // Try to find the image file in the vault. This is very inefficient but works for now.
+    let aTFiles = app.vault.getAllLoadedFiles()
+    let resourcePath = ""
+    for(let i = 0; i < aTFiles.length; i++) {
 
-            let abstractFile = aTFiles[i];
-            if(abstractFile instanceof TFile === false) {
-                continue;
-            }
-            let file = abstractFile as TFile;
-
-            if(file.name === src && hasImageExtension(file.extension) === true) {
-                resourcePath = app.vault.getResourcePath(file)
-                break;
-            }
+        let abstractFile = aTFiles[i];
+        if(abstractFile instanceof TFile === false) {
+            continue;
         }
+        let file = abstractFile as TFile;
 
-        if(resourcePath !== "") {
+        if(file.name === src && isImageExtension(file.extension) === true) {
+            resourcePath = app.vault.getResourcePath(file)
+            break;
+        }
+    }
 
-            fixedEl = createDiv({
-                cls: "internal-embed image-embed is-loaded",
-            })
-            fixedEl.setAttr("alt", alt);
+    // If we found the resource path then we update the element to be a proper image render.
+    if(resourcePath !== "") {
 
-            let image = fixedEl.createEl("img");
-            image.setAttr("src", resourcePath);
+        fixedEl = createDiv({
+            cls: "internal-embed image-embed is-loaded",
+        })
+        fixedEl.setAttr("alt", alt);
 
-            if(customWidth !== null) {
+        let image = fixedEl.createEl("img");
+        image.setAttr("src", resourcePath);
 
-                image.setAttr("width", customWidth.value);
-            }
+        if(customWidth !== null) {
+
+            image.setAttr("width", customWidth.value);
         }
     }
 
     return fixedEl;
 }
 
-function hasImageExtension(extension: string): boolean {
+function fixExternalLinks(el: Element): Element {
+
+    let items = el.getElementsByClassName("external-link");
+    for(let linkEl of Array.from(items)) {
+
+        let link = linkEl as HTMLElement;
+        if(link === undefined ||
+           link === null ) {
+            continue;
+        }
+
+        // Remove the href from the link and setup an event listener to open the link in the default browser.
+        let href = link.getAttr("href")
+        link.removeAttribute("href");
+
+        link.addEventListener("click", (ev) => {
+
+            window.open(href); 
+        });
+    }
+
+    items = el.getElementsByClassName("internal-link");
+    for(let linkEl of Array.from(items)) {
+
+        let link = linkEl as HTMLElement;
+        if(link === undefined ||
+           link === null ) {
+            continue;
+        }
+
+        // Removing the href from internal links is all that seems to be required to fix the onclick.
+        link.removeAttribute("href");
+    }
+
+    return el;
+}
+
+function filenameIsImage(filename: string): boolean {
+
+    let parts = filename.split(".");
+    if(parts.length <= 1) {
+        return false;
+    }
+
+    let extension = parts.last();
+    return isImageExtension(extension);
+}
+
+function isImageExtension(extension: string): boolean {
 
     extension = extension.toLowerCase();
     switch(extension) {

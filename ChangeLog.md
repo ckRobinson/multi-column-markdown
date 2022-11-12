@@ -8,6 +8,7 @@
 - Added option to toggle columns rendering on mobile devices (per feature request). 
     - Use the new command "Toggle Mobile Rendering - Multi-Column Markdown" to toggle between rendered and un-rendered modes.
     - Command is available and will toggle setting on desktop but only effects mobile rendering.
+- Fixed a bug that caused internal and external links to not properly open within live preview.
 
 # **0.7.3**
 - Added option to create full width single column regions. Use "column size: full" to enable.
