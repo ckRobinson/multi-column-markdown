@@ -140,6 +140,12 @@ export abstract class RegionManager {
         return addAtIndex;
     }
 
+    public addObjectAtIndex(obj: DOMObject, index: number) {
+
+        this.domList.splice(index, 0, obj);
+        this.domObjectMap.set(obj.UID, obj);
+    }
+
     public removeObject(objectUID: string): void {
         // /**
         //  * Make a copy of the list to log

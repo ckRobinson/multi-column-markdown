@@ -422,7 +422,7 @@ ${editor.getDoc().getSelection()}`
              * callback for when the object is removed from view that will remove 
              * the item from the manager.
              */
-            regionalManager.addObject(siblingsAbove, siblingsBelow, currentObject);
+            let addIndex = regionalManager.addObject(siblingsAbove, siblingsBelow, currentObject);
 
             let elementMarkdownRenderer = new MarkdownRenderChild(el);
             elementMarkdownRenderer.onunload = () => {
