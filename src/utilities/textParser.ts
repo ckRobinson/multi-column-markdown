@@ -120,14 +120,14 @@ function getEndTagData(text: string) {
     return { found, startPosition, endPosition, matchLength };
 }
 
-const COL_REGEX_STRS: string[] = ["=== *column-end *===",
-                                  "=== *end-column *===",
-                                  "=== *column-break *===",
-                                  "=== *break-column *===",
-                                  "--- *column-end *---",
-                                  "--- *end-column *---",
-                                  "--- *column-break *---",
-                                  "--- *break-column *---"];
+const COL_REGEX_STRS: string[] = ["^===\\s*?column-end\\s*?===\\s*?$",
+                                  "^===\\s*?end-column\\s*?===\\s*?$",
+                                  "^===\\s*?column-break\\s*?===\\s*?$",
+                                  "^===\\s*?break-column\\s*?===\\s*?$",
+                                  "^---\\s*?column-end\\s*?---\\s*?$",
+                                  "^---\\s*?end-column\\s*?---\\s*?$",
+                                  "^---\\s*?column-break\\s*?---\\s*?$",
+                                  "^---\\s*?break-column\\s*?---\\s*?$"];
 const COL_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < COL_REGEX_STRS.length; i++) {
     COL_REGEX_ARR.push(new RegExp(COL_REGEX_STRS[i]));
