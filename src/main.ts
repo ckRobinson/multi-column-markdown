@@ -452,9 +452,6 @@ ${editor.getDoc().getSelection()}`
             };
             ctx.addChild(elementMarkdownRenderer);
 
-            let elementTextSpaced = linesOfElement.reduce((prev, curr) => {
-                return prev + "\n" + curr;
-            });
             /**
              * Now we check if our current element is a special flag so we can
              * properly set the element tag within the regional manager.
@@ -465,17 +462,17 @@ ${editor.getDoc().getSelection()}`
                 el.addClass(MultiColumnStyleCSS.RegionEndTag)
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
             }
-            else if(multiColumnParser.containsColEndTag(elementTextSpaced) === true) {
+            else if(multiColumnParser.containsColEndTag(textOfElement) === true) {
 
                 currentObject.elementType = ElementRenderType.unRendered
                 el.addClass(MultiColumnStyleCSS.ColumnEndTag)
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
             }
-            else if(multiColumnParser.containsColSettingsTag(elementTextSpaced) === true) {
+            else if(multiColumnParser.containsColSettingsTag(textOfElement) === true) {
 
                 currentObject.elementType = ElementRenderType.unRendered
                 el.addClass(MultiColumnStyleCSS.RegionSettings)
-                regionalManager = regionalContainer.setRegionSettings(elementTextSpaced)
+                regionalManager = regionalContainer.setRegionSettings(textOfElement)
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.regionSettings);
             }
             else {
