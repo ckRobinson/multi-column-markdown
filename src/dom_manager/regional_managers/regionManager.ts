@@ -176,10 +176,7 @@ export abstract class RegionManager {
     public updateElementTag(objectUID: string, newTag: DOMObjectTag): void {
 
         let obj = this.domObjectMap.get(objectUID);
-        let index = this.domList.indexOf(obj);
-        if (index !== -1) {
-            this.domList[index].tag = newTag;
-        }
+        obj.tag = newTag;
     }
 
     public setRegionalSettings(regionSettings: MultiColumnSettings): void {
