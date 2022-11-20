@@ -64,6 +64,13 @@ export abstract class RegionManager {
         };
     }
 
+    /**
+     * Adds a new object to the region by finding where it should be relative to its siblings.
+     * @param siblingsAbove The Markdown text rendered elements for sibilings above this element in the dom
+     * @param siblingsBelow The Markdown text rendered elements for sibilings below this element in the dom
+     * @param obj The object to add.
+     * @returns Returns the index at which the object has been added.
+     */
     public addObject(siblingsAbove: HTMLDivElement, siblingsBelow: HTMLDivElement, obj: DOMObject): number {
 
         let nextObj = siblingsBelow.children[0] as HTMLElement;
