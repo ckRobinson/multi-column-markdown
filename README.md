@@ -369,6 +369,9 @@ These syntax options are currently still supported but are being depreciated for
 
 # Change Log
 
+### **0.7.5**
+- Fixed bug in live preview that caused Obsidian 1.1.0 to hang on start up.
+
 ### **0.7.4**
 - Added option to change text alignment within columns.
     - Merged from PR by lucabello
