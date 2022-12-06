@@ -1,3 +1,6 @@
+### **0.7.5**
+- Fixed bug in live preview that caused Obsidian 1.1.0 to hang on start up.
+
 # **0.7.4**
 - Fixed bug in pdf export caused by using both kinds of codeblock start regions.
 - Fixed bug in Fix Missing ID command when appending new IDs to codeblock start regions.

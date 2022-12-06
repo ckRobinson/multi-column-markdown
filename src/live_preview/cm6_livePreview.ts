@@ -6,12 +6,12 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { EditorState, Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
+import { Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
 import { containsRegionStart, findEndTag, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
 import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
-import { editorViewField } from "obsidian";
+import { editorLivePreviewField } from "obsidian";
 
 export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	create(state): DecorationSet {
@@ -31,7 +31,8 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                     return;
                 }
 
-                if(isEditorInLivePreview(transaction.state) === true) {
+				// Check if view is in live preview state.
+                if(transaction.state.field(editorLivePreviewField) === true) {
                     // console.debug("User disabled live preview.")
                     return;
                 }
@@ -253,18 +254,3 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 		return EditorView.decorations.from(field);
 	},
 });
-
-function isEditorInLivePreview(state: EditorState): boolean {
-	
-	let mdView = state.field(editorViewField);
-	let viewState = mdView.leaf.getViewState();
-
-	let stateData = null;
-	if(viewState.state) {
-		stateData = viewState.state;
-	}
-
-	return (
-		stateData && stateData.mode == "source" && stateData.source == true
-	);
-}
