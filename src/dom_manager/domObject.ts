@@ -10,7 +10,7 @@ import { getUID } from "../utilities/utils";
 import { ElementRenderType } from "../utilities/elementRenderTypeParser";
 import { containsColEndTag, containsColSettingsTag, containsEndTag, containsStartTag, elInnerTextContainsColEndTag } from "src/utilities/textParser";
 
-const UPDATE_TIMES: number[] = [250, 20000];
+const UPDATE_TIMES: number[] = [125, 125, 250, 20000];
 
 export enum DOMObjectTag {
     none,
