@@ -32,7 +32,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                 }
 
 				// Check if view is in live preview state.
-                if(transaction.state.field(editorLivePreviewField) === true) {
+                if(transaction.state.field(editorLivePreviewField) === false) {
                     // console.debug("User disabled live preview.")
                     return;
                 }
