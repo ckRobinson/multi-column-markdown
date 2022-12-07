@@ -394,6 +394,9 @@ export abstract class RegionManager {
 
             // console.log("Updating canvas re-render")
             containerElement.appendChild(originalElement);
+            if(clonedElement !== null && clonedElement.parentElement === containerElement) {
+                containerElement.removeChild(clonedElement);
+            }
 
             function cloneCanvas(originalCanvas: HTMLCanvasElement): HTMLCanvasElement {
 
@@ -434,6 +437,7 @@ export abstract class RegionManager {
             }
 
             containerElement.removeChild(originalElement);
+            containerElement.appendChild(clonedElement);
         }
         
         /** 
