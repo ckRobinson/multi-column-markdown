@@ -143,7 +143,7 @@ function hasAdmonitionFold(element: HTMLElement) {
 
 function hasDataview(element: HTMLElement) {
 
-    let isDataview = element.getElementsByClassName("dataview").length !== 0;
+    let isDataview = element.getElementsByClassName("block-language-dataview").length !== 0;
     return isDataview;
 }
 

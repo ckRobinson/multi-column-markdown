@@ -384,7 +384,7 @@ export abstract class RegionManager {
            domElement.clonedElementReadyForUpdate() === true) &&
            domElement.elementType !== ElementRenderType.canvasRenderElement) {
             
-            // console.log("Updating Cloned Element.", clonedElementHeight, originalElementHeight)
+            // console.log("Updating Cloned Element.", ElementRenderType[domElement.elementType], clonedElementHeight, originalElementHeight)
             // Update clone and reference.
             cloneElement();
         }
