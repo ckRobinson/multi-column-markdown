@@ -23,6 +23,9 @@ export type MultiColumnRenderData = {
 export abstract class RegionManager {
 
     protected domList: DOMObject[] = [];
+    public get numberOfChildren(): number {
+        return this.domList.length;
+    }
     protected domObjectMap: Map<string, DOMObject> = new Map();
     private _regionParent: HTMLElement;
     public get regionParent(): HTMLElement {

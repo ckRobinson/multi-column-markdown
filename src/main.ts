@@ -606,7 +606,8 @@ ${editor.getDoc().getSelection()}`
 
 
                         let regionalContainer: RegionManagerContainer = fileDOMManager.getRegionalContainer(regionKey);
-                        if (regionalContainer === null) {
+                        if (regionalContainer === null || regionalContainer.getRegion().numberOfChildren === 0) {
+                            // If the number of children is 0, we are probably in LivePreview, where the codeblock start regions have been processed by native obsidian live preview but do not have any children linked to them.
                             renderErrorRegion.innerText = "Error rendering multi-column region.\nPlease close and reopen the file, then make sure you are in reading mode before exporting.";
                         }
                         else {
