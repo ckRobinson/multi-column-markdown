@@ -7,7 +7,7 @@
  */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings } from "../../regionSettings";
+import { AlignmentType, ContentOverflowType, MultiColumnSettings } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { RegionManager } from './regionManager';
 import { getHeadingCollapseElement, hasHeader } from 'src/utilities/elementRenderTypeParser';
@@ -160,6 +160,23 @@ export class AutoLayoutRegionManager extends RegionManager {
                     });
                     regionElements[i].elementContainer = element;
     
+                    if(settings.contentOverflow === ContentOverflowType.hidden) {
+                        element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden)
+                    }
+                    else {
+                        element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll)
+                    }
+                    
+                    if(settings.alignment === AlignmentType.center) {
+                        element.addClass(MultiColumnLayoutCSS.AlignmentCenter)
+                    }
+                    else if (settings.alignment === AlignmentType.right) {
+                        element.addClass(MultiColumnLayoutCSS.AlignmentRight)
+                    }
+                    else {
+                        element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
+                    }
+
                     let clonedElement = regionElements[i].clonedElement;
                     if(regionElements[i].clonedElement === null) {
 

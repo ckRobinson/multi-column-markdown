@@ -1,5 +1,5 @@
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout, SingleColumnSize } from "../../regionSettings";
+import { MultiColumnSettings, ColumnLayout, SingleColumnSize, ContentOverflowType, AlignmentType } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
@@ -91,6 +91,23 @@ export class SingleColumnRegionManager extends RegionManager {
                     cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
                 });
                 regionElements[i].elementContainer = element;
+
+                if(settings.contentOverflow === ContentOverflowType.hidden) {
+                    element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden)
+                }
+                else {
+                    element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll)
+                }
+                
+                if(settings.alignment === AlignmentType.center) {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentCenter)
+                }
+                else if (settings.alignment === AlignmentType.right) {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentRight)
+                }
+                else {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
+                }
 
                 // Otherwise we just make a copy of the original element to display.
                 let clonedElement = regionElements[i].originalElement.cloneNode(true) as HTMLDivElement;
