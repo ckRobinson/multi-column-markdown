@@ -143,7 +143,7 @@ export class DOMStartRegionObject extends DOMObject {
 export class TaskListDOMObject extends DOMObject {
 
     originalCheckboxes: HTMLElement[] = [];
-
+    checkboxElements: Map<number, HTMLInputElement> = new Map();
     constructor(baseDOMObject: DOMObject) {
 
         super(baseDOMObject.originalElement, baseDOMObject.linesOfElement, baseDOMObject.UID, DOMObjectTag.none);
@@ -151,11 +151,40 @@ export class TaskListDOMObject extends DOMObject {
 
     checkboxClicked(index: number) {
 
+        if(this.checkboxElements.has(index)) {
+            this.checkboxElements.get(index).click();
+        }
+
         if(index < this.originalCheckboxes.length) {
 
-            let originalInput = this.originalCheckboxes[index].firstChild as HTMLInputElement;
-            originalInput.click();
+            let originalInput = this.originalCheckboxes[index].getElementsByClassName('task-list-item-checkbox')
+            if(originalInput.length === 1) {
+                (originalInput[0] as HTMLInputElement).click();
+            }
+            else {
+                console.error("Could not find checkbox to click.")
+            }
         }
+    }
+
+    getCheckboxElement(index: number): HTMLInputElement | undefined {
+
+
+        if(this.checkboxElements.has(index) === false) {
+
+            if(index < this.originalCheckboxes.length) {
+
+                let originalInput = this.originalCheckboxes[index]?.getElementsByClassName('task-list-item-checkbox')
+                if(originalInput?.length === 1) {
+
+                    this.checkboxElements.set(index, (originalInput[0] as HTMLInputElement))
+                }
+                else {
+                    console.error("Could not find checkbox element to return.", this.originalCheckboxes, index);
+                }
+            }
+        }
+        return this.checkboxElements.get(index);
     }
 
     static checkForTaskListElement(domElement: DOMObject) {
@@ -166,5 +195,16 @@ export class TaskListDOMObject extends DOMObject {
         }
 
         return domElement;
+    }
+
+    static getChildCheckbox(el: HTMLElement): HTMLElement {
+
+        let checkboxElements = el.getElementsByClassName('task-list-item-checkbox')
+        if(checkboxElements.length === 1) {
+
+            return checkboxElements[0] as HTMLElement;
+        }
+        
+        return el.children[0] as HTMLElement
     }
 }

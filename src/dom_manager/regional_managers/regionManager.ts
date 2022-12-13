@@ -305,6 +305,7 @@ export abstract class RegionManager {
 
         if (initalizeCheckboxes === true) {
 
+            domElement.originalCheckboxes = originalListCheckboxes;
             // When we initalize we remove the old input checkbox that contains
             // the weird callback situation causing the bug. Then we create a new
             // checkbox to replace it and set it up to fire the click event on
@@ -313,10 +314,10 @@ export abstract class RegionManager {
 
                 const checkbox = createEl('input');
 
-                let originalInput = originalListCheckboxes[i].firstChild as HTMLInputElement;
+                let originalInput = domElement.getCheckboxElement(i);
+                checkbox.checked = originalInput?.checked;
+                clonedListCheckboxes[i].replaceChild(checkbox, TaskListDOMObject.getChildCheckbox(clonedListCheckboxes[i]));
 
-                checkbox.checked = originalInput.checked;
-                clonedListCheckboxes[i].replaceChild(checkbox, clonedListCheckboxes[i].children[0]);
                 checkbox.addClass('task-list-item-checkbox');
                 checkbox.type = 'checkbox';
                 checkbox.onClickEvent(() => {
