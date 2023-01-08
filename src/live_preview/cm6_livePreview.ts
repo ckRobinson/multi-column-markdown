@@ -20,9 +20,16 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	update(oldState: DecorationSet, transaction: Transaction): DecorationSet {
 		const builder = new RangeSetBuilder<Decoration>();
         let generated = false;
+		let fileContainsStartTag = true;
 
 		syntaxTree(transaction.state).iterate({
 			enter(node) {
+
+				// If we find that the file does not contain any MCM regions we can flip this
+				// flag and skip all other node iterations, potentially saving a lot of compute time.
+				if(fileContainsStartTag === false) {
+					return;
+				}
 
                 // We only want to run the generation once per state change. If
                 // a previous node has sucessfully generated regions we ignore all
@@ -51,6 +58,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                 let docText = transaction.state.doc.sliceString(0, docLength);
 				if (containsRegionStart(docText) === false) {
 					// console.debug("No start tag in document.")
+					fileContainsStartTag = false;
 					return;
 				}
 
