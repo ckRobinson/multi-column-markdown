@@ -60,6 +60,12 @@ export class DOMObject {
         if(this.tag === DOMObjectTag.none) {
             this.setDomObjectTag()
         }
+
+        // If our tag is still none here, we now want to check for
+        // an in paragraph column break flag.
+        if(this.tag === DOMObjectTag.none) {
+            this.checkForPrePostColumnBreak()
+        }
     }
 
     setMainDOMElement(domElement: HTMLElement) {
@@ -134,6 +140,9 @@ export class DOMObject {
             // regionalManager = regionalContainer.setRegionSettings(elementTextSpaced)
             // regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.regionSettings);
         }
+    }
+
+    checkForPrePostColumnBreak() {
     }
 }
 
