@@ -86,6 +86,10 @@
     text-align: center;
 }
 
+.mcm-error-message-color {
+    color: var(--text-error);
+}
+
 .mcm-column-root-container {
     margin: 1.5625em 0;
 }
@@ -163,4 +167,9 @@
 
 .mcm-content-alignment-right {
     text-align: right;
+}
+
+.mcm-span-content-alignment-center {
+    display: block;
+    text-align: center;
 }

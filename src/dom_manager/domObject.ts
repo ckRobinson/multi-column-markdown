@@ -11,6 +11,7 @@ import { ElementRenderType } from "../utilities/elementRenderTypeParser";
 import { checkForParagraphInnerColEndTag, containsColEndTag, containsColSettingsTag, containsEndTag, containsStartTag, elInnerTextContainsColEndTag } from "src/utilities/textParser";
 
 const UPDATE_TIMES: number[] = [125, 125, 250, 20000];
+const MID_BREAK_ERROR_MESSAGE: string = "Detected invalid column break syntax.\nPlease make sure column break tags are not in the middle of a paragraph block"
 
 export enum DOMObjectTag {
     none,
@@ -171,6 +172,14 @@ export class DOMObject {
             else {
                 // console.debug("Column break in the middle of element?")
                 this.elementIsColumnBreak = ElementColumnBreakType.midBreak;
+
+                const ERROR_COLOR_CSS = "mcm-error-message-color";
+                const CENTER_ALIGN_SPAN_CSS = "mcm-span-content-alignment-center";
+                if(paragraph) {
+                    paragraph.innerHTML = `${pre}\n<span class="${ERROR_COLOR_CSS} ${CENTER_ALIGN_SPAN_CSS}">${MID_BREAK_ERROR_MESSAGE}</span>\n\n${post}`.split("\n").join("<br>");
+
+                }
+                return;
             }
 
             if(paragraph) {
