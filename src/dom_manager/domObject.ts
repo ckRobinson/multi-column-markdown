@@ -20,12 +20,20 @@ export enum DOMObjectTag {
     endRegion
 }
 
+export enum ElementColumnBreakType {
+    none = 0,
+    preBreak,
+    postBreak,
+    midBreak
+}
+
 export class DOMObject {
     nodeKey: string;
     originalElement: HTMLElement;
     clonedElement: HTMLElement = null;
     UID: string;
     tag: DOMObjectTag;
+    elementIsColumnBreak: ElementColumnBreakType = ElementColumnBreakType.none;
     usingOriginalElement: boolean
     elementType: ElementRenderType = ElementRenderType.undefined;
     elementContainer: HTMLDivElement = null;
