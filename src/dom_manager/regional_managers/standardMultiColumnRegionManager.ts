@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson                                         *
  */
 
-import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
+import { DOMObject, DOMObjectTag, ElementColumnBreakType, TaskListDOMObject } from '../domObject';
 import { MultiColumnSettings, ContentOverflowType, AlignmentType } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
@@ -90,6 +90,13 @@ export class StandardMultiColumnRegionManager extends RegionManager {
             if (regionElements[i].tag === DOMObjectTag.none ||
                 regionElements[i].tag === DOMObjectTag.columnBreak) {
 
+                // If a standard element contains a column break tag and it is set as a pre content break tag we flip our index here.
+                if(regionElements[i].tag === DOMObjectTag.none && 
+                   regionElements[i].elementIsColumnBreak === ElementColumnBreakType.preBreak && 
+                   (columnIndex + 1) < settings.numberOfColumns) {
+                    columnIndex++;
+                }
+
                 // We store the elements in a wrapper container until we determine
                 let element = createDiv({
                     cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
@@ -144,6 +151,13 @@ export class StandardMultiColumnRegionManager extends RegionManager {
                 if (regionElements[i].tag === DOMObjectTag.columnBreak &&
                     (columnIndex + 1) < settings.numberOfColumns) {
 
+                    columnIndex++;
+                }
+                else if(regionElements[i].tag === DOMObjectTag.none && 
+                        regionElements[i].elementIsColumnBreak === ElementColumnBreakType.postBreak && 
+                        (columnIndex + 1) < settings.numberOfColumns) {
+
+                    // If a standard element contains a column break tag and it is set as a post content break tag we flip our index here.
                     columnIndex++;
                 }
             }
