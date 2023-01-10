@@ -369,23 +369,18 @@ These syntax options are currently still supported but are being depreciated for
 
 # Change Log
 
+### **0.7.7**
+- Fixed bug where error message was not displayed when attempting to export to PDF from live preview.
+- Fixed bug with DataviewJS rendering within columns.
+- Fixed bug where dataview inline elements were not being rendered properly.
+- Fixed bug where checkboxes were double rendering the button and not properly triggering on click.
+- Fixed bug in live preview in which certain kinds of content would cause Obsidian to hang on any file interaction.
+- Fixed bug where additional image embed syntax was not rendering properly.
+- Updated element reload timings to attempt to reduce initial delay when loading elements on initial file load.
+- Updated single column and auto layout to properly use content alignment and content overflow.
+
 ### **0.7.6**
 - Fixed bug in live preview that caused Obsidian 1.1.0 to hang on start up.
-
-### **0.7.4**
-- Added option to change text alignment within columns.
-    - Merged from PR by lucabello
-- Fixed bug in pdf export caused by using both kinds of codeblock start regions.
-- Fixed bug in Fix Missing ID command when appending new IDs to codeblock start regions.
-- Fixed bug where having multiple tabs of the same document open could cause regions to not render properly.
-    - This fix may cause issues in other areas, will be watching this closely. 
-- Fixed bug where images with custom width were not being rendered in live-preview
-    - This only applies to images using the core obsidian \[\[Image|width]] syntax, any other syntax may not render properly.
-- Added option to toggle columns rendering on mobile devices (per feature request). 
-    - Use the new command "Toggle Mobile Rendering - Multi-Column Markdown" to toggle between rendered and un-rendered modes.
-    - Command is available and will toggle setting on desktop but only effects mobile rendering.
-- Fixed a bug that caused internal and external links to not properly open within live preview.
-- Made an adjustment to interal embeds which should reduce flickering when placed within column region.
 
 ## Older Changes:
 

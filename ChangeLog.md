@@ -1,3 +1,16 @@
+### **0.7.7**
+- Fixed bug where error message was not displayed when attempting to export to PDF from live preview.
+- Fixed bug with DataviewJS rendering within columns.
+- Fixed bug where dataview inline elements were not being rendered properly.
+- Fixed bug where checkboxes were double rendering the button and not properly triggering on click.
+- Fixed bug in live preview in which certain kinds of content would cause Obsidian to hang on any file interaction.
+- Fixed bug where additional image embed syntax was not rendering properly.
+- Updated element reload timings to attempt to reduce initial delay when loading elements on initial file load.
+- Updated single column and auto layout to properly use content alignment and content overflow.
+
+### **0.7.6**
+- Fixed bug in live preview that caused Obsidian 1.1.0 to hang on start up.
+
 ### **0.7.5**
 - Fixed bug in live preview that caused Obsidian 1.1.0 to hang on start up.
 
