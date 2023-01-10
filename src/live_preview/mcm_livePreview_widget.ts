@@ -163,13 +163,24 @@ export class MultiColumnMarkdown_DefinedSettings_LivePreview_Widget extends Widg
 
 function fixImageRender(el: Element): Element {
 
+    let embed = null;
     let fixedEl = el;
-    let items = el.getElementsByClassName("internal-embed");
-    if(items.length !== 1) {
-        return el;
+
+    // image embeds can either be a <div class="internal-embed" or <p><div class="internal-embed"
+    // depending on the syntax this additional check is to fix false negatives when embed is
+    // the first case.
+    if(el.hasClass("internal-embed")) {
+        embed = el;
+    }
+    else {
+
+        let items = el.getElementsByClassName("internal-embed");
+        if(items.length !== 1) {
+            return el;
+        }
+        embed = items[0];
     }
 
-    let embed = items[0];
     let customWidth = embed.attributes.getNamedItem("width")
     let alt = embed.getAttr("alt")
     let src = embed.getAttr("src")
