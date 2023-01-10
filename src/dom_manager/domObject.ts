@@ -153,6 +153,12 @@ export class DOMObject {
             let endIndex = startIndex + containsColumnBreak[0].length;
             let pre = text.slice(0, startIndex);
             let post = text.slice(endIndex)
+
+            let paragraph = this.originalElement.children[0] as HTMLElement;
+            if(this.originalElement.nodeName === "P") {
+                paragraph = this.originalElement;
+            }
+
             // console.debug("Checking where column break is", startIndex, endIndex, text.length);
             if(startIndex === 0) {
                 // console.debug("column break at start of element.")
@@ -165,6 +171,10 @@ export class DOMObject {
             else {
                 // console.debug("Column break in the middle of element?")
                 this.elementIsColumnBreak = ElementColumnBreakType.midBreak;
+            }
+
+            if(paragraph) {
+                paragraph.innerText = `${pre}${post}`;
             }
         }
     }
