@@ -8,7 +8,7 @@
 
 import { getUID } from "../utilities/utils";
 import { ElementRenderType } from "../utilities/elementRenderTypeParser";
-import { containsColEndTag, containsColSettingsTag, containsEndTag, containsStartTag, elInnerTextContainsColEndTag } from "src/utilities/textParser";
+import { checkForParagraphInnerColEndTag, containsColEndTag, containsColSettingsTag, containsEndTag, containsStartTag, elInnerTextContainsColEndTag } from "src/utilities/textParser";
 
 const UPDATE_TIMES: number[] = [125, 125, 250, 20000];
 
@@ -143,6 +143,30 @@ export class DOMObject {
     }
 
     checkForPrePostColumnBreak() {
+
+        let textOfElement = this.originalElement.innerText;
+        let containsColumnBreak = checkForParagraphInnerColEndTag(textOfElement);
+        if(containsColumnBreak !== null) {
+
+            let text = this.originalElement.innerText;
+            let startIndex = containsColumnBreak.index;
+            let endIndex = startIndex + containsColumnBreak[0].length;
+            let pre = text.slice(0, startIndex);
+            let post = text.slice(endIndex)
+            // console.debug("Checking where column break is", startIndex, endIndex, text.length);
+            if(startIndex === 0) {
+                // console.debug("column break at start of element.")
+                this.elementIsColumnBreak = ElementColumnBreakType.preBreak;
+            }
+            else if(endIndex === text.length) {
+                // console.debug("Column break at end of element.")
+                this.elementIsColumnBreak = ElementColumnBreakType.postBreak;
+            }
+            else {
+                // console.debug("Column break in the middle of element?")
+                this.elementIsColumnBreak = ElementColumnBreakType.midBreak;
+            }
+        }
     }
 }
 

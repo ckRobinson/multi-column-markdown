@@ -477,21 +477,6 @@ ${editor.getDoc().getSelection()}`
             }
             else {
                 el.addClass(MultiColumnStyleCSS.RegionContent)
-
-                console.debug("Checking:", textOfElement)
-                let containsColumnBreak = /^-{3}\s*?column-end\s*?-{3}\s*?$/m.exec(textOfElement)
-                if(containsColumnBreak !== null) {
-    
-                    let text = el.innerText;
-                    let startIndex = containsColumnBreak.index;
-                    let endIndex = startIndex + containsColumnBreak[0].length;
-                    let pre = text.slice(0, startIndex);
-                    let post = text.slice(endIndex)
-
-                    el.innerText = `${pre}${post}`
-                    // TODO: Add a column break element here after colunn is rendered? Should remove the column break text from the elemnt
-                    console.debug(containsColumnBreak, el.cloneNode(true));
-                }
             }
             
             regionalManager.renderRegionElementsToScreen()

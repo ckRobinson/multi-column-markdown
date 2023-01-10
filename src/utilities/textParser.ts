@@ -146,6 +146,28 @@ export function containsColEndTag(text: string): boolean {
     return found;
 }
 
+const INNER_COL_END_REGEX_ARR: RegExp[] = [
+    /^-{3}\s*?column-end\s*?-{3}\s*?$\n?/m,
+    /^-{3}\s*?end-column\s*?-{3}\s*?$\n?/m,
+    /^-{3}\s*?column-break\s*?-{3}\s*?$\n?/m,
+    /^-{3}\s*?break-column\s*?-{3}\s*?$\n?/m,
+    /^={3}\s*?column-end\s*?={3}\s*?$\n?/m,
+    /^={3}\s*?end-column\s*?={3}\s*?$\n?/m,
+    /^={3}\s*?column-break\s*?={3}\s*?$\n?/m,
+    /^={3}\s*?break-column\s*?={3}\s*?$\n?/m
+]
+export function checkForParagraphInnerColEndTag(text: string): RegExpExecArray | null {
+
+    for(let i = 0; i< INNER_COL_END_REGEX_ARR.length; i++) {
+
+        let regexResult = INNER_COL_END_REGEX_ARR[i].exec(text);
+        if(regexResult) {
+            return regexResult;
+        }
+    }
+    return null;
+}
+
 const COL_ELEMENT_INNER_TEXT_REGEX_STRS: string[] = ["= *column-end *=",
                                                     "= *end-column *=",
                                                     "= *column-break *=",
