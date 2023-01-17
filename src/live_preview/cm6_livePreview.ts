@@ -19,28 +19,25 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	},
 	update(oldState: DecorationSet, transaction: Transaction): DecorationSet {
 		const builder = new RangeSetBuilder<Decoration>();
-        let generated = false;
-		let fileContainsStartTag = true;
+        let ignoreFurtherIterations = false;
 
 		syntaxTree(transaction.state).iterate({
 			enter(node) {
 
 				// If we find that the file does not contain any MCM regions we can flip this
 				// flag and skip all other node iterations, potentially saving a lot of compute time.
-				if(fileContainsStartTag === false) {
-					return;
-				}
-
+				// 
                 // We only want to run the generation once per state change. If
                 // a previous node has sucessfully generated regions we ignore all
                 // other nodes in the state.
-                if(generated === true) {
+                if(ignoreFurtherIterations === true) {
                     return;
                 }
 
 				// Check if view is in live preview state.
                 if(transaction.state.field(editorLivePreviewField) === false) {
                     // console.debug("User disabled live preview.")
+					ignoreFurtherIterations = true;
                     return;
                 }
 
@@ -58,7 +55,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                 let docText = transaction.state.doc.sliceString(0, docLength);
 				if (containsRegionStart(docText) === false) {
 					// console.debug("No start tag in document.")
-					fileContainsStartTag = false;
+					ignoreFurtherIterations = true;
 					return;
 				}
 
@@ -167,7 +164,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 							})
 						);
 					}
-					generated = true;
+					ignoreFurtherIterations = true;
 
 					// Infinite loop protection.
 					loopIndex++;
