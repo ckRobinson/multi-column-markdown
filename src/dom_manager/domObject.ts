@@ -144,6 +144,20 @@ export class DOMObject {
     }
 
     checkForPrePostColumnBreak() {
+        function replaceColBreak(text: string): string {
+
+            let colBreakData = checkForParagraphInnerColEndTag(text);
+            if(containsColumnBreak === null) {
+                return text;
+            }
+
+            let startIndex = colBreakData.index;
+            let endIndex = startIndex + colBreakData[0].length;
+            let pre = text.slice(0, startIndex);
+            let post = text.slice(endIndex);
+
+            return `${pre}${post}`;
+        }
 
         let textOfElement = this.originalElement.innerText;
         let containsColumnBreak = checkForParagraphInnerColEndTag(textOfElement);
@@ -155,9 +169,46 @@ export class DOMObject {
             let pre = text.slice(0, startIndex);
             let post = text.slice(endIndex)
 
-            let paragraph = this.originalElement.children[0] as HTMLElement;
-            if(this.originalElement.nodeName === "P") {
-                paragraph = this.originalElement;
+            // Sometimes the element passed in is a DIV containing a child element, other
+            // times it is the root child element alone, here we just make sure we are accessing
+            // the right element we want.
+            let checkNode = this.originalElement;
+            if(this.originalElement.nodeName === "DIV") {
+                checkNode = this.originalElement.children[0] as HTMLElement;
+            }
+
+            let paragraph = null;
+            if(checkNode.nodeName === "P") {
+
+                // Paragraphs simply remove the col-break tag
+                // we set our element here incase we need to display an error.
+                paragraph = checkNode;
+                checkNode.innerText = `${pre}${post}`;
+            }
+            else if(checkNode.nodeName === "UL" || checkNode.nodeName === "OL") {
+
+                // Attempt to get the list item that contains the column break,
+                // From testing this code should only run when the column break is at the end
+                // of a list not at the start of the list.
+                let listItem = null;
+                for(let i = checkNode.children.length - 1; i >= 0; i--) {
+                    if(checkNode.children[i].nodeName === "LI") {
+                        listItem = checkNode.children[i];
+                        break;
+                    }
+                }
+
+                if(listItem !== null) {
+
+                    // Replace, the list element HTML without the col-break text.
+                    (listItem as HTMLElement).innerHTML = replaceColBreak((listItem as HTMLElement).innerHTML);
+                }
+            }
+            else {
+                console.debug(`Element Type: ${checkNode.nodeName}, does not currently support appened column-breaks.`, checkNode.cloneNode(true));
+                // if(paragraph) {
+                //     paragraph.innerText = `${pre}${post}`;
+                // }
             }
 
             // console.debug("Checking where column break is", startIndex, endIndex, text.length);
@@ -179,11 +230,6 @@ export class DOMObject {
                     paragraph.innerHTML = `${pre}\n<span class="${ERROR_COLOR_CSS} ${CENTER_ALIGN_SPAN_CSS}">${MID_BREAK_ERROR_MESSAGE}</span>\n\n${post}`.split("\n").join("<br>");
 
                 }
-                return;
-            }
-
-            if(paragraph) {
-                paragraph.innerText = `${pre}${post}`;
             }
         }
     }
