@@ -369,6 +369,9 @@ These syntax options are currently still supported but are being depreciated for
 
 # Change Log
 
+### **0.7.8**
+- Updated column break flag to trigger properly when attached to the end of lists.
+
 ### **0.7.7**
 - Fixed bug where error message was not displayed when attempting to export to PDF from live preview.
 - Fixed bug with DataviewJS rendering within columns.
