@@ -21,6 +21,29 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 		const builder = new RangeSetBuilder<Decoration>();
         let ignoreFurtherIterations = false;
 
+		// Check if view is in live preview state.
+		if(transaction.state.field(editorLivePreviewField) === false) {
+            return builder.finish();
+		}
+
+        /**
+         * When we have the while file we then get the entire doc text and check if it 
+         * contains a MCM region so we know to break or not.
+         */
+        let docLength = transaction.state.doc.length
+        let docText = transaction.state.doc.sliceString(0, docLength);
+        if (containsRegionStart(docText) === false) {
+            return builder.finish();
+        }
+
+		if(transaction.isUserEvent("select.pointer") && transaction.state.selection.ranges && transaction.state.selection.ranges.length > 0) {
+
+			let range = transaction.state.selection.ranges[0];
+			if(range.to - range.from > 1) {
+				return builder.finish();
+			}
+		}
+
 		syntaxTree(transaction.state).iterate({
 			enter(node) {
 
@@ -34,28 +57,9 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
                     return;
                 }
 
-				// Check if view is in live preview state.
-                if(transaction.state.field(editorLivePreviewField) === false) {
-                    // console.debug("User disabled live preview.")
-					ignoreFurtherIterations = true;
-                    return;
-                }
-
 				// We want to run on the whole file so we dont just look for a single token.
 				const tokenProps = node.type.prop<string>(tokenClassNodeProp);
 				if (tokenProps !== undefined) {
-					return;
-				}
-
-				/**
-				 * When we have the while file we then get the entire doc text and check if it 
-				 * contains a MCM region so we know to break or not.
-				 */
-                let docLength = transaction.state.doc.length
-                let docText = transaction.state.doc.sliceString(0, docLength);
-				if (containsRegionStart(docText) === false) {
-					// console.debug("No start tag in document.")
-					ignoreFurtherIterations = true;
 					return;
 				}
 

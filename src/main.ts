@@ -18,6 +18,7 @@ import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefini
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
 import { parseStartRegionCodeBlockID } from './utilities/settingsParser';
+import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
 
 interface MCM_Settings {
     renderOnMobile: boolean;
@@ -44,6 +45,7 @@ export default class MultiColumnMarkdown extends Plugin {
         this.globalManager = new GlobalDOMManager();
 
         this.registerEditorExtension(multiColumnMarkdown_StateField)
+        this.registerEditorExtension(MultiColumnMarkdown_OnClickFix);
 
         for(let i = 0; i < CODEBLOCK_START_STRS.length; i++) {
 
