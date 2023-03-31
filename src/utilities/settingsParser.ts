@@ -278,6 +278,9 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
         settingsData = getSettingsDataFromKeys(settingsLine, COLUMN_HEIGHT_REGEX_ARR);
         if (settingsData !== null) {
 
+            let settingValues = parseForMultiSettings(settingsData);
+            console.log("Parsed settings: ", settingValues);
+
             let parsed = getLengthUnit(settingsData.trim());
             let spacingStr = "";
 
@@ -306,6 +309,22 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     }
 
     return parsedSettings;
+}
+
+function parseForMultiSettings(originalValue: string): string[] {
+
+    // Parse off brackets. If no brackets we return original value to be parsed as sole value.
+    let result = /\[(.*)\]/.exec(originalValue);
+    if(result === null) {
+        return [originalValue];
+    }
+
+    let settingsList: string = result[1];
+    let settings: string[] = settingsList.split(",").map((val) => {
+        return val.trim();
+    })
+
+    return settings;
 }
 
 function getLengthUnit(lengthStr: string): { isValid: boolean, unitStr: string } {
