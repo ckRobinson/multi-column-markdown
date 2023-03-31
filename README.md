@@ -326,6 +326,10 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 - Some cross compatibility with other plugins is not supported and will not render.
     - Most plugins that do not render are more advanced plugins that load their content over time rather than immediatly at render time.
 
+- Clicking within a document causes the document to flash before recentering on the cursor location.
+
+- Clicking outside of the editor and then back in may cause the viewport to jump to the bottom of the editor in certain cercumstances.
+
 #### **Minor Render Issues**
 
 - Any general render issues within columns:
@@ -370,6 +374,12 @@ These syntax options are currently still supported but are being depreciated for
 # Change Log
 
 ### **0.7.8**
+- Added new CM6 module that attempts to fix the viewport scroll issue in live preview.
+    - The module attempts to keep the viewport centered on the cursor by moving the view after Obsidian rerenders the document.
+    - Known issues:
+        - The viewport will appear to flash as it jumps to the new cursor location. This appears to be more or less noticable depending on the machine.
+        - Swapping out and back into Obsidian causes the document to jump to the bottom of the document.
+        - Clicking back into an editor view without moving the cursor can cause the viewport to jump to the bottom of the document.
 - Updated column break flag to trigger properly when attached to the end of lists.
 
 ### **0.7.7**
