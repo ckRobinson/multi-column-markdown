@@ -81,6 +81,17 @@ const COLUMN_SPACING_REGEX_ARR: RegExp[] = [
     return new RegExp(convertStringToSettingsRegex(value), "i");
 });
 
+const COLUMN_HEIGHT_REGEX_ARR: RegExp[] = [
+    "column height",
+    "col height",
+    "column max height",
+    "col max height",
+    "max column height",
+    "max col height"
+].map((value) => {
+    return new RegExp(convertStringToSettingsRegex(value), "i");
+});
+
 const CONTENT_OVERFLOW_REGEX_ARR: RegExp[] = [
     "overflow",
     "content overflow"
@@ -263,6 +274,34 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
                 alignmentType = AlignmentType.right;
             }
             parsedSettings.alignment = alignmentType;
+        }
+        settingsData = getSettingsDataFromKeys(settingsLine, COLUMN_HEIGHT_REGEX_ARR);
+        if (settingsData !== null) {
+
+            let parsed = getLengthUnit(settingsData.trim());
+            let spacingStr = "";
+
+            if(parsed.isValid) {
+
+                let noUnitsStr = settingsData.replace(parsed.unitStr, "").trim();
+                let noUnitsNum = parseInt(noUnitsStr);
+                if(isNaN(noUnitsNum) === false) {
+
+                    spacingStr = `${noUnitsStr}${parsed.unitStr}`
+                }
+            }
+            else {
+                
+                let noUnitsNum = parseInt(settingsData.trim());
+                if(isNaN(noUnitsNum) === false) {
+
+                    spacingStr = `${noUnitsNum}pt`
+                }
+            }
+
+            if(spacingStr !== "") {
+                parsedSettings.columnHeight = spacingStr;
+            }
         }
     }
 

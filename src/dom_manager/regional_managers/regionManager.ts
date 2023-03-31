@@ -638,6 +638,14 @@ export abstract class RegionManager {
             }
         }
 
+        if(settings.columnHeight !== null) {
+            columnContentDivs.forEach((column) => {
+                column.style.height = settings.columnHeight;
+                column.style.maxHeight = settings.columnHeight;
+                column.style.minHeight = settings.columnHeight;
+            })
+        }
+
         return columnContentDivs;
     }
 

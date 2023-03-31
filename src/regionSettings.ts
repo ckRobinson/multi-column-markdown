@@ -64,7 +64,8 @@ export type MultiColumnSettings = {
     columnPosition: ColumnLayout,
     columnSpacing: string,
     contentOverflow: ContentOverflowType,
-    alignment: AlignmentType
+    alignment: AlignmentType,
+    columnHeight: string | null
 }
 
 export function getDefaultMultiColumnSettings(): MultiColumnSettings {
@@ -79,6 +80,7 @@ export function getDefaultMultiColumnSettings(): MultiColumnSettings {
         columnPosition: ColumnLayout.standard,
         columnSpacing: "",
         contentOverflow: ContentOverflowType.scroll,
-        alignment: AlignmentType.left
+        alignment: AlignmentType.left,
+        columnHeight: null
     }
 }
