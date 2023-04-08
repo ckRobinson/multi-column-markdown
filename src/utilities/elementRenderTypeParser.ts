@@ -53,7 +53,8 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      * being checked.
      */
     if(hasAdmonition(element) === true ||
-       isIFrame(element) === true) {
+       isIFrame(element) === true      ||
+       isCustomIFrame(element) === true  ) {
         
         return ElementRenderType.normalRender
     }
@@ -178,4 +179,9 @@ export function getHeadingCollapseElement(element: HTMLElement): Element | null 
         console.debug("Found multiple heading collapse indicators in element.")
     }
     return null;
+}
+
+function isCustomIFrame(element: HTMLElement) {
+    let isFrame = element.getElementsByClassName("custom-frames-frame").length !== 0;
+    return isFrame;
 }
