@@ -187,7 +187,7 @@ function checkSettingIsNumberOfColumns(settingsLine: string, parsedSettings: Mul
     }
 
     let settingValues = parseForMultiSettings(settingsData);
-    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+    settingsData = settingValues[0];
 
     let numOfCols = parseInt(settingsData);
     if (Number.isNaN(numOfCols) === false) {
@@ -205,7 +205,7 @@ function checkSettingIsLargestColumn(settingsLine: string, parsedSettings: Multi
     }
 
     let settingValues = parseForMultiSettings(settingsData);
-    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+    settingsData = settingValues[0];
 
     let userDefLayout: ColumnLayout = (<any>ColumnLayout)[settingsData];
     if (userDefLayout !== undefined) {
@@ -251,7 +251,7 @@ function checkSettingIsDrawShadow(settingsLine: string, parsedSettings: MultiCol
     }
 
     let settingValues = parseForMultiSettings(settingsData);
-    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+    settingsData = settingValues[0];
 
     let isShadowDrawn: ShadowOption = (<any>ShadowOption)[settingsData];
     if (isShadowDrawn !== undefined) {
@@ -273,7 +273,7 @@ function checkSettingIsAutoLayout(settingsLine: string, parsedSettings: MultiCol
     }
 
     let settingValues = parseForMultiSettings(settingsData);
-    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+    settingsData = settingValues[0];
 
 
     if (settingsData === "false" || 
@@ -379,7 +379,7 @@ function checkSettingIsColumnHeight(settingsLine: string, parsedSettings: MultiC
     }
 
     let settingValues = parseForMultiSettings(settingsData);
-    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+    settingsData = settingValues[0];
 
     let parsed = getLengthUnit(settingsData.trim());
     let spacingValue = "";
