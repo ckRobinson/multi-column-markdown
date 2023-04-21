@@ -7,7 +7,7 @@
  */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { AlignmentType, ContentOverflowType, MultiColumnSettings } from "../../regionSettings";
+import { AlignmentType, ContentOverflowType, MultiColumnSettings, columnAlignmentState, columnOverflowState, shouldDrawColumnBorder } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { RegionManager } from './regionManager';
 import { getHeadingCollapseElement, hasHeader } from 'src/utilities/elementRenderTypeParser';
@@ -59,7 +59,7 @@ export class AutoLayoutRegionManager extends RegionManager {
             multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
         }
         for (let i = 0; i < this.columnDivs.length; i++) {
-            if (settings.drawBorder === true) {
+            if(shouldDrawColumnBorder(i, settings) === true) {
                 this.columnDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
             }
 
@@ -160,17 +160,18 @@ export class AutoLayoutRegionManager extends RegionManager {
                     });
                     regionElements[i].elementContainer = element;
     
-                    if(settings.contentOverflow === ContentOverflowType.hidden) {
+                    if(columnOverflowState(columnIndex, settings) === ContentOverflowType.hidden) {
                         element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden)
                     }
                     else {
                         element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll)
                     }
                     
-                    if(settings.alignment === AlignmentType.center) {
+                    let alignment = columnAlignmentState(columnIndex, settings);
+                    if(alignment === AlignmentType.center) {
                         element.addClass(MultiColumnLayoutCSS.AlignmentCenter)
                     }
-                    else if (settings.alignment === AlignmentType.right) {
+                    else if (alignment === AlignmentType.right) {
                         element.addClass(MultiColumnLayoutCSS.AlignmentRight)
                     }
                     else {

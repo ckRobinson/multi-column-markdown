@@ -7,7 +7,7 @@
  */
 
 import { DOMObject, DOMObjectTag, ElementColumnBreakType, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ContentOverflowType, AlignmentType } from "../../regionSettings";
+import { MultiColumnSettings, ContentOverflowType, AlignmentType, shouldDrawColumnBorder, columnOverflowState, columnAlignmentState } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
@@ -54,8 +54,10 @@ export class StandardMultiColumnRegionManager extends RegionManager {
         if(settings.drawShadow === true) {
             multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
         }
+
         for(let i = 0; i < columnContentDivs.length; i++) {
-            if(settings.drawBorder === true) {
+
+            if(shouldDrawColumnBorder(i, settings) === true) {
                 columnContentDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
             }
 
@@ -102,17 +104,18 @@ export class StandardMultiColumnRegionManager extends RegionManager {
                     cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
                 });
 
-                if(settings.contentOverflow === ContentOverflowType.hidden) {
+                if(columnOverflowState(columnIndex, settings) === ContentOverflowType.hidden) {
                     element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden)
                 }
                 else {
                     element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll)
                 }
 
-                if(settings.alignment === AlignmentType.center) {
+                let alignment = columnAlignmentState(columnIndex, settings);
+                if(alignment === AlignmentType.center) {
                     element.addClass(MultiColumnLayoutCSS.AlignmentCenter)
                 }
-                else if (settings.alignment === AlignmentType.right) {
+                else if (alignment === AlignmentType.right) {
                     element.addClass(MultiColumnLayoutCSS.AlignmentRight)
                 }
                 else {
@@ -164,4 +167,3 @@ export class StandardMultiColumnRegionManager extends RegionManager {
         }
     }
 }
-

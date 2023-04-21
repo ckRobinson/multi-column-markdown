@@ -7,7 +7,7 @@
  */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings } from "../../regionSettings";
+import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings, columnSpacingState } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { FileDOMManager } from '../domManager';
 import { ElementRenderType, getElementRenderType } from 'src/utilities/elementRenderTypeParser';
@@ -493,11 +493,6 @@ export abstract class RegionManager {
     getColumnContentDivs(settings: MultiColumnSettings, multiColumnParent: HTMLDivElement): HTMLDivElement[] {
 
         let columnContentDivs: HTMLDivElement[] = []
-        let styleStr: string = ""
-        if(settings.columnSpacing !== "") {
-
-            styleStr = `margin-inline: ${settings.columnSpacing};`
-        }
 
         if(settings.numberOfColumns === 2) {
 
@@ -511,7 +506,7 @@ export abstract class RegionManager {
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(0, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumns}`
@@ -525,7 +520,7 @@ export abstract class RegionManager {
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(0, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnSmall}`
@@ -540,7 +535,7 @@ export abstract class RegionManager {
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(0, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnLarge}`
@@ -557,14 +552,14 @@ export abstract class RegionManager {
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(0, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(1, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
@@ -578,14 +573,14 @@ export abstract class RegionManager {
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(0, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(1, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
@@ -600,14 +595,14 @@ export abstract class RegionManager {
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(0, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(1, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
@@ -622,14 +617,14 @@ export abstract class RegionManager {
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(0, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
                     }));
                     multiColumnParent.createDiv({
                         cls: `mcm-column-spacer`,
-                        attr: {"style": styleStr}
+                        attr: {"style": columnSpacingState(1, settings)}
                     });
                     columnContentDivs.push(multiColumnParent.createDiv({
                         cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`

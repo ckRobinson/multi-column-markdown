@@ -165,150 +165,246 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     for (let i = 0; i < settingsLines.length; i++) {
         let settingsLine = settingsLines[i];
 
-        let settingsData = getSettingsDataFromKeys(settingsLine, NUMBER_OF_COLUMNS_REGEX_ARR);
-        if (settingsData !== null) {
-
-            let numOfCols = parseInt(settingsData)
-            if (Number.isNaN(numOfCols) === false) {
-                if (numOfCols >= 1 && numOfCols <= 3) {
-                    parsedSettings.numberOfColumns = numOfCols;
-                }
-            }
-        }
-
-        settingsData = getSettingsDataFromKeys(settingsLine, LARGEST_COLUMN_REGEX_ARR)
-        if (settingsData !== null) {
-
-            let userDefLayout: ColumnLayout = (<any>ColumnLayout)[settingsData];
-            if (userDefLayout !== undefined) {
-                parsedSettings.columnLayout = userDefLayout;
-                parsedSettings.columnPosition = userDefLayout;
-            }
-        }
-
-        settingsData = getSettingsDataFromKeys(settingsLine, DRAW_BORDER_REGEX_ARR)
-        if (settingsData !== null) {
-
-            let isBorderDrawn: BorderOption = (<any>BorderOption)[settingsData];
-            if (isBorderDrawn !== undefined) {
-                switch (isBorderDrawn) {
-                    case (BorderOption.disabled):
-                    case (BorderOption.off):
-                    case (BorderOption.false):
-                        parsedSettings.drawBorder = false;
-                        break;
-                }
-            }
-        }
-
-        settingsData = getSettingsDataFromKeys(settingsLine, DRAW_SHADOW_REGEX_ARR)
-        if (settingsData !== null) {
-
-            let isShadowDrawn: ShadowOption = (<any>ShadowOption)[settingsData];
-            if (isShadowDrawn !== undefined) {
-                switch (isShadowDrawn) {
-                    case (ShadowOption.disabled):
-                    case (ShadowOption.off):
-                    case (ShadowOption.false):
-                        parsedSettings.drawShadow = false;
-                        break;
-                }
-            }
-        }
-
-        settingsData = getSettingsDataFromKeys(settingsLine, AUTO_LAYOUT_REGEX_ARR)
-        if (settingsData !== null) {
-
-            if(settingsData === "true") {
-                parsedSettings.autoLayout = true
-            }
-        }
-
-        settingsData = getSettingsDataFromKeys(settingsLine, COLUMN_SPACING_REGEX_ARR);
-        if(settingsData !== null) {
-
-            let parsed = getLengthUnit(settingsData.trim());
-            let spacingStr = "";
-
-            if(parsed.isValid) {
-
-                let noUnitsStr = settingsData.replace(parsed.unitStr, "").trim();
-                let noUnitsNum = parseInt(noUnitsStr);
-                if(isNaN(noUnitsNum) === false) {
-
-                    spacingStr = `${noUnitsStr}${parsed.unitStr}`
-                }
-            }
-            else {
-                
-                let noUnitsNum = parseInt(settingsData.trim());
-                if(isNaN(noUnitsNum) === false) {
-
-                    spacingStr = `${noUnitsNum}pt`
-                }
-            }
-
-            parsedSettings.columnSpacing = spacingStr;
-        }
-
-        settingsData = getSettingsDataFromKeys(settingsLine, CONTENT_OVERFLOW_REGEX_ARR);
-        if(settingsData !== null) {
-
-            let overflowType = ContentOverflowType.scroll;
-
-            settingsData = settingsData.toLowerCase().trim();
-            if(settingsData === "hidden") {
-                overflowType = ContentOverflowType.hidden;
-            }
-
-            parsedSettings.contentOverflow = overflowType;
-        }
-        settingsData = getSettingsDataFromKeys(settingsLine, ALIGNMENT_REGEX_ARR);
-        if (settingsData !== null) {
-            let alignmentType = AlignmentType.left;
-            settingsData = settingsData.toLowerCase().trim();
-            if (settingsData === "center") {
-                alignmentType = AlignmentType.center;
-            }
-            if (settingsData === "right") {
-                alignmentType = AlignmentType.right;
-            }
-            parsedSettings.alignment = alignmentType;
-        }
-        settingsData = getSettingsDataFromKeys(settingsLine, COLUMN_HEIGHT_REGEX_ARR);
-        if (settingsData !== null) {
-
-            let settingValues = parseForMultiSettings(settingsData);
-            console.log("Parsed settings: ", settingValues);
-
-            let parsed = getLengthUnit(settingsData.trim());
-            let spacingStr = "";
-
-            if(parsed.isValid) {
-
-                let noUnitsStr = settingsData.replace(parsed.unitStr, "").trim();
-                let noUnitsNum = parseInt(noUnitsStr);
-                if(isNaN(noUnitsNum) === false) {
-
-                    spacingStr = `${noUnitsStr}${parsed.unitStr}`
-                }
-            }
-            else {
-                
-                let noUnitsNum = parseInt(settingsData.trim());
-                if(isNaN(noUnitsNum) === false) {
-
-                    spacingStr = `${noUnitsNum}pt`
-                }
-            }
-
-            if(spacingStr !== "") {
-                parsedSettings.columnHeight = spacingStr;
-            }
-        }
+        checkSettingIsNumberOfColumns(settingsLine, parsedSettings);
+        checkSettingIsLargestColumn(settingsLine, parsedSettings);
+        checkSettingIsDrawBorder(settingsLine, parsedSettings);
+        checkSettingIsDrawShadow(settingsLine, parsedSettings);
+        checkSettingIsAutoLayout(settingsLine, parsedSettings);
+        checkSettingIsColumnSpacing(settingsLine, parsedSettings);
+        checkSettingIsContentOverflow(settingsLine, parsedSettings);
+        checkSettingIsColumnAlignment(settingsLine, parsedSettings);
+        checkSettingIsColumnHeight(settingsLine, parsedSettings);
     }
 
     return parsedSettings;
+}
+
+function checkSettingIsNumberOfColumns(settingsLine: string, parsedSettings: MultiColumnSettings) {
+
+    let settingsData = getSettingsDataFromKeys(settingsLine, NUMBER_OF_COLUMNS_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+    let settingValues = parseForMultiSettings(settingsData);
+    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+
+    let numOfCols = parseInt(settingsData);
+    if (Number.isNaN(numOfCols) === false) {
+        if (numOfCols >= 1 && numOfCols <= 3) {
+            parsedSettings.numberOfColumns = numOfCols;
+        }
+    }
+}
+
+function checkSettingIsLargestColumn(settingsLine: string, parsedSettings: MultiColumnSettings) {
+
+    let settingsData = getSettingsDataFromKeys(settingsLine, LARGEST_COLUMN_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+    let settingValues = parseForMultiSettings(settingsData);
+    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+
+    let userDefLayout: ColumnLayout = (<any>ColumnLayout)[settingsData];
+    if (userDefLayout !== undefined) {
+        parsedSettings.columnLayout = userDefLayout;
+        parsedSettings.columnPosition = userDefLayout;
+    }
+}
+
+function checkSettingIsDrawBorder(settingsLine: string, parsedSettings: MultiColumnSettings) {
+
+    let settingsData = getSettingsDataFromKeys(settingsLine, DRAW_BORDER_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+    let borders: boolean[] = []
+    let settingValues = parseForMultiSettings(settingsData);
+    for(let settingsData of settingValues) {
+
+        let borderState = true;
+        let isBorderDrawn: BorderOption = (<any>BorderOption)[settingsData];
+        if (isBorderDrawn !== undefined) {
+            switch (isBorderDrawn) {
+                case (BorderOption.disabled):
+                case (BorderOption.off):
+                case (BorderOption.false):
+                    borderState = false;
+                    break;
+            }
+        }
+        
+        borders.push(borderState);
+    }
+
+    parsedSettings.drawBorder = borders;
+}
+
+function checkSettingIsDrawShadow(settingsLine: string, parsedSettings: MultiColumnSettings) {
+
+    let settingsData = getSettingsDataFromKeys(settingsLine, DRAW_SHADOW_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+    let settingValues = parseForMultiSettings(settingsData);
+    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+
+    let isShadowDrawn: ShadowOption = (<any>ShadowOption)[settingsData];
+    if (isShadowDrawn !== undefined) {
+        switch (isShadowDrawn) {
+            case (ShadowOption.disabled):
+            case (ShadowOption.off):
+            case (ShadowOption.false):
+                parsedSettings.drawShadow = false;
+                break;
+        }
+    }
+}
+
+function checkSettingIsAutoLayout(settingsLine: string, parsedSettings: MultiColumnSettings) {
+    
+    let settingsData = getSettingsDataFromKeys(settingsLine, AUTO_LAYOUT_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+    let settingValues = parseForMultiSettings(settingsData);
+    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+
+
+    if (settingsData === "false" || 
+        settingsData === "off"     ) {
+
+        parsedSettings.autoLayout = false;
+    }
+    parsedSettings.autoLayout = true;
+}
+
+function checkSettingIsColumnSpacing(settingsLine: string, parsedSettings: MultiColumnSettings) {
+    
+    let settingsData = getSettingsDataFromKeys(settingsLine, COLUMN_SPACING_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+
+    let spacings: string[] = []
+
+    let settingValues = parseForMultiSettings(settingsData);
+    for(let settingsData of settingValues) {
+        
+        let parsed = getLengthUnit(settingsData.trim());
+        let spacingStr = "";
+    
+        if (parsed.isValid) {
+    
+            let noUnitsStr = settingsData.replace(parsed.unitStr, "").trim();
+            let noUnitsNum = parseInt(noUnitsStr);
+            if (isNaN(noUnitsNum) === false) {
+    
+                spacingStr = `${noUnitsStr}${parsed.unitStr}`;
+            }
+        }
+        else {
+    
+            let noUnitsNum = parseInt(settingsData.trim());
+            if (isNaN(noUnitsNum) === false) {
+    
+                spacingStr = `${noUnitsNum}pt`;
+            }
+        }
+        spacings.push(spacingStr);
+    }
+
+    parsedSettings.columnSpacing = spacings;
+}
+
+function checkSettingIsContentOverflow(settingsLine: string, parsedSettings: MultiColumnSettings) {
+    
+    let settingsData = getSettingsDataFromKeys(settingsLine, CONTENT_OVERFLOW_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+    let overflowStates: ContentOverflowType[] = []
+    let settingValues = parseForMultiSettings(settingsData);
+
+    for(let settingsData of settingValues) {
+        
+        let overflowType = ContentOverflowType.scroll;
+        settingsData = settingsData.toLowerCase().trim();
+        if (settingsData === "hidden") {
+            overflowType = ContentOverflowType.hidden;
+        }
+        overflowStates.push(overflowType);
+    }
+    parsedSettings.contentOverflow = overflowStates;
+}
+
+function checkSettingIsColumnAlignment(settingsLine: string, parsedSettings: MultiColumnSettings) {
+    
+    let settingsData = getSettingsDataFromKeys(settingsLine, ALIGNMENT_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+
+    let alignments: AlignmentType[] = []
+
+    let settingValues = parseForMultiSettings(settingsData);
+    for(let settingsData of settingValues) {
+        
+        let alignmentType = AlignmentType.left;
+        settingsData = settingsData.toLowerCase().trim();
+        if (settingsData === "center") {
+            alignmentType = AlignmentType.center;
+        }
+        if (settingsData === "right") {
+            alignmentType = AlignmentType.right;
+        }
+        alignments.push(alignmentType);
+    }
+    parsedSettings.alignment = alignments;
+}
+
+function checkSettingIsColumnHeight(settingsLine: string, parsedSettings: MultiColumnSettings) {
+
+    let settingsData = getSettingsDataFromKeys(settingsLine, COLUMN_HEIGHT_REGEX_ARR);
+    if(settingsData === null) {
+        return;
+    }
+
+    let settingValues = parseForMultiSettings(settingsData);
+    settingsData = settingValues[0]; // Only 1 column height allowed, taking either first value supplied or the only value returned.
+
+    let parsed = getLengthUnit(settingsData.trim());
+    let spacingValue = "";
+
+    if (parsed.isValid) {
+
+        let noUnitsStr = settingsData.replace(parsed.unitStr, "").trim();
+        let noUnitsNum = parseInt(noUnitsStr);
+        if (isNaN(noUnitsNum) === false) {
+
+            spacingValue = `${noUnitsStr}${parsed.unitStr}`;
+        }
+    }
+    else {
+
+        let noUnitsNum = parseInt(settingsData.trim());
+        if (isNaN(noUnitsNum) === false) {
+
+            spacingValue = `${noUnitsNum}pt`;
+        }
+    }
+
+    if (spacingValue !== "") {
+        parsedSettings.columnHeight = spacingValue;
+    }
 }
 
 function parseForMultiSettings(originalValue: string): string[] {
