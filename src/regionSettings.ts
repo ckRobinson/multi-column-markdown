@@ -92,11 +92,7 @@ export function shouldDrawColumnBorder(index: number, settings: MultiColumnSetti
         return true;
     }
 
-    if( index < settings.drawBorder.length) {
-        return settings.drawBorder[index];
-    }
-
-    return settings.drawBorder.last();
+    return getIndexedClampedArrayValue(index, settings.drawBorder);
 }
 
 export function columnOverflowState(index: number, settings: MultiColumnSettings): ContentOverflowType {
@@ -106,11 +102,7 @@ export function columnOverflowState(index: number, settings: MultiColumnSettings
         return ContentOverflowType.scroll
     }
 
-    if(index < settings.contentOverflow.length) {
-        return settings.contentOverflow[index];
-    }
-
-    return settings.contentOverflow.last();
+    return getIndexedClampedArrayValue(index, settings.contentOverflow);
 }
 
 export function columnAlignmentState(index: number, settings: MultiColumnSettings): AlignmentType {
@@ -120,11 +112,7 @@ export function columnAlignmentState(index: number, settings: MultiColumnSetting
         return AlignmentType.left
     }
 
-    if(index < settings.alignment.length) {
-        return settings.alignment[index];
-    }
-
-    return settings.alignment.last();
+    return getIndexedClampedArrayValue(index, settings.alignment)
 }
 
 export function columnSpacingState(index: number, settings: MultiColumnSettings): string {
@@ -134,9 +122,22 @@ export function columnSpacingState(index: number, settings: MultiColumnSettings)
         return "";
     }
 
-    if(index < settings.columnSpacing.length) {
-        return `margin-inline: ${settings.columnSpacing[index]};`;
+    return `margin-inline: ${getIndexedClampedArrayValue(index, settings.columnSpacing)};`;
+}
+
+export function getIndexedClampedArrayValue<T>(index: number, arr: T[]) {
+
+    if(arr.length === 0) {
+        throw("Error getting value from empty array.")
     }
 
-    return `margin-inline: ${settings.columnSpacing.last()};`;
+    if(index < 0) {
+        return arr[0];
+    }
+
+    if(index < arr.length) {
+        return arr[index];
+    }
+
+    return arr.last();
 }
