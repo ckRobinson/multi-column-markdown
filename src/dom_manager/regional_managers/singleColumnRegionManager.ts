@@ -158,10 +158,10 @@ export class SingleColumnRegionManager extends RegionManager {
 
 function isCentered(layout: ColumnLayout): boolean {
 
-    if(layout === ColumnLayout.standard ||
-       layout === ColumnLayout.middle   ||
-       layout === ColumnLayout.center   ||
-       layout === ColumnLayout.second    ) {
+    if(layout === "standard" ||
+       layout === "middle"   ||
+       layout === "center"   ||
+       layout === "second"    ) {
 
         return true;
     }
@@ -171,8 +171,8 @@ function isCentered(layout: ColumnLayout): boolean {
 
 function isLeftLayout(layout: ColumnLayout): boolean {
 
-    if(layout === ColumnLayout.left ||
-       layout === ColumnLayout.first ) {
+    if(layout === "left" ||
+       layout === "first" ) {
  
          return true;
      }
@@ -182,9 +182,9 @@ function isLeftLayout(layout: ColumnLayout): boolean {
 
 function isRightLayout(layout: ColumnLayout): boolean {
 
-    if(layout === ColumnLayout.right ||
-       layout === ColumnLayout.third ||
-       layout === ColumnLayout.last ) {
+    if(layout === "right" ||
+       layout === "third" ||
+       layout === "last" ) {
  
          return true;
      }
