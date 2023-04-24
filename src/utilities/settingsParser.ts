@@ -205,13 +205,54 @@ function checkSettingIsLargestColumn(settingsLine: string, parsedSettings: Multi
     }
 
     let settingValues = parseForMultiSettings(settingsData);
-    settingsData = settingValues[0];
-
-    let userDefLayout: ColumnLayout = (<any>ColumnLayout)[settingsData];
-    if (userDefLayout !== undefined) {
-        parsedSettings.columnLayout = userDefLayout;
-        parsedSettings.columnPosition = userDefLayout;
+    if(settingValues.length === 1) {
+        // If there is only 1 item we attempt to parse out a layout type. If we get a valid item we 
+        // return here.
+        if (isColumnLayout(settingValues[0])) {
+            parsedSettings.columnSize = settingValues[0];
+            return;
+        }
     }
+
+    let widths: HTMLSizing[] = []
+    for(let setting of settingValues) {
+
+        let unitData = getLengthUnit(setting);
+        if(unitData.isValid === true) {
+
+            let noUnitsStr = setting.replace(unitData.unitStr, "").trim();
+            let noUnitsNum = parseInt(noUnitsStr);
+            let width = HTMLSizing.create().setWidth(noUnitsNum).setUnits(unitData.unitStr);
+            widths.push(width);
+        }
+    }
+
+    // If none are parsed properly to a width then we return a default.
+    if(widths.length === 0) {
+        console.error("Error parsing column layout or width, defaulting to standard layout.")
+        parsedSettings.columnSize = "standard";
+        return;
+    }
+
+    if(widths.length !== settingValues.length) {
+
+        for(let setting of settingValues) {
+
+            let unitData = getLengthUnit(setting);
+            if(unitData.isValid === true) {
+                parsedSettings.columnSize = widths;
+                return;
+            }
+
+            if (isColumnLayout(settingValues[0])) {
+                parsedSettings.columnSize = settingValues[0];
+                return;
+            }
+        }
+    }
+
+    parsedSettings.columnSize = widths;
+    return;
 }
 
 function checkSettingIsDrawBorder(settingsLine: string, parsedSettings: MultiColumnSettings) {
@@ -489,7 +530,7 @@ function parseForSingleColumnLocation(locationString: string): ColumnLayout{
         case "first":
         case "start":
         case "beginning":
-            return ColumnLayout.left
+            return "left"
         case "middle":
         case "middlealigned":
         case "middlealignment":
@@ -498,7 +539,7 @@ function parseForSingleColumnLocation(locationString: string): ColumnLayout{
         case "centeralignment":
         case "centered":
         case "standard":
-            return ColumnLayout.center
+            return "center"
         case "right":
         case "rightside":
         case "rightmargin":
@@ -507,10 +548,10 @@ function parseForSingleColumnLocation(locationString: string): ColumnLayout{
         case "rightalignment":
         case "last":
         case "end":
-            return ColumnLayout.right
+            return "right"
     }
 
-    return ColumnLayout.center
+    return "center"
 }
 
 function parseForSingleColumnSize(sizeString: string): SingleColumnSize {
