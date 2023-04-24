@@ -139,13 +139,13 @@ export class SingleColumnRegionManager extends RegionManager {
             cls: `${MultiColumnStyleCSS.ColumnContent}`
         });
 
-        if(this.regionalSettings.columnSize === SingleColumnSize.small) {
+        if(this.regionalSettings.columnSize === "small") {
             contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnSmall}`)
         }
-        else if(this.regionalSettings.columnSize === SingleColumnSize.large) {
+        else if(this.regionalSettings.columnSize === "large") {
             contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnLarge}`)
         }
-        else if(this.regionalSettings.columnSize === SingleColumnSize.full) {
+        else if(this.regionalSettings.columnSize === "full") {
             contentDiv.addClass(`${MultiColumnLayoutCSS.SingleColumnFull}`)
         }
         else {

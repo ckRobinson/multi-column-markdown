@@ -44,11 +44,16 @@ export function isColumnLayout(value: string): value is ColumnLayout {
   return ALL_LAYOUTS.includes(value as ColumnLayout)
 }
 
-export enum SingleColumnSize {
-    small,
-    medium,
-    large,
-    full
+const ALL_SINGLE_COLUMN_SIZES = [
+    "small",
+    "medium",
+    "large",
+    "full"
+]
+type SingleColumnSizeTuple = typeof ALL_SINGLE_COLUMN_SIZES;
+export type SingleColumnSize = SingleColumnSizeTuple[number];
+export function isSingleColumnSize(value: string): value is SingleColumnSize {
+    return ALL_SINGLE_COLUMN_SIZES.includes(value as SingleColumnSize)
 }
 
 export enum ContentOverflowType {
@@ -82,7 +87,7 @@ export function getDefaultMultiColumnSettings(): MultiColumnSettings {
         drawBorder: [true],
         drawShadow: true,
         autoLayout: false,
-        columnSize: SingleColumnSize.medium,
+        columnSize: "medium",
         columnPosition: "standard",
         columnSpacing: [""],
         contentOverflow: [ContentOverflowType.scroll],

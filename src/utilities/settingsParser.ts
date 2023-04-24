@@ -560,19 +560,19 @@ function parseForSingleColumnSize(sizeString: string): SingleColumnSize {
     switch (sizeString = sizeString.toLowerCase().trim().replace(" ", "")) {
         case "small":
         case "sm":
-            return SingleColumnSize.small;
+            return "small";
         case "medium":
         case "med":
-            return SingleColumnSize.medium;
+            return "medium";
         case "large":
         case "lg":
-            return SingleColumnSize.large;
+            return "large";
         case "full":
         case "full size":
-            return SingleColumnSize.full;
+            return "full";
     }
 
-    return SingleColumnSize.medium
+    return "medium"
 }
 
 function convertStringToSettingsRegex(originalString: String): string {
