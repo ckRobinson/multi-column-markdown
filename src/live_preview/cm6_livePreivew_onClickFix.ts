@@ -452,7 +452,7 @@ function attemptParseDocTitle(value: string) {
 	for(let i = 0; i < 2; i++) {
 
 		let result = /(.*) - .*/.exec(value)
-		if(result.length > 1) {
+		if(result !== null && result.length > 1) {
 			value = result[1];
 		}
 		else {
