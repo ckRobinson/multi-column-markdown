@@ -23,6 +23,8 @@ export enum MultiColumnLayoutCSS {
     AlignmentCenter = "mcm-content-alignment-center",
     AlignmentRight = "mcm-content-alignment-right",
 
+    NoFlexShrink = "mcm-no-flex-shrink",
+
     // ------------------------------------------------------ //
 
     SingleColumnSmall = "mcm-single-column-small",
