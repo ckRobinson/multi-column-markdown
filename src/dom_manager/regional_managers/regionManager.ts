@@ -500,6 +500,7 @@ export abstract class RegionManager {
            (settings.numberOfColumns === 2 || settings.numberOfColumns === 3)) {      
 
             buildStandardLayouts(settings, multiColumnParent, columnContentDivs)
+            return columnContentDivs;
         }
 
         let columnSizes: HTMLSizing[] = [];
