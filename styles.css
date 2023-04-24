@@ -96,7 +96,7 @@
 
 .mcm-column-parent-container {
     padding: 0;
-    overflow: hidden;
+    overflow: auto;
     color: var(--text-normal);
     page-break-inside: avoid;
 
@@ -138,6 +138,10 @@
     white-space: normal;
     word-break: keep-all;
     word-wrap: normal;
+}
+
+.mcm-no-flex-shrink {
+    flex-shrink: 0;
 }
 
 .mcm-col-settings-preview {
