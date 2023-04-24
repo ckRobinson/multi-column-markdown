@@ -507,10 +507,14 @@ export abstract class RegionManager {
         // If the user has defined the widths individually then we just need to create
         // each column individually with each width size.
         if(Array.isArray(settings.columnSize)) {
-            columnSizes = settings.columnSize;
+            columnSizes = settings.columnSize.slice();
         }
         else {
+            calcColumnSizes(settings, columnSizes)
+        }
 
+        if(columnSizes.length === 0) {
+            columnSizes.push(HTMLSizing.create().setWidth(50).setUnits("%"))
         }
 
         for(let i = 0; i < settings.numberOfColumns; i++) {
