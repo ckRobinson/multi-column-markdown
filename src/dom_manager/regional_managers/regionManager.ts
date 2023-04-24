@@ -7,12 +7,13 @@
  */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings, columnSpacingState } from "../../regionSettings";
+import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings, columnSpacingState, getIndexedClampedArrayValue, isColumnLayout } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { FileDOMManager } from '../domManager';
 import { ElementRenderType, getElementRenderType } from 'src/utilities/elementRenderTypeParser';
 import { RegionManagerData } from './regionManagerContainer';
 import { searchChildrenForNodeType } from 'src/utilities/utils';
+import { HTMLSizing } from 'src/utilities/interfaces';
 
 export type MultiColumnRenderData = { 
     parentRenderElement: HTMLElement, 
@@ -493,144 +494,44 @@ export abstract class RegionManager {
     getColumnContentDivs(settings: MultiColumnSettings, multiColumnParent: HTMLDivElement): HTMLDivElement[] {
 
         let columnContentDivs: HTMLDivElement[] = []
+        
+        if(typeof settings.columnSize === "string" &&
+           isColumnLayout(settings.columnSize)     && 
+           (settings.numberOfColumns === 2 || settings.numberOfColumns === 3)) {      
 
-        if(settings.numberOfColumns === 2) {
+            buildStandardLayouts(settings, multiColumnParent, columnContentDivs)
+        }
 
-            switch(settings.columnLayout) {
-                case(ColumnLayout.standard):
-                case(ColumnLayout.middle):
-                case(ColumnLayout.center):
-                case(ColumnLayout.third):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumns}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(0, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumns}`
-                    }));
-                    break;
+        let columnSizes: HTMLSizing[] = [];
+        // If the user has defined the widths individually then we just need to create
+        // each column individually with each width size.
+        if(Array.isArray(settings.columnSize)) {
+            columnSizes = settings.columnSize;
+        }
+        else {
 
-                case(ColumnLayout.left):
-                case(ColumnLayout.first):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnLarge}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(0, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnSmall}`
-                    }));
-                    break;
+        }
 
-                case(ColumnLayout.right):
-                case(ColumnLayout.second):
-                case(ColumnLayout.last):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnSmall}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(0, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnLarge}`
-                    }));
-                    break;
+        for(let i = 0; i < settings.numberOfColumns; i++) {
+
+            let sizing = getIndexedClampedArrayValue(i, columnSizes);
+
+            columnContentDivs.push(multiColumnParent.createDiv({
+                cls: `${MultiColumnStyleCSS.ColumnContent}`,
+                attr: {"style": `width: ${sizing.toString()}`}
+            }));
+
+            if(i !== columnSizes.length - 1) {
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(0, settings)}
+                });
             }
         }
-        else if(settings.numberOfColumns === 3) {
 
-            switch(settings.columnLayout) {
-                case(ColumnLayout.standard):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(0, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(1, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
-                    }));
-                    break;
+        for(let i = 0; i < columnContentDivs.length; i++) {
 
-                case(ColumnLayout.left):
-                case(ColumnLayout.first):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(0, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(1, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
-                    }));
-                    break;
-
-                case(ColumnLayout.middle):
-                case(ColumnLayout.center):
-                case(ColumnLayout.second):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(0, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(1, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
-                    }));
-                    break;
-
-                case(ColumnLayout.right):
-                case(ColumnLayout.third):
-                case(ColumnLayout.last):
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(0, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
-                    }));
-                    multiColumnParent.createDiv({
-                        cls: `mcm-column-spacer`,
-                        attr: {"style": columnSpacingState(1, settings)}
-                    });
-                    columnContentDivs.push(multiColumnParent.createDiv({
-                        cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
-                    }));
-                    break;
-            }
+            columnContentDivs[i].addClass(MultiColumnLayoutCSS.NoFlexShrink);
         }
 
         if(settings.columnHeight !== null) {
@@ -659,4 +560,148 @@ function getElementClientHeight(element: HTMLElement, parentRenderElement: HTMLD
         parentRenderElement.removeChild(element);
     }
     return height
+}
+
+function buildStandardLayouts(settings: MultiColumnSettings, multiColumnParent: HTMLDivElement, columnContentDivs: HTMLDivElement[]) {
+
+    let layout = settings.columnSize as ColumnLayout;
+
+    if(settings.numberOfColumns === 2) {
+        switch(layout) {
+            case("standard"):
+            case("middle"):
+            case("center"):
+            case("third"):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumns}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(0, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoEqualColumns}`
+                }));
+                break;
+
+            case("left"):
+            case("first"):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnLarge}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(0, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnSmall}`
+                }));
+                break;
+
+            case("right"):
+            case("second"):
+            case("last"):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnSmall}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(0, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.TwoColumnLarge}`
+                }));
+                break;
+        }
+        return;
+    }
+
+    if(settings.numberOfColumns === 3) {
+        switch(layout) {
+            case("standard"):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(0, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(1, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeEqualColumns}`
+                }));
+                break;
+
+            case("left"):
+            case("first"):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(0, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(1, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
+                }));
+                break;
+
+            case("middle"):
+            case("center"):
+            case("second"):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(0, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(1, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
+                }));
+                break;
+
+            case("right"):
+            case("third"):
+            case("last"):
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(0, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Small}`
+                }));
+                multiColumnParent.createDiv({
+                    cls: `mcm-column-spacer`,
+                    attr: {"style": columnSpacingState(1, settings)}
+                });
+                columnContentDivs.push(multiColumnParent.createDiv({
+                    cls: `${MultiColumnStyleCSS.ColumnContent} ${MultiColumnLayoutCSS.ThreeColumn_Large}`
+                }));
+                break;
+        }
+    }
 }
