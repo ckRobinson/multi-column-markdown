@@ -521,7 +521,7 @@ export abstract class RegionManager {
                 attr: {"style": `width: ${sizing.toString()}`}
             }));
 
-            if(i !== columnSizes.length - 1) {
+            if(i !== settings.numberOfColumns - 1) {
                 multiColumnParent.createDiv({
                     cls: `mcm-column-spacer`,
                     attr: {"style": columnSpacingState(0, settings)}
