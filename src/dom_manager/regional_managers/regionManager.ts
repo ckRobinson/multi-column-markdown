@@ -550,6 +550,68 @@ export abstract class RegionManager {
     public abstract renderRegionElementsToLivePreview(parentElement: HTMLElement): void
 }
 
+function calcColumnSizes(settings: MultiColumnSettings, columnSizes: HTMLSizing[]) {
+    let layout = settings.columnSize as ColumnLayout;
+
+    if(settings.numberOfColumns === 2) {
+        switch(layout) {
+            case("standard"):
+            case("middle"):
+            case("center"):
+            case("third"):
+                columnSizes.push(HTMLSizing.create().setWidth(50).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(50).setUnits("%"))
+                break;
+
+            case("left"):
+            case("first"):
+                columnSizes.push(HTMLSizing.create().setWidth(75).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(25).setUnits("%"))
+                break;
+
+            case("right"):
+            case("second"):
+            case("last"):
+                columnSizes.push(HTMLSizing.create().setWidth(25).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(75).setUnits("%"))
+                break;
+        }
+        return;
+    }
+
+    if(settings.numberOfColumns === 3) {
+        switch(layout) {
+            case("standard"):
+                columnSizes.push(HTMLSizing.create().setWidth(33).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(33).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(33).setUnits("%"))
+                break;
+
+            case("left"):
+            case("first"):
+                columnSizes.push(HTMLSizing.create().setWidth(50).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(25).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(25).setUnits("%"))
+                break;
+
+            case("middle"):
+            case("center"):
+            case("second"):
+                columnSizes.push(HTMLSizing.create().setWidth(25).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(50).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(25).setUnits("%"))
+                break;
+
+            case("right"):
+            case("third"):
+            case("last"):
+                columnSizes.push(HTMLSizing.create().setWidth(25).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(25).setUnits("%"))
+                columnSizes.push(HTMLSizing.create().setWidth(50).setUnits("%"))
+                break;
+        }
+    }
+}
 
 function getElementClientHeight(element: HTMLElement, parentRenderElement: HTMLDivElement): number {
 
