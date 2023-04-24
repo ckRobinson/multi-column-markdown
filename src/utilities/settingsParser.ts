@@ -6,7 +6,8 @@
  * Copyright (c) 2022 Cameron Robinson                                         
  */
 
-import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType, AlignmentType } from "../regionSettings";
+import { HTMLSizing } from "src/utilities/interfaces";
+import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType, AlignmentType, isColumnLayout } from "../regionSettings";
 
 /**
  * Here we define all of the valid settings strings that the user can enter for each setting type.
@@ -191,7 +192,7 @@ function checkSettingIsNumberOfColumns(settingsLine: string, parsedSettings: Mul
 
     let numOfCols = parseInt(settingsData);
     if (Number.isNaN(numOfCols) === false) {
-        if (numOfCols >= 1 && numOfCols <= 3) {
+        if (numOfCols >= 1) {
             parsedSettings.numberOfColumns = numOfCols;
         }
     }
