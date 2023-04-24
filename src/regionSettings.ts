@@ -6,6 +6,8 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
+import { HTMLSizing } from "./utilities/interfaces"
+
 export enum BorderOption {
     enabled,
     on,
@@ -24,17 +26,23 @@ export enum ShadowOption {
     false
 }
 
-export enum ColumnLayout { 
-    standard,
-    left,
-    first,
-    center,
-    middle,
-    second,
-    right,
-    third,
-    last
-};
+const ALL_LAYOUTS = [
+    "standard",
+    "left", 
+    "first", 
+    "center",
+    "middle",
+    "second",
+    "right",
+    "third",
+    "last"
+] as const;
+type ColumnLayoutTuple = typeof ALL_LAYOUTS;
+export type ColumnLayout = ColumnLayoutTuple[number];
+
+export function isColumnLayout(value: string): value is ColumnLayout {
+  return ALL_LAYOUTS.includes(value as ColumnLayout)
+}
 
 export enum SingleColumnSize {
     small,
@@ -56,11 +64,10 @@ export enum AlignmentType {
 
 export type MultiColumnSettings = {
     numberOfColumns: number,
-    columnLayout: ColumnLayout,
     drawBorder: boolean[],
     drawShadow: boolean,
     autoLayout: boolean
-    columnSize: SingleColumnSize,
+    columnSize: SingleColumnSize | ColumnLayout | HTMLSizing[],
     columnPosition: ColumnLayout,
     columnSpacing: string[],
     contentOverflow: ContentOverflowType[],
@@ -72,12 +79,11 @@ export function getDefaultMultiColumnSettings(): MultiColumnSettings {
 
     return {
         numberOfColumns: 2,
-        columnLayout: ColumnLayout.standard,
         drawBorder: [true],
         drawShadow: true,
         autoLayout: false,
         columnSize: SingleColumnSize.medium,
-        columnPosition: ColumnLayout.standard,
+        columnPosition: "standard",
         columnSpacing: [""],
         contentOverflow: [ContentOverflowType.scroll],
         alignment: [AlignmentType.left],
