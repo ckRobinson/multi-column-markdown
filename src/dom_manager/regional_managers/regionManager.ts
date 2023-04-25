@@ -500,6 +500,7 @@ export abstract class RegionManager {
            (settings.numberOfColumns === 2 || settings.numberOfColumns === 3)) {      
 
             buildStandardLayouts(settings, multiColumnParent, columnContentDivs)
+            setMaxColumnHeight();
             return columnContentDivs;
         }
 
@@ -539,15 +540,19 @@ export abstract class RegionManager {
             columnContentDivs[i].addClass(MultiColumnLayoutCSS.NoFlexShrink);
         }
 
-        if(settings.columnHeight !== null) {
-            columnContentDivs.forEach((column) => {
-                column.style.height = settings.columnHeight;
-                column.style.maxHeight = settings.columnHeight;
-                column.style.minHeight = settings.columnHeight;
-            })
-        }
+        setMaxColumnHeight();
 
         return columnContentDivs;
+
+        function setMaxColumnHeight() {
+            if (settings.columnHeight !== null) {
+                columnContentDivs.forEach((column) => {
+                    column.style.height = settings.columnHeight;
+                    column.style.maxHeight = settings.columnHeight;
+                    column.style.minHeight = settings.columnHeight;
+                });
+            }
+        }
     }
 
     public abstract renderRegionElementsToScreen(): void;
