@@ -45,7 +45,7 @@ export class AutoLayoutRegionManager extends RegionManager {
     private renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
         let multiColumnParent = createDiv({
-            cls: MultiColumnLayoutCSS.RegionColumnContainerDiv,
+            cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} ${MultiColumnLayoutCSS.ContentOverflowAutoScroll}`
         });
         this.columnParent = multiColumnParent;
 

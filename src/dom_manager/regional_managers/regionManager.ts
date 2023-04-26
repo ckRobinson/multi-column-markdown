@@ -499,6 +499,9 @@ export abstract class RegionManager {
            isColumnLayout(settings.columnSize)     && 
            (settings.numberOfColumns === 2 || settings.numberOfColumns === 3)) {      
 
+            multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll);
+            multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowHidden);
+
             buildStandardLayouts(settings, multiColumnParent, columnContentDivs)
             setMaxColumnHeight();
             return columnContentDivs;

@@ -35,7 +35,7 @@ export class SingleColumnRegionManager extends RegionManager {
     protected renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
         let multiColumnParent = createDiv({
-            cls: MultiColumnLayoutCSS.RegionColumnContainerDiv,
+            cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} ${MultiColumnLayoutCSS.ContentOverflowAutoScroll}`
         });
 
         if(isLeftLayout(this.regionalSettings.columnPosition)){
