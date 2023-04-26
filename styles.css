@@ -96,7 +96,6 @@
 
 .mcm-column-parent-container {
     padding: 0;
-    overflow: auto;
     color: var(--text-normal);
     page-break-inside: avoid;
 
