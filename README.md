@@ -373,14 +373,29 @@ These syntax options are currently still supported but are being depreciated for
 
 # Change Log
 
-### **0.7.8**
-- Added new CM6 module that attempts to fix the viewport scroll issue in live preview.
+### **0.8.0**
+- **Unlimited Columns**
+    - You can now define an unlimited number of columns within your settings blocks. All columns that extend beyond the viewport will be visible when scrolling the column region.
+    - Use the column size settings flag and the new settings array syntax to define custom column widths.<br>(EG: "Column size: [20%, 30%, 50%, 100%]")
+    - Implemented for FR #45, #46, #47
+- **Multiple setting values per column**
+    - You can now define certain settings to be different for each column. 
+    - Use the syntax: "Alignment: [Left, Center, Right]" 
+    - The following settings can be defined in this way:
+        - Column Size
+        - Column Border
+        - Column Spacing
+        - Column Overflow
+        - Text Alignment
+- **Live preview scroll "fix"**
+    - Added new CM6 module that attempts to fix the viewport scroll issue in live preview.
     - The module attempts to keep the viewport centered on the cursor by moving the view after Obsidian rerenders the document.
     - Known issues:
         - The viewport will appear to flash as it jumps to the new cursor location. This appears to be more or less noticable depending on the machine.
         - Swapping out and back into Obsidian causes the document to jump to the bottom of the document.
         - Clicking back into an editor view without moving the cursor can cause the viewport to jump to the bottom of the document.
 - Updated column break flag to trigger properly when attached to the end of lists.
+- Added new check for custom frame plugins that fixes rendering in view mode.
 
 ### **0.7.7**
 - Fixed bug where error message was not displayed when attempting to export to PDF from live preview.
