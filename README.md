@@ -396,6 +396,7 @@ These syntax options are currently still supported but are being depreciated for
         - Clicking back into an editor view without moving the cursor can cause the viewport to jump to the bottom of the document.
 - Updated column break flag to trigger properly when attached to the end of lists.
 - Added new check for custom frame plugins that fixes rendering in view mode.
+- Fixed a bug that caused theme CSS to not apply to tables when rendered in live preview.
 
 ### **0.7.7**
 - Fixed bug where error message was not displayed when attempting to export to PDF from live preview.
