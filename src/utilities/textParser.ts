@@ -65,7 +65,9 @@ export function isStartTagWithID(text: string): {isStartTag: boolean, hasKey: bo
     return {isStartTag: false, hasKey: false};
 }
 
-const END_REGEX_STRS = ["=== *end-multi-column",
+const END_REGEX_STRS = ["--- *end-multi-column",
+                        "--- *multi-column-end",
+                        "=== *end-multi-column",
                         "=== *multi-column-end"]
 const END_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < END_REGEX_STRS.length; i++) {
