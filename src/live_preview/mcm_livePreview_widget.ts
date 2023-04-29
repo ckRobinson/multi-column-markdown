@@ -87,6 +87,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     fixElementRender(el: Element): Element {
 
         let fixedEl = fixImageRender(el);
+        fixedEl = fixTableRender(el);
         return fixedEl;
     }
 
@@ -159,6 +160,20 @@ export class MultiColumnMarkdown_DefinedSettings_LivePreview_Widget extends Widg
 
         return el;
     }
+}
+
+const OBSIDIAN_LIVEPREVIEW_TABLE_CLASSES = "cm-embed-block markdown-rendered cm-table-widget show-indentation-guide"
+function fixTableRender(el: Element): Element {
+
+    if(el.tagName !== "TABLE") {
+        return el;
+    }
+
+    let parentDiv = createDiv({
+        "cls": OBSIDIAN_LIVEPREVIEW_TABLE_CLASSES
+    })
+    parentDiv.appendChild(el);
+    return parentDiv;
 }
 
 function fixImageRender(el: Element): Element {
