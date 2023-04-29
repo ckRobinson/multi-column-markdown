@@ -35,23 +35,19 @@ const COL_SIZE_OPTION_STRS: string[] = [
     "single column size",
     "single col size",
     "single column width",
-    "single col width"
+    "single col width",
+    "largest column"
 ];
 const COL_SIZE_OPTION_REGEX_ARR: RegExp[] = COL_SIZE_OPTION_STRS.map(convertStringToSettingsRegex).map((value) => {
     return new RegExp(value, "i");
 });
 
 const NUMBER_OF_COLUMNS_STRS = [
-    "number of columns"
+    "number of columns",
+    "Num of Cols",
+    "Col Count"
 ]
 const NUMBER_OF_COLUMNS_REGEX_ARR: RegExp[] = NUMBER_OF_COLUMNS_STRS.map(convertStringToSettingsRegex).map((value) => {
-    return new RegExp(value, "i");
-});
-
-const LARGEST_COLUMN_STRS = [
-    "largest column"
-]
-const LARGEST_COLUMN_REGEX_ARR: RegExp[] = LARGEST_COLUMN_STRS.map(convertStringToSettingsRegex).map((value) => {
     return new RegExp(value, "i");
 });
 
@@ -102,6 +98,7 @@ const CONTENT_OVERFLOW_REGEX_ARR: RegExp[] = [
 
 const ALIGNMENT_REGEX_ARR: RegExp[] = [
     "alignment",
+    "content alignment",
     "align",
     "content align",
     "align content",
@@ -137,6 +134,7 @@ function getSettingsDataFromKeys(settingsString: string, validSettingFormatRegEx
 
 export function parseSingleColumnSettings(settingsStr: string, originalSettings: MultiColumnSettings): MultiColumnSettings {
 
+    originalSettings.columnSize = "medium";
     let settingsLines = settingsStr.split("\n");
     for (let i = 0; i < settingsLines.length; i++) {
 
@@ -167,7 +165,7 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
         let settingsLine = settingsLines[i];
 
         checkSettingIsNumberOfColumns(settingsLine, parsedSettings);
-        checkSettingIsLargestColumn(settingsLine, parsedSettings);
+        checkSettingDefinesColumnSize(settingsLine, parsedSettings);
         checkSettingIsDrawBorder(settingsLine, parsedSettings);
         checkSettingIsDrawShadow(settingsLine, parsedSettings);
         checkSettingIsAutoLayout(settingsLine, parsedSettings);
@@ -198,9 +196,10 @@ function checkSettingIsNumberOfColumns(settingsLine: string, parsedSettings: Mul
     }
 }
 
-function checkSettingIsLargestColumn(settingsLine: string, parsedSettings: MultiColumnSettings) {
 
-    let settingsData = getSettingsDataFromKeys(settingsLine, LARGEST_COLUMN_REGEX_ARR);
+function checkSettingDefinesColumnSize(settingsLine: string, parsedSettings: MultiColumnSettings) {
+
+    let settingsData = getSettingsDataFromKeys(settingsLine, COL_SIZE_OPTION_REGEX_ARR);
     if (settingsData === null) {
         return;
     }
@@ -230,11 +229,14 @@ function checkSettingIsLargestColumn(settingsLine: string, parsedSettings: Multi
 
     // If none are parsed properly to a width then we return a default.
     if(widths.length === 0) {
-        console.error("Error parsing column layout or width, defaulting to standard layout.")
+        console.debug("Error parsing column layout or width, defaulting to standard layout.")
         parsedSettings.columnSize = "standard";
         return;
     }
 
+    // If we parsed some lengths and some did not parse properly, the user has either
+    // poorly defined their settings or is attempting to break us. Take the first valid option
+    // between the two arrays.
     if(widths.length !== settingValues.length) {
 
         for(let setting of settingValues) {
@@ -253,7 +255,6 @@ function checkSettingIsLargestColumn(settingsLine: string, parsedSettings: Multi
     }
 
     parsedSettings.columnSize = widths;
-    return;
 }
 
 function checkSettingIsDrawBorder(settingsLine: string, parsedSettings: MultiColumnSettings) {

@@ -87,7 +87,7 @@ export function getDefaultMultiColumnSettings(): MultiColumnSettings {
         drawBorder: [true],
         drawShadow: true,
         autoLayout: false,
-        columnSize: "medium",
+        columnSize: "standard",
         columnPosition: "standard",
         columnSpacing: [""],
         contentOverflow: [ContentOverflowType.scroll],
