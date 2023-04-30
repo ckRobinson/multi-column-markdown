@@ -77,7 +77,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             this.regionManager = new SingleColumnRegionManager(regionData);
         }
         else if (this.regionSettings.autoLayout === true) {
-            this.regionManager = new AutoLayoutRegionManager(regionData);
+            this.regionManager = new AutoLayoutRegionManager(regionData, 1);
         }
         else {
             this.regionManager = new StandardMultiColumnRegionManager(regionData);
@@ -87,7 +87,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     fixElementRender(el: Element): Element {
 
         let fixedEl = fixImageRender(el);
-        fixedEl = fixTableRender(el);
+        fixedEl = fixTableRender(fixedEl);
         return fixedEl;
     }
 
