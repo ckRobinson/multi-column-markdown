@@ -12,6 +12,15 @@ creative ways.
 
 <br>
 
+---
+## **A Word On Live Preview**
+---
+Live preivew has been supported in Multi-Column Markdown, however cross compatibilty with other plugins, anything that requires interaction (IE: button clicks), and more advanced, non-naitive markdown, Obsidian features may or may not be supported in this mode. 
+
+Due to how custom live preview plugins are implemented within CodeMirror6 and hook into Obsidian, I can not guarentee all plugins will render properly within live preview at this point. Plugins that do not render their content immediatly, such as needing to wait for a dataview query, do not render properly. 
+
+This plugin was originally intended for use only in Reading mode where plugins have more control over how content is rendered. *Most* plugins, interactive elements, advanced markdown, and visual stylings will render better and have far more cross compatibility in Reading mode.
+
 # Usage:
 
 
@@ -33,7 +42,7 @@ Text displayed in column 1.
 
 Text displayed in column 2.
 
-=== end-multi-column
+\--- end-multi-column
 
 Text displayed below.
 
@@ -43,7 +52,10 @@ Text displayed below.
 
 ---
 
+
 <br>
+
+# Syntax Reference
 
 ### **Region Start Tag:**
 Each multi-column region must start with either:
@@ -77,12 +89,12 @@ Each tag type can be defined with the following options:
 #### **Start Multi-Column Region:**
 \```start-multi-column\
 ID: A_unique_region_ID\
-*Any Additional Settings (see below)*\
+*Any Additional Setting flags (see below)*\
 \```
 
 \```multi-column-start\
 ID: A_unique_region_ID_2\
-*Any Additional Settings (see below)*\
+*Any Additional Setting flags (see below)*\
 \```
 
 #### **End a Column:**
@@ -91,87 +103,158 @@ ID: A_unique_region_ID_2\
 \--- column-break \---\
 \--- break-column \---
 
+<br>
+
 #### **End Multi-Column Region:**
-- \=\=\= end-multi-column
-- \=\=\= multi-column-end
+\--- end-multi-column\
+\--- multi-column-end
 
 <br>
 
-### **Valid Setting Options:**
+## **Region Settings:**
 
 #### **ID:**
-- Any string of characters.
+- **Setting Flags**:
+    - ID:
+- **Valid Selections**:
+    - Any string of characters.
+<br>
+---
 - The ID is used to differentiate between different regions if there are multiple in the same document.
 - Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
 - Can be ommitted if there will only ever be a single column region in the document.
 
+<br>
+
 #### **Number of Columns:**
-- 1, 2 or 3
+- **Setting Flags**:
+    - Number of Columns:
+    - Num of Cols:
+    - Col Count:
+- **Valid Selections**:
+    - Any digit.
 
-#### **Largest Column:**
-By default all of the columns will be set to equal size
-if this option is omitted.
+<br>
 
-- For either 2 or 3 column layouts
-    - Standard
-    - Left
-    - First
-    - Right
-    - Second
-- Only for 3 column layouts
-    - Center
-    - Third
-    - Middle
+#### **Column Size:**
+By default all of the columns will be set to equal size if this option is omitted.<br>
+_Can define on a per column basis with array syntax: EG: [25%, 75%]_
+
+- **Setting Flags**:
+    - Column Size:
+    - Col Size:
+    - Column Width:
+    - Col Width:
+    - Largest Column:
+- **Valid Selections**:
+    - Single Column layout:
+        - Small
+        - Medium
+        - Large
+        - Full
+    - For either 2 or 3 column layouts
+        - Standard
+        - Left
+        - First
+        - Right
+        - Second
+    - Only for 3 column layouts
+        - Center
+        - Third
+        - Middle
+    - Allows *most* CSS unit lengths (px, pt, %, etc).
+
+<br>
+
 
 #### **Border:**
-By default the border is enabled but can be removed with:
-- disabled
-- off
-- false
+By default the border is enabled but can be removed with:<br>
+_Can define on a per column basis with array syntax: EG: [off, on, off]_
+
+- **Setting Flags**:
+    - Border:
+- **Valid Selections**:
+    - disabled
+    - off
+    - false
+
+<br>
 
 #### **Shadow:**
 On by default, can be removed with:
-- disabled
-- off
-- false
 
-#### **Column size:**
-Only used with the single column option.
-- Valid Options:
-    - Small
-    - Medium
-    - Large
-    - Full
+- **Setting Flags**:
+    - Shadow:
+- **Valid Selections**:
+    - disabled
+    - off
+    - false
+
+<br>
 
 #### **Column Position or Column Location:**
 Only used with the single column option.
-- Valid options:
+
+- **Setting Flags**:
+    - Column Position:
+    - Col Position:
+    - Column Location:
+    - Col Location:
+- **Valid Selections**:
     - Left
     - Right
     - Center
     - Middle
 
+<br>
+
 #### **Column Spacing:**
-- Used to set the distance between all of the columns.
-- Allows *most* CSS unit lengths (px, pt, %, etc).
-- A number alone without a defined unit type defaults to pt unit.
+Used to set the distance between all of the columns.<br>
+_Can define on a per column basis with array syntax: EG: [5px, 10px]_
+
+- **Setting Flags**:
+    - Column Spacing:
+- **Valid Selections**:
+    - Allows *most* CSS unit lengths (px, pt, %, etc).
+    - A number alone without a defined unit type defaults to pt unit.
+
+<br>
 
 #### **Content Overflow:**
 Should the columns cut off anything that goes outside the column bounds or should it be scrollable.
-- Valid options:
+
+- **Setting Flags**:
+    - Overflow:
+    - Content Overflow:
+- **Valid Selections**:
     - Scroll (Default)
     - Hidden
 
+<br>
+
 #### **Alignment:**
-Choose the alignment of the content in the columns.
-- Valid Options
+Choose the alignment of the content in the columns.<br>
+_Can define on a per column basis with array syntax: EG: [Left, Center]_
+
+- **Setting Flags**:
+    - Alignment:
+    - Content Alignment:
+    - Content align:
+    - Text Align:
+- **Valid Selections**:
     - Left (Default)
     - Center
     - Right
 
 <br>
 
-### **Auto Layout**
+####  **Auto Layout**
+- **Setting Flags**:
+    - Auto Layout:
+- **Valid Selections**:
+    - true
+    - on
+<br>
 ---
 
 Auto layout regions do not use defined column breaks. Instead these type of multi-column regions will attempt to balance all content equally between the columns. Headings are also attempted to be preserved so that a heading block will not end a column but will instead be moved to the top of the next column with it's corresponding content.
@@ -180,104 +263,28 @@ To use this feature set "Auto Layout: true" within the region settings.
 
 <br>
 
-## **Live Preview**
 ---
-
-Live preivew is now supported in Multi-Column Markdown, however cross compatibilty with other plugins may or may not be supported in this mode. Due to how custom live preview plugins are implemented within CodeMirror6 and hook into Obsidian, I can not guarentee all plugins will render properly within live preview at this point. Plugins that do not render their content immediatly, such as needing to wait for a dataview query, do not render properly. *Most* plugins retain their cross compatibility when viewing the columns in Reading mode however.
-
-<br>
-
-# **Full Examples:**
-
-\```start-multi-column\
-ID: ExampleRegion3\
-\```
-
-\# Column 1
-
-\=== end-column ===
-
-\# Column 2
-
-=== end-multi-column
-
-**Rendered as:**
-![Eample_2Column](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_2Column.png?raw=true)
-
-<br>
-
-\```start-multi-column\
-ID: ExampleRegion4\
-number of columns: 3\
-border: off\
-\```
-
-\# Column 1
-
-\--- end-column ---
-
-\# Column 2
-
-\--- end-column ---
-
-\# Column 3
-
-=== end-multi-column
-
-**Rendered as:**
-![Eample_3Column_1](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_3Column_1.png?raw=true)
-
-<br>
-
-\```start-multi-column\
-ID: ExampleRegion5\
-number of columns: 3\
-largest column: center\
-\```
-
-\#### Column 1
-
-\--- end-column ---
-
-\# Column 2
-
-\--- end-column ---
-
-\#### Column 3
-
-=== end-multi-column
-
-**Rendered as:**
-![Eample_3Column_2](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_3Column_2.png?raw=true)
-
-<br>
-
-\```start-multi-column\
-ID: ExampleRegion6\
-number of columns: 1\
-column size: medium\
-column position: left\
-\```
-
-\#### Single Left Aligned Column 
-
-=== end-multi-column
-
-**Rendered as:**
-![Example_4Column_1](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_4Column_1.png?raw=true)
-
-<br>
-
-### **Things to note:**
+## Plugin Cross Compatibility.
+---
+Not all plugins will be cross compatable within a multi-column region. Depending on the implementation or use case, some plugins will either entierly not render, render incorrectly, or render but be uninteractable. For the most part, due to how Obsidian plugins work, there is little that can be done at this stage to guarentee cross compatibility. And this is even more the case when using Live Preview. You can check the [Cross Compatibility](documentation/CrossCompatibility.md) sheet for plugins known to work within columns. Anything not on that list has not been tested. 
 
 ---
-
-You can not nest a multi-column region within another multi-column region.
+## Obsidian Theming
+---
+Just as with cross compatibilty above, multi-column regions may be affected by the Obsidian Theme you are running. There is very little non-layout dependent CSS within MCM but some themes may add or remove elements neccessary to properly render the columns. If regions do not render properly in a specific theme, feel free to open an issue and make sure to include what Obsidian theme you are running when describing the problem.
 
 <br>
 
-### **Available Commands:**
----
+# **Full Mutli-Column Examples:**
+
+[Here](documentation/FullExamples.md)
+
+<br>
+
+
+<br>
+
+# **Plugin Commands:**
 
 You can access the command pallet with ctrl/command - P. 
 
@@ -328,7 +335,7 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 - Clicking within a document causes the document to flash before recentering on the cursor location.
 
-- Clicking outside of the editor and then back in may cause the viewport to jump to the bottom of the editor in certain cercumstances.
+- Clicking outside of the editor and then back in may cause the viewport to jump to the bottom of the editor in certain circumstances.
 
 #### **Minor Render Issues**
 
@@ -360,7 +367,7 @@ These syntax options are currently still supported but are being depreciated for
 - === start-multi-column: A_unique_region_ID_2
 - === multi-column-start: A_unique_region_ID_3
 
-#### **Settings Regions: 
+#### **Settings Regions**: 
 \```settings\```\
 \```column-settings\```\
 \```multi-column-settings\```
@@ -370,6 +377,10 @@ These syntax options are currently still supported but are being depreciated for
 - \=== end-column ===
 - \=== column-break ===
 - \=== break-column ===
+
+#### **End Multi-Column Region:**
+- \=\=\= end-multi-column
+- \=\=\= multi-column-end
 
 # Change Log
 
@@ -419,6 +430,6 @@ These syntax options are currently still supported but are being depreciated for
 
 # Support Me:
 
-<a href="https://www.buymeacoffee.com/ckrobinson" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="217" height="60" /></a>
+<a href="https://www.buymeacoffee.com/ckrobinson" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="45" /></a>
 
 <a href='https://ko-fi.com/ckrobinson' target='_blank'><img height='35' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
