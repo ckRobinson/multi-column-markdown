@@ -8,24 +8,44 @@
 
 import { parseStartRegionCodeBlockID } from "./settingsParser";
 
-const PANDOC_REGEX: string[] = (() => {
+const PANDOC_COL_COUNT_NAME = "colCount"
+const PANDOC_COL_CONTENT = "colContent"
+const PANDOC_COl_SETTINGS = "colSettings"
+const PANDOC_REGEX_STR: string = (() => {
 
-    let regex_strings = []
-    regex_strings.push(`(:{3,}) *columns *\n`);
-    regex_strings.push(`(:{3,}) *\{ *.columns.*\} *\n`);
-
-    let nums = ["two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
-    for(let number of nums) {
-
-        regex_strings.push(`(:{3,}) *${number}(?:[-_]|)columns *\n`);
-        regex_strings.push(`(:{3,}) *\{ *.${number}(?:[-_]|)columns.*\} *\n`);
-    }
-    return nums;
+    let nums = ["two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"].join("|")
+    let regex_strings = `(?<OpenDiv>:{3,}) *\\{ *\\.(?<${PANDOC_COL_COUNT_NAME}>(?:${nums}|))(?:[-_]|)columns(?<${PANDOC_COl_SETTINGS}>.*)\\}$\\n(?<${PANDOC_COL_CONTENT}>(?:.|\\n)*?)\\n?^(\\k<OpenDiv>)$`
+    return regex_strings;
 })()
+const PANDOC_REGEX_ARR: RegExp[] = [];
+PANDOC_REGEX_ARR.push(new RegExp(PANDOC_REGEX_STR, "m"));
+
+console.log(PANDOC_REGEX_ARR);
 export function findPandoc(text: string) {
 
+    for(let i = 0; i< PANDOC_REGEX_ARR.length; i++) {
 
+        let regexData = PANDOC_REGEX_ARR[i].exec(text)
+        if(regexData !== null) {
 
+            console.group("Pandoc Region:");
+            console.log("ColCount:", regexData.groups[PANDOC_COL_COUNT_NAME]);
+            console.log("Settings:", regexData.groups[PANDOC_COl_SETTINGS]);
+            console.log("Content:");
+            console.log(regexData.groups[PANDOC_COL_CONTENT]);
+            console.groupEnd();
+            return {
+                found: true
+            }
+        }
+    }
+
+    return {
+        found: false
+    }
+}
+export function containsPandoc(text: string): boolean {
+    return findPandoc(text).found
 }
 
 const START_REGEX_STRS = ["=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
@@ -299,7 +319,7 @@ export function containsStartCodeBlock(text: string): boolean {
 }
 
 export function containsRegionStart(text: string): boolean {
-    return containsStartCodeBlock(text) || containsStartTag(text);
+    return containsStartCodeBlock(text) || containsStartTag(text) || containsPandoc(text);
 }
 
 export function countStartTags(initialText: string): { numberOfTags: number, keys: string[] } {
