@@ -87,6 +87,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     fixElementRender(el: Element): Element {
 
         let fixedEl = fixImageRender(el);
+        fixedEl = fixPDFRender(el);
         fixedEl = fixTableRender(fixedEl);
         return fixedEl;
     }
@@ -176,12 +177,52 @@ function fixTableRender(el: Element): Element {
     return parentDiv;
 }
 
+function fixPDFRender(el: Element): Element {
+
+    let embed = getEmbed(el);
+    if(embed === null) {
+        return el;
+    }
+
+    let alt = embed.getAttr("alt")
+    let src = embed.getAttr("src")
+
+    // If the link source is not an image we dont want to make any adjustments.
+    if(filenameIsImage(src) === true) {
+        return el;
+    }
+    if(filenameIsPDF(src) === false) {
+        return el;
+    }
+
+    // Try to find the image file in the vault. This is very inefficient but works for now.
+    let resourcePath = attemptToGetResourcePath(src, isPDFExtension);
+    if(resourcePath === "") {
+        return el;
+    }
+
+    // If we found the resource path then we update the element to be a proper PDF render.
+    console.log("Fixing embed.");
+    let fixedEl = createDiv({
+        cls: "internal-embed pdf-embed is-loaded",
+    })
+    fixedEl.setAttr("alt", alt);
+
+    let iframe = fixedEl.createEl("iframe", {
+        "attr": {
+            "style": "width: 100%; height: 100%;"
+        }
+    });
+    iframe.setAttr("src", resourcePath);
+    return fixedEl;
+}
+
 function fixImageRender(el: Element): Element {
 
     let embed = getEmbed(el);
     if(embed === null) {
-            return el;
-        }
+        return el;
+    }
 
     let customWidth = embed.attributes.getNamedItem("width")
     let alt = embed.getAttr("alt")
@@ -199,16 +240,16 @@ function fixImageRender(el: Element): Element {
     }
 
     let fixedEl = createDiv({
-            cls: "internal-embed image-embed is-loaded",
-        })
-        fixedEl.setAttr("alt", alt);
+        cls: "internal-embed image-embed is-loaded",
+    })
+    fixedEl.setAttr("alt", alt);
 
-        let image = fixedEl.createEl("img");
-        image.setAttr("src", resourcePath);
+    let image = fixedEl.createEl("img");
+    image.setAttr("src", resourcePath);
 
-        if(customWidth !== null) {
+    if(customWidth !== null) {
 
-            image.setAttr("width", customWidth.value);
+        image.setAttr("width", customWidth.value);
     }
 
     return fixedEl;
@@ -313,4 +354,19 @@ function isImageExtension(extension: string): boolean {
             return true;
     }
     return false;
+}
+
+function filenameIsPDF(filename: string): boolean {
+    let parts = filename.split(".");
+    if(parts.length <= 1) {
+        return false;
+    }
+
+    let extension = parts.last();
+    return isPDFExtension(extension);
+}
+
+function isPDFExtension(extension: string): boolean {
+    return extension.toLowerCase() === "pdf";
+
 }
