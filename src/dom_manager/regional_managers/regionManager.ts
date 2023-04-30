@@ -507,6 +507,20 @@ export abstract class RegionManager {
             return columnContentDivs;
         }
 
+        if(typeof settings.columnSize === "string" &&
+           isColumnLayout(settings.columnSize)     && 
+           settings.columnSize === "standard" && 
+           settings.numberOfColumns > 3 ){
+
+            multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll);
+            multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowHidden);
+
+            buildEqualLayout(settings, multiColumnParent, columnContentDivs);
+
+            setMaxColumnHeight();
+            return columnContentDivs;
+        }
+        
         let columnSizes: HTMLSizing[] = [];
         // If the user has defined the widths individually then we just need to create
         // each column individually with each width size.
@@ -635,6 +649,26 @@ function getElementClientHeight(element: HTMLElement, parentRenderElement: HTMLD
         parentRenderElement.removeChild(element);
     }
     return height
+}
+
+function buildEqualLayout(settings: MultiColumnSettings, multiColumnParent: HTMLDivElement, columnContentDivs: HTMLDivElement[]) {
+
+    let percent = Math.ceil(100 / settings.numberOfColumns);
+
+    for(let i = 0; i < settings.numberOfColumns; i++) {
+        
+        columnContentDivs.push(multiColumnParent.createDiv({
+            cls: `${MultiColumnStyleCSS.ColumnContent}`,
+            attr: {"style": `width: ${percent}%`}
+        }));
+
+        if(i !== settings.numberOfColumns - 1) {
+            multiColumnParent.createDiv({
+                cls: `mcm-column-spacer`,
+                attr: {"style": columnSpacingState(0, settings)}
+            });
+        }
+    }
 }
 
 function buildStandardLayouts(settings: MultiColumnSettings, multiColumnParent: HTMLDivElement, columnContentDivs: HTMLDivElement[]) {
