@@ -178,23 +178,10 @@ function fixTableRender(el: Element): Element {
 
 function fixImageRender(el: Element): Element {
 
-    let embed = null;
-    let fixedEl = el;
-
-    // image embeds can either be a <div class="internal-embed" or <p><div class="internal-embed"
-    // depending on the syntax this additional check is to fix false negatives when embed is
-    // the first case.
-    if(el.hasClass("internal-embed")) {
-        embed = el;
-    }
-    else {
-
-        let items = el.getElementsByClassName("internal-embed");
-        if(items.length !== 1) {
+    let embed = getEmbed(el);
+    if(embed === null) {
             return el;
         }
-        embed = items[0];
-    }
 
     let customWidth = embed.attributes.getNamedItem("width")
     let alt = embed.getAttr("alt")
@@ -206,26 +193,12 @@ function fixImageRender(el: Element): Element {
     }
 
     // Try to find the image file in the vault. This is very inefficient but works for now.
-    let aTFiles = app.vault.getAllLoadedFiles()
-    let resourcePath = ""
-    for(let i = 0; i < aTFiles.length; i++) {
-
-        let abstractFile = aTFiles[i];
-        if(abstractFile instanceof TFile === false) {
-            continue;
-        }
-        let file = abstractFile as TFile;
-
-        if(file.name === src && isImageExtension(file.extension) === true) {
-            resourcePath = app.vault.getResourcePath(file)
-            break;
-        }
+    let resourcePath = attemptToGetResourcePath(src, isImageExtension);
+    if(resourcePath === "") {
+        return el;
     }
 
-    // If we found the resource path then we update the element to be a proper image render.
-    if(resourcePath !== "") {
-
-        fixedEl = createDiv({
+    let fixedEl = createDiv({
             cls: "internal-embed image-embed is-loaded",
         })
         fixedEl.setAttr("alt", alt);
@@ -236,10 +209,28 @@ function fixImageRender(el: Element): Element {
         if(customWidth !== null) {
 
             image.setAttr("width", customWidth.value);
-        }
     }
 
     return fixedEl;
+}
+
+function attemptToGetResourcePath(src: string, fileExtensionCheck: (filename: string) => boolean = () => { return true; }) {
+    let aTFiles = app.vault.getAllLoadedFiles();
+    let resourcePath = "";
+    for (let i = 0; i < aTFiles.length; i++) {
+
+        let abstractFile = aTFiles[i];
+        if (abstractFile instanceof TFile === false) {
+            continue;
+        }
+        let file = abstractFile as TFile;
+
+        if (file.name === src && fileExtensionCheck(file.extension) === true) {
+            resourcePath = app.vault.getResourcePath(file);
+            break;
+        }
+    }
+    return resourcePath;
 }
 
 function fixExternalLinks(el: Element): Element {
@@ -277,6 +268,25 @@ function fixExternalLinks(el: Element): Element {
     }
 
     return el;
+}
+
+function getEmbed(el: Element): Element | null {
+
+    // embeds can either be a <div class="internal-embed" or <p><div class="internal-embed"
+    // depending on the syntax this additional check is to fix false negatives when embed is
+    // the first case.
+    if(el.hasClass("internal-embed")) {
+        return el;
+    }
+    else {
+
+        let items = el.getElementsByClassName("internal-embed");
+        if(items.length === 1) {
+            return items[0];
+        }
+    }
+
+    return null;
 }
 
 function filenameIsImage(filename: string): boolean {
