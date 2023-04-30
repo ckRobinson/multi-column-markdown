@@ -11,13 +11,21 @@ import { AlignmentType, ContentOverflowType, MultiColumnSettings, columnAlignmen
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { RegionManager } from './regionManager';
 import { getHeadingCollapseElement, hasHeader } from 'src/utilities/elementRenderTypeParser';
+import { RegionManagerData } from './regionManagerContainer';
 
 export class AutoLayoutRegionManager extends RegionManager {
+
+    private autoLayoutBalanceIterations: number = 5;
 
     private previousColumnHeights: number[] = []
 
     private columnParent: HTMLDivElement;
     private columnDivs: HTMLDivElement[];
+
+    constructor(data: RegionManagerData, balanceIterations: number = 5) {
+        super(data);
+        this.autoLayoutBalanceIterations = balanceIterations;
+    }
 
     public renderRegionElementsToScreen(): void {
 
@@ -235,7 +243,7 @@ export class AutoLayoutRegionManager extends RegionManager {
          * 
          * There is probably a better way of accomplishing this task but this works for the time being.
          */
-        for(let i = 0; i < 5; i++) {
+        for(let i = 0; i < this.autoLayoutBalanceIterations; i++) {
             
             balanceElements()
 
