@@ -44,8 +44,9 @@ const COL_SIZE_OPTION_REGEX_ARR: RegExp[] = COL_SIZE_OPTION_STRS.map(convertStri
 
 const NUMBER_OF_COLUMNS_STRS = [
     "number of columns",
-    "Num of Cols",
-    "Col Count"
+    "num of cols",
+    "col count",
+    "column-count"
 ]
 const NUMBER_OF_COLUMNS_REGEX_ARR: RegExp[] = NUMBER_OF_COLUMNS_STRS.map(convertStringToSettingsRegex).map((value) => {
     return new RegExp(value, "i");

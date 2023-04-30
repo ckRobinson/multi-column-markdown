@@ -8,6 +8,26 @@
 
 import { parseStartRegionCodeBlockID } from "./settingsParser";
 
+const PANDOC_REGEX: string[] = (() => {
+
+    let regex_strings = []
+    regex_strings.push(`(:{3,}) *columns *\n`);
+    regex_strings.push(`(:{3,}) *\{ *.columns.*\} *\n`);
+
+    let nums = ["two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+    for(let number of nums) {
+
+        regex_strings.push(`(:{3,}) *${number}(?:[-_]|)columns *\n`);
+        regex_strings.push(`(:{3,}) *\{ *.${number}(?:[-_]|)columns.*\} *\n`);
+    }
+    return nums;
+})()
+export function findPandoc(text: string) {
+
+
+
+}
+
 const START_REGEX_STRS = ["=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
                           "=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?"]
 const START_REGEX_ARR: RegExp[] = [];
@@ -129,7 +149,8 @@ const COL_REGEX_STRS: string[] = ["^===\\s*?column-end\\s*?===\\s*?$",
                                   "^---\\s*?column-end\\s*?---\\s*?$",
                                   "^---\\s*?end-column\\s*?---\\s*?$",
                                   "^---\\s*?column-break\\s*?---\\s*?$",
-                                  "^---\\s*?break-column\\s*?---\\s*?$"];
+                                  "^---\\s*?break-column\\s*?---\\s*?$",
+                                  "^ *?(?:\\?)\\columnbreak *?$"];
 const COL_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < COL_REGEX_STRS.length; i++) {
     COL_REGEX_ARR.push(new RegExp(COL_REGEX_STRS[i]));
@@ -156,7 +177,8 @@ const INNER_COL_END_REGEX_ARR: RegExp[] = [
     /^={3}\s*?column-end\s*?={3}\s*?$\n?/m,
     /^={3}\s*?end-column\s*?={3}\s*?$\n?/m,
     /^={3}\s*?column-break\s*?={3}\s*?$\n?/m,
-    /^={3}\s*?break-column\s*?={3}\s*?$\n?/m
+    /^={3}\s*?break-column\s*?={3}\s*?$\n?/m,
+    /^ *?(?:\\?)\\columnbreak *?$\n?/m
 ]
 export function checkForParagraphInnerColEndTag(text: string): RegExpExecArray | null {
 
