@@ -75,53 +75,16 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 				let startIndexOffset = 0;
 				while (true) {
 
-					// If there are multiple kinds of start blocks, the old way of parsing would cause issues.
-					// Now search for both kinds and determine what to do after search.
-					let startTagData_codeblockStart = findStartCodeblock(workingFileText);
-					let startTagData_depreciatedStart = findStartTag(workingFileText);
-
-					// Default to codeblock Style. Then check, if codeblock was not found and depreciated Start was, set startTag to depreciated.
-					let startTagData = startTagData_codeblockStart;
-					if(startTagData_codeblockStart.found === false && startTagData_depreciatedStart.found === true) {
-						
-						startTagData = startTagData_depreciatedStart
-					}
-					else if(startTagData_codeblockStart.found === true && startTagData_depreciatedStart.found === true) {
-
-						// If both kinds were found we want to start with the one closer to the top of the document as CM6 requires we work in order.
-						if (startTagData_codeblockStart.startPosition > startTagData_depreciatedStart.startPosition) {
-
-							startTagData = startTagData_depreciatedStart
-						}
-					}
-	
-					if(startTagData.found === false) {
+					let regionData: RegionData = getNextRegion(workingFileText, startIndexOffset, docText);
+					if(regionData === null) {
 						break;
 					}
 
-					// Search for the first end tag after a start block. (No recursive columns.)
-					let endTagData = findEndTag(workingFileText.slice(startTagData.startPosition));
-					if(endTagData.found === false) {
-						break;
-					}
-
-					/**
-					 * For the region we found get the start and end position of the tags so we 
-					 * can slice it out of the document.
-					 */
-					let startIndex = startIndexOffset + startTagData.startPosition
-					let endIndex = startIndex + endTagData.startPosition + endTagData.matchLength // Without the matchLength will leave the end tag on the screen.
-
-					// This text is the entire region data including the start and end tags.
-					let elementText = docText.slice(startIndex, endIndex)
-
-					/**
-					 * Update our start offset and the working text of the file so our next 
-					 * iteration knows where we left off
-					 */
-					startIndexOffset = endIndex
-					workingFileText = docText.slice(endIndex);
-
+					let elementText  = regionData.regionText;
+					workingFileText  = regionData.remainingText;
+					let startIndex   = regionData.startIndex;
+					let endIndex     = regionData.endIndex;
+					startIndexOffset = endIndex;
 
 					// Here we check if the cursor is in this specific region.
 					let cursorInRegion = checkCursorInRegion(startIndex, endIndex, ranges);
@@ -263,3 +226,86 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 		return EditorView.decorations.from(field);
 	},
 });
+
+const ALL_REGION_TYPES= [
+    "CODEBLOCK",
+    "DEPRECIATED", 
+    "PADOC"
+] as const;
+type RegionTypeTuple = typeof ALL_REGION_TYPES;
+export type RegionType = RegionTypeTuple[number];
+interface RegionData {
+	type: RegionType;
+	regionText: string;
+	remainingText: string;
+	startIndex: number;
+	endIndex: number;
+}
+function getNextRegion(workingFileText: string, startIndexOffset: number, wholeDoc: string): RegionData | null {
+
+	let data: RegionData = {
+		type: "CODEBLOCK",
+		regionText: "",
+		remainingText: "",
+		startIndex: startIndexOffset,
+		endIndex: startIndexOffset
+	}
+
+	// If there are multiple kinds of start blocks, the old way of parsing would cause issues.
+	// Now search for both kinds and determine what to do after search.
+	let startTagData_codeblockStart = findStartCodeblock(workingFileText);
+	let startTagData_depreciatedStart = findStartTag(workingFileText);
+
+	if(startTagData_codeblockStart.found === false && startTagData_depreciatedStart.found === false) {
+		return null;
+	}
+
+	// Default to codeblock Style. Then check, if codeblock was not found and depreciated Start was, set startTag to depreciated.
+	let startTagData = startTagData_codeblockStart;
+	if(startTagData_codeblockStart.found === true && startTagData_depreciatedStart.found === true) {
+
+		// If both kinds were found we want to start with the one closer to the top of the document as CM6 requires we work in order.
+		if (startTagData_codeblockStart.startPosition > startTagData_depreciatedStart.startPosition) {
+
+			startTagData = startTagData_depreciatedStart
+			data.type = "DEPRECIATED"
+		}
+	}
+	else if(startTagData_codeblockStart.found === true) {
+		startTagData = startTagData_codeblockStart;
+		data.type = "CODEBLOCK"
+	}
+	else if(startTagData_depreciatedStart.found === true){
+		startTagData = startTagData_depreciatedStart
+		data.type = "DEPRECIATED"
+	}
+
+	// if(data.type === "CODEBLOCK" || data.type === "DEPRECIATED") {
+		// Search for the first end tag after a start block. (No recursive columns.)
+		let endTagData = findEndTag(workingFileText.slice(startTagData.startPosition));
+		if(endTagData.found === false) {
+			return null;
+		}
+
+		/**
+		 * For the region we found get the start and end position of the tags so we 
+		 * can slice it out of the document.
+		 */
+		let startIndex = startIndexOffset + startTagData.startPosition;
+		let endIndex = startIndex + endTagData.startPosition + endTagData.matchLength // Without the matchLength will leave the end tag on the screen.
+
+		// This text is the entire region data including the start and end tags.
+		let elementText = wholeDoc.slice(startIndex, endIndex)
+		data.regionText = elementText;
+
+		/**
+		 * Update our start offset and the working text of the file so our next 
+		 * iteration knows where we left off
+		 */
+		workingFileText = wholeDoc.slice(endIndex);
+		data.remainingText = workingFileText;
+		data.startIndex = startIndex
+		data.endIndex = endIndex
+		return data;
+	// }
+}
