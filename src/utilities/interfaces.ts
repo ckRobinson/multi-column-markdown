@@ -21,3 +21,17 @@ export class HTMLSizing {
         return new HTMLSizing(0, "px");
     }
 }
+
+const ALL_MOUSE_STATES = [
+    "up",
+    "down", 
+] as const;
+type MouseStateTuple = typeof ALL_MOUSE_STATES;
+export type MouseState = MouseStateTuple[number];
+export let mouseState: MouseState = "up"; 
+addEventListener("mousedown", () => {
+	mouseState = "down"
+})
+addEventListener("mouseup", () => {
+	mouseState = "up"
+})
