@@ -45,10 +45,24 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 			selecting = false;
 		}
 
-		if(transaction.isUserEvent("select.pointer") && transaction.state.selection.ranges && transaction.state.selection.ranges.length > 0) {
+		if(transaction.isUserEvent("select.pointer") && 
+		   transaction.state.selection.ranges && 
+		   transaction.state.selection.ranges.length > 0) {
 
-			selecting = true;
-			return builder.finish();
+			let isSelecting = false;
+			for(let range of transaction.state.selection.ranges) {
+
+				if(range.to - range.from > 1) {
+
+					isSelecting = true;
+					break;
+				}
+			}
+
+			if(isSelecting) {
+				selecting = true;
+				return builder.finish();
+			}
 		}
 
 		syntaxTree(transaction.state).iterate({
