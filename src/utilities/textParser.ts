@@ -21,7 +21,7 @@ const PANDOC_REGEX_ARR: RegExp[] = [];
 PANDOC_REGEX_ARR.push(new RegExp(PANDOC_REGEX_STR, "m"));
 
 console.log(PANDOC_REGEX_ARR);
-export function findPandoc(text: string) {
+export function findPandoc(text: string): PandocRegexData {
 
     for(let i = 0; i< PANDOC_REGEX_ARR.length; i++) {
 
@@ -34,18 +34,34 @@ export function findPandoc(text: string) {
             console.log("Content:");
             console.log(regexData.groups[PANDOC_COL_CONTENT]);
             console.groupEnd();
-            return {
-                found: true
-            }
+
+            let data = defaultPandocRegexData();
+            data.found = true;
+            data.startPosition = regexData.index;
+            data.endPosition = regexData.index + regexData[0].length;
+            data.content = regexData.groups[PANDOC_COL_CONTENT]
+            return data;
         }
     }
 
-    return {
-        found: false
-    }
+    return defaultPandocRegexData();
 }
 export function containsPandoc(text: string): boolean {
     return findPandoc(text).found
+}
+export interface PandocRegexData {
+    found: boolean;
+    startPosition: number;
+    endPosition: number;
+    content: string;
+}
+function defaultPandocRegexData(): PandocRegexData {
+    return {
+        found: false,
+        startPosition: -1,
+        endPosition: -1,
+        content: ""
+    }
 }
 
 const START_REGEX_STRS = ["=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
@@ -63,7 +79,7 @@ for(let i = 0; i < START_REGEX_STRS_WHOLE_LINE.length; i++) {
 }
 
 
-export function findStartTag(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+export function findStartTag(text: string): StartRegionData {
 
     let found = false;
     let startPosition = -1;
@@ -296,7 +312,13 @@ const CODEBLOCK_START_REGEX_STR: string = [
 }, "")
 const START_CODEBLOCK_REGEX: RegExp = new RegExp(`\`\`\`(:?${CODEBLOCK_START_REGEX_STR})(.*?)\`\`\``, "ms");
 
-export function findStartCodeblock(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+export interface StartRegionData {
+    found: boolean;
+    startPosition: number;
+    endPosition: number;
+    matchLength: number
+}
+export function findStartCodeblock(text: string): StartRegionData {
 
     let found = false;
     let startPosition = -1;

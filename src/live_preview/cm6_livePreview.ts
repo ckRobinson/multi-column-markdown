@@ -9,7 +9,7 @@
 import { Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
-import { containsRegionStart, findEndTag, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
+import { PandocRegexData, StartRegionData, containsRegionStart, findEndTag, findPandoc, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
 import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
 import { editorLivePreviewField } from "obsidian";
 import { mouseState } from "src/utilities/interfaces";
@@ -242,7 +242,6 @@ const ALL_REGION_TYPES= [
 type RegionTypeTuple = typeof ALL_REGION_TYPES;
 export type RegionType = RegionTypeTuple[number];
 interface RegionData {
-	type: RegionType;
 	regionText: string;
 	remainingText: string;
 	startIndex: number;
@@ -250,46 +249,15 @@ interface RegionData {
 }
 function getNextRegion(workingFileText: string, startIndexOffset: number, wholeDoc: string): RegionData | null {
 
-	let data: RegionData = {
-		type: "CODEBLOCK",
-		regionText: "",
-		remainingText: "",
-		startIndex: startIndexOffset,
-		endIndex: startIndexOffset
-	}
-
-	// If there are multiple kinds of start blocks, the old way of parsing would cause issues.
-	// Now search for both kinds and determine what to do after search.
-	let startTagData_codeblockStart = findStartCodeblock(workingFileText);
-	let startTagData_depreciatedStart = findStartTag(workingFileText);
-
-	if(startTagData_codeblockStart.found === false && startTagData_depreciatedStart.found === false) {
+	let region = findNextRegion(workingFileText);
+	if(region === null) {
 		return null;
 	}
 
-	// Default to codeblock Style. Then check, if codeblock was not found and depreciated Start was, set startTag to depreciated.
-	let startTagData = startTagData_codeblockStart;
-	if(startTagData_codeblockStart.found === true && startTagData_depreciatedStart.found === true) {
+	if(region.dataType === "CODEBLOCK" || region.dataType === "DEPRECIATED") {
 
-		// If both kinds were found we want to start with the one closer to the top of the document as CM6 requires we work in order.
-		if (startTagData_codeblockStart.startPosition > startTagData_depreciatedStart.startPosition) {
-
-			startTagData = startTagData_depreciatedStart
-			data.type = "DEPRECIATED"
-		}
-	}
-	else if(startTagData_codeblockStart.found === true) {
-		startTagData = startTagData_codeblockStart;
-		data.type = "CODEBLOCK"
-	}
-	else if(startTagData_depreciatedStart.found === true){
-		startTagData = startTagData_depreciatedStart
-		data.type = "DEPRECIATED"
-	}
-
-	// if(data.type === "CODEBLOCK" || data.type === "DEPRECIATED") {
 		// Search for the first end tag after a start block. (No recursive columns.)
-		let endTagData = findEndTag(workingFileText.slice(startTagData.startPosition));
+		let endTagData = findEndTag(workingFileText.slice(region.data.startPosition));
 		if(endTagData.found === false) {
 			return null;
 		}
@@ -298,21 +266,79 @@ function getNextRegion(workingFileText: string, startIndexOffset: number, wholeD
 		 * For the region we found get the start and end position of the tags so we 
 		 * can slice it out of the document.
 		 */
-		let startIndex = startIndexOffset + startTagData.startPosition;
+		let startIndex = startIndexOffset + region.data.startPosition;
 		let endIndex = startIndex + endTagData.startPosition + endTagData.matchLength // Without the matchLength will leave the end tag on the screen.
 
 		// This text is the entire region data including the start and end tags.
 		let elementText = wholeDoc.slice(startIndex, endIndex)
-		data.regionText = elementText;
+		workingFileText = wholeDoc.slice(endIndex);
 
 		/**
 		 * Update our start offset and the working text of the file so our next 
 		 * iteration knows where we left off
 		 */
-		workingFileText = wholeDoc.slice(endIndex);
-		data.remainingText = workingFileText;
-		data.startIndex = startIndex
-		data.endIndex = endIndex
+		let data: RegionData = {
+			regionText: elementText,
+			remainingText: workingFileText,
+			startIndex: startIndex,
+			endIndex: endIndex
+		}
 		return data;
-	// }
+	}
+
+	if(region.dataType === "PADOC") {
+
+		let pandocData: PandocRegexData = region.data as PandocRegexData;
+		let startIndex = startIndexOffset + pandocData.startPosition;
+		let endIndex = startIndexOffset + pandocData.endPosition;
+		workingFileText = wholeDoc.slice(endIndex);
+		let data: RegionData = {
+			regionText: pandocData.content,
+			remainingText: workingFileText,
+			startIndex: startIndex,
+			endIndex: endIndex
+		}
+		return data;
+	}
+}
+
+function findNextRegion(workingFileText: string): { dataType: RegionType, data: StartRegionData | PandocRegexData } {
+
+	// If there are multiple kinds of start blocks, the old way of parsing would cause issues.
+	// Now search for both kinds and determine what to do after search.
+	let startTagData_codeblockStart: { dataType: RegionType, data: StartRegionData } = {dataType: "CODEBLOCK", data: findStartCodeblock(workingFileText) };
+	let startTagData_depreciatedStart: { dataType: RegionType, data: StartRegionData } = {dataType: "DEPRECIATED", data: findStartTag(workingFileText) };
+	let pandocData: { dataType: RegionType, data: PandocRegexData } = {dataType: "PADOC", data: findPandoc(workingFileText) }
+
+	if(startTagData_codeblockStart.data.found === false && 
+	   startTagData_depreciatedStart.data.found === false &&
+	   pandocData.data.found === false) {
+		return null;
+	}
+
+	// Default to codeblock Style. Then check, if codeblock was not found and depreciated Start was, set startTag to depreciated.
+	let startTagData = startTagData_codeblockStart;
+
+	let regionsFound = [startTagData_codeblockStart, startTagData_depreciatedStart, pandocData].filter((val) => { return val.data.found === true });
+	if(regionsFound.length > 1) {
+
+		let sorted = regionsFound.sort((a, b) => {
+			return a.data.startPosition - b.data.endPosition;
+		})
+		return sorted.first();
+	}
+	
+	if(startTagData_codeblockStart.data.found === true) {
+		return startTagData_codeblockStart;
+	}
+	
+	if(startTagData_depreciatedStart.data.found === true){
+		return startTagData_depreciatedStart;
+	}
+	
+	if(pandocData.data.found === true) {
+		return pandocData;
+	}
+
+	throw("Unknown type found when parsing region.")
 }
