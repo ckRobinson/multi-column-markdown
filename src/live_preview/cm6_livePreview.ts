@@ -12,7 +12,9 @@ import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
 import { containsRegionStart, findEndTag, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
 import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
 import { editorLivePreviewField } from "obsidian";
+import { mouseState } from "src/utilities/interfaces";
 
+let selecting = false;
 export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	create(state): DecorationSet {
 		return Decoration.none;
@@ -36,12 +38,17 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
             return builder.finish();
         }
 
+		if(selecting && mouseState === "down") {
+            return builder.finish();
+		}
+		else if(mouseState === "up") {
+			selecting = false;
+		}
+
 		if(transaction.isUserEvent("select.pointer") && transaction.state.selection.ranges && transaction.state.selection.ranges.length > 0) {
 
-			let range = transaction.state.selection.ranges[0];
-			if(range.to - range.from > 1) {
-				return builder.finish();
-			}
+			selecting = true;
+			return builder.finish();
 		}
 
 		syntaxTree(transaction.state).iterate({
