@@ -168,6 +168,7 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     for (let i = 0; i < settingsLines.length; i++) {
         let settingsLine = settingsLines[i];
 
+        checkSettingIsRegionID(settingsLine, parsedSettings);
         checkSettingIsNumberOfColumns(settingsLine, parsedSettings);
         checkSettingDefinesColumnSize(settingsLine, parsedSettings);
         checkSettingIsDrawBorder(settingsLine, parsedSettings);
@@ -239,6 +240,14 @@ function checkSettingIsNumberOfColumns(settingsLine: string, parsedSettings: Mul
     }
 }
 
+function checkSettingIsRegionID(settingsLine: string, parsedSettings: MultiColumnSettings) {
+    let settingsData = getSettingsDataFromKeys(settingsLine, CODEBLOCK_REGION_ID_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+    parsedSettings.columnID = settingsData;
+}
 
 function checkSettingDefinesColumnSize(settingsLine: string, parsedSettings: MultiColumnSettings) {
 
