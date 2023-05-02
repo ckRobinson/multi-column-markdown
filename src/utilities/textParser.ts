@@ -223,18 +223,19 @@ function getEndTagData(text: string) {
     return { found, startPosition, endPosition, matchLength };
 }
 
-const COL_REGEX_STRS: string[] = ["^===\\s*?column-end\\s*?===\\s*?$",
-                                  "^===\\s*?end-column\\s*?===\\s*?$",
-                                  "^===\\s*?column-break\\s*?===\\s*?$",
-                                  "^===\\s*?break-column\\s*?===\\s*?$",
-                                  "^---\\s*?column-end\\s*?---\\s*?$",
-                                  "^---\\s*?end-column\\s*?---\\s*?$",
-                                  "^---\\s*?column-break\\s*?---\\s*?$",
-                                  "^---\\s*?break-column\\s*?---\\s*?$",
-                                  "^ *?(?:\\?)\\columnbreak *?$"];
+const COL_REGEX_STRS: [string,string][] = [["^===\\s*?column-end\\s*?===\\s*?$"   ,""], // [Regex, Regex Flags]
+                                           ["^===\\s*?end-column\\s*?===\\s*?$"   ,""],
+                                           ["^===\\s*?column-break\\s*?===\\s*?$" ,""],
+                                           ["^===\\s*?break-column\\s*?===\\s*?$" ,""],
+                                           ["^---\\s*?column-end\\s*?---\\s*?$"   ,""],
+                                           ["^---\\s*?end-column\\s*?---\\s*?$"   ,""],
+                                           ["^---\\s*?column-break\\s*?---\\s*?$" ,""],
+                                           ["^---\\s*?break-column\\s*?---\\s*?$" ,""],
+                                           ["^ *?(?:\\?)\\columnbreak *?$"        ,""],
+                                           ["^:{3,} *column-?break *(?:(?:$\\n^)?| *):{3,} *$" ,"m"]];
 const COL_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < COL_REGEX_STRS.length; i++) {
-    COL_REGEX_ARR.push(new RegExp(COL_REGEX_STRS[i]));
+    COL_REGEX_ARR.push(new RegExp(COL_REGEX_STRS[i][0], COL_REGEX_STRS[i][1]));
 }
 export function containsColEndTag(text: string): boolean {
 
@@ -259,7 +260,8 @@ const INNER_COL_END_REGEX_ARR: RegExp[] = [
     /^={3}\s*?end-column\s*?={3}\s*?$\n?/m,
     /^={3}\s*?column-break\s*?={3}\s*?$\n?/m,
     /^={3}\s*?break-column\s*?={3}\s*?$\n?/m,
-    /^ *?(?:\\?)\\columnbreak *?$\n?/m
+    /^ *?(?:\\?)\\columnbreak *?$\n?/m,
+    /^:{3,} *column-?break *(?:(?:$\n^)?| *):{3,} *$/m
 ]
 export function checkForParagraphInnerColEndTag(text: string): RegExpExecArray | null {
 
