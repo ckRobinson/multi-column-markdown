@@ -14,7 +14,7 @@ import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMark
 import { editorLivePreviewField } from "obsidian";
 import { mouseState } from "src/utilities/interfaces";
 import { MultiColumnSettings } from "src/regionSettings";
-import { parseColumnSettings } from "src/utilities/settingsParser";
+import { parseColumnSettings, parsePandocSettings } from "src/utilities/settingsParser";
 
 let selecting = false;
 export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
@@ -389,9 +389,6 @@ function getSettingsData(regionData: RegionData): {settings: MultiColumnSettings
 			contentData: contentData
 		}
 	}
-	function getPandocSettings(): null {
-		return null
-	}
 
 	if(regionData.regionType === "CODEBLOCK") {
 		let settingsStartData = findStartCodeblock(contentData);
@@ -413,6 +410,9 @@ function getSettingsData(regionData: RegionData): {settings: MultiColumnSettings
 	if(regionData.regionType === "PADOC") {
 
 		let pandocData = regionData as PandocRegionData
-		return null;
+		return {
+			settings: parsePandocSettings(pandocData.userSettings, pandocData.columnCount),
+			contentData: regionData.regionText
+		}
 	}
 }

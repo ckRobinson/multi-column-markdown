@@ -179,6 +179,11 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     return parsedSettings;
 }
 
+export function parsePandocSettings(pandocUserSettings: string, colCount: string = ""): MultiColumnSettings {
+
+    return getDefaultMultiColumnSettings();
+}
+
 function checkSettingIsNumberOfColumns(settingsLine: string, parsedSettings: MultiColumnSettings) {
 
     let settingsData = getSettingsDataFromKeys(settingsLine, NUMBER_OF_COLUMNS_REGEX_ARR);
