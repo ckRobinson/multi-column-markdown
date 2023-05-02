@@ -18,6 +18,7 @@ import { DOMObject } from "../dom_manager/domObject";
 import { RegionManager } from "../dom_manager/regional_managers/regionManager";
 import { SingleColumnRegionManager } from "../dom_manager/regional_managers/singleColumnRegionManager";
 import { AutoLayoutRegionManager } from "../dom_manager/regional_managers/autoLayoutRegionManager";
+import { RegionType } from "./cm6_livePreview";
 
 export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
@@ -28,23 +29,12 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     regionSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
     regionManager: RegionManager;
 
-    constructor(contentData: string) {
+    constructor(contentData: string, userSettings: MultiColumnSettings) {
         super();
         this.contentData = contentData;
 
-        // Find the settings defined in the content, if it exists.
-        // If the settings codeblock isnt defined attempt to get the region codeblock type.
-        let settingsStartData = findSettingsCodeblock(this.contentData);
-        if(settingsStartData.found === false) {
-            settingsStartData = findStartCodeblock(this.contentData);
-        }
-        if (settingsStartData.found === true) {
-
-            this.settingsText = this.contentData.slice(settingsStartData.startPosition, settingsStartData.endPosition);
-            this.contentData = this.contentData.replace(this.settingsText, "");
-
-            // Parse the settings, updating the default settings.
-            this.regionSettings = parseColumnSettings(this.settingsText);
+        if(userSettings !== null) {
+            this.regionSettings = userSettings;
         }
 
         // Render the markdown content to our temp parent element.
