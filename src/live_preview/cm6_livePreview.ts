@@ -13,6 +13,8 @@ import { PandocRegexData, StartRegionData, containsRegionStart, findEndTag, find
 import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
 import { editorLivePreviewField } from "obsidian";
 import { mouseState } from "src/utilities/interfaces";
+import { MultiColumnSettings } from "src/regionSettings";
+import { parseColumnSettings } from "src/utilities/settingsParser";
 
 let selecting = false;
 export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
@@ -142,13 +144,21 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					}
 					else {
 
+						let foundSettings = getSettingsData(regionData);
+						let userSettings = null;
+						if(foundSettings !== null) {
+							
+							elementText = foundSettings.contentData;
+							userSettings = foundSettings.settings;
+						}
+
 						// At this point if the cursor isnt in the region we pass the data to the
 						// element to be rendered.
 						builder.add(
 							startIndex,
 							endIndex,
 							Decoration.replace({
-								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText),
+								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText, userSettings),
 							})
 						);
 					}
@@ -319,8 +329,8 @@ function getNextRegion(workingFileText: string, startIndexOffset: number, wholeD
 			remainingText: workingFileText,
 			startIndex: startIndex,
 			endIndex: endIndex,
-			columnCount: pandocData.settingData.columnCount,
-			userSettings: pandocData.settingData.userSettings
+			columnCount: pandocData.columnCount,
+			userSettings: pandocData.userSettings
 		}
 		return data;
 	}
@@ -362,4 +372,47 @@ function findNextRegion(workingFileText: string): { dataType: RegionType, data: 
 	}
 
 	throw("Unknown type found when parsing region.")
+}
+
+function getSettingsData(regionData: RegionData): {settings: MultiColumnSettings, contentData: string} {
+
+	let contentData = regionData.regionText
+	function parseCodeBlockSettings(settingsStartData: StartRegionData) {
+
+		let settingsText = contentData.slice(settingsStartData.startPosition, settingsStartData.endPosition);
+		contentData = contentData.replace(settingsText, "");
+
+		let settings = parseColumnSettings(settingsText);
+
+		return {
+			settings: settings,
+			contentData: contentData
+		}
+	}
+	function getPandocSettings(): null {
+		return null
+	}
+
+	if(regionData.regionType === "CODEBLOCK") {
+		let settingsStartData = findStartCodeblock(contentData);
+		if (settingsStartData.found === false) {
+			return null;
+		}
+
+		return parseCodeBlockSettings(settingsStartData)
+	}
+
+	if(regionData.regionType === "DEPRECIATED") {
+		let settingsStartData = findSettingsCodeblock(contentData);
+		if (settingsStartData.found === false) {
+			return null;
+		}
+		return parseCodeBlockSettings(settingsStartData)
+	}
+
+	if(regionData.regionType === "PADOC") {
+
+		let pandocData = regionData as PandocRegionData
+		return null;
+	}
 }

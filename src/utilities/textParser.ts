@@ -39,7 +39,9 @@ export function findPandoc(text: string): PandocRegexData {
             data.found = true;
             data.startPosition = regexData.index;
             data.endPosition = regexData.index + regexData[0].length;
-            data.content = regexData.groups[PANDOC_COL_CONTENT]
+            data.content = regexData.groups[PANDOC_COL_CONTENT];
+            data.userSettings = regexData.groups[PANDOC_COl_SETTINGS];
+            data.columnCount = regexData.groups[PANDOC_COL_COUNT_NAME];
             return data;
         }
     }
@@ -54,13 +56,17 @@ export interface PandocRegexData {
     startPosition: number;
     endPosition: number;
     content: string;
+    userSettings: string,
+    columnCount: string
 }
 function defaultPandocRegexData(): PandocRegexData {
     return {
         found: false,
         startPosition: -1,
         endPosition: -1,
-        content: ""
+        content: "",
+        userSettings: "",
+        columnCount: ""
     }
 }
 
