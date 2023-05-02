@@ -8,12 +8,51 @@
 
 import { parseStartRegionCodeBlockID } from "./settingsParser";
 
+export const PANDOC_ENGLISH_NUMBER_OF_COLUMNS = [
+    "two",
+    "three", 
+    "four", 
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten"
+] as const;
+type PandocNumberOfColumnsTuple = typeof PANDOC_ENGLISH_NUMBER_OF_COLUMNS;
+export type PandocNumberOfColumns = PandocNumberOfColumnsTuple[number];
+export function isPandocNumberOfColumns(value: string): value is PandocNumberOfColumns {
+  return PANDOC_ENGLISH_NUMBER_OF_COLUMNS.includes(value as PandocNumberOfColumns)
+}
+export function pandocNumberOfColumnsToValue(value: PandocNumberOfColumns): number {
+    switch(value) {
+        case "two":
+            return 2;
+        case "three":
+            return 3;
+        case "four":
+            return 4;
+        case "five":
+            return 5;
+        case "six":
+            return 6;
+        case "seven":
+            return 7;
+        case "eight":
+            return 8;
+        case "nine":
+            return 9;
+        case "ten":
+            return 10;
+    }
+}
+
 const PANDOC_COL_COUNT_NAME = "colCount"
 const PANDOC_COL_CONTENT = "colContent"
 const PANDOC_COl_SETTINGS = "colSettings"
 const PANDOC_REGEX_STR: string = (() => {
 
-    let nums = ["two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"].join("|")
+    let nums = PANDOC_ENGLISH_NUMBER_OF_COLUMNS.join("|")
     let regex_strings = `(?<OpenDiv>:{3,}) *\\{ *\\.(?<${PANDOC_COL_COUNT_NAME}>(?:${nums}|))(?:[-_]|)columns(?<${PANDOC_COl_SETTINGS}>.*)\\}$\\n(?<${PANDOC_COL_CONTENT}>(?:.|\\n)*?)\\n?^(\\k<OpenDiv>)$`
     return regex_strings;
 })()
@@ -28,12 +67,12 @@ export function findPandoc(text: string): PandocRegexData {
         let regexData = PANDOC_REGEX_ARR[i].exec(text)
         if(regexData !== null) {
 
-            console.group("Pandoc Region:");
-            console.log("ColCount:", regexData.groups[PANDOC_COL_COUNT_NAME]);
-            console.log("Settings:", regexData.groups[PANDOC_COl_SETTINGS]);
-            console.log("Content:");
-            console.log(regexData.groups[PANDOC_COL_CONTENT]);
-            console.groupEnd();
+            // console.group("Pandoc Region:");
+            // console.log("ColCount:", regexData.groups[PANDOC_COL_COUNT_NAME]);
+            // console.log("Settings:", regexData.groups[PANDOC_COl_SETTINGS]);
+            // console.log("Content:");
+            // console.log(regexData.groups[PANDOC_COL_CONTENT]);
+            // console.groupEnd();
 
             let data = defaultPandocRegexData();
             data.found = true;
