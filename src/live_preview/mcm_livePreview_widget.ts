@@ -29,10 +29,11 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     regionSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
     regionManager: RegionManager;
 
-    constructor(contentData: string, userSettings: MultiColumnSettings) {
+    constructor(contentData: string, userSettings: MultiColumnSettings, settingsText: string = "") {
         super();
         this.contentData = contentData;
-
+        this.settingsText = settingsText;
+        
         if(userSettings !== null) {
             this.regionSettings = userSettings;
         }
