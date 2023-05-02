@@ -330,9 +330,6 @@ function findNextRegion(workingFileText: string): { dataType: RegionType, data: 
 		return null;
 	}
 
-	// Default to codeblock Style. Then check, if codeblock was not found and depreciated Start was, set startTag to depreciated.
-	let startTagData = startTagData_codeblockStart;
-
 	let regionsFound = [startTagData_codeblockStart, startTagData_depreciatedStart, pandocData].filter((val) => { return val.data.found === true });
 	if(regionsFound.length > 1) {
 
