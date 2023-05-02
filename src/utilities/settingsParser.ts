@@ -8,6 +8,7 @@
 
 import { HTMLSizing } from "src/utilities/interfaces";
 import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType, AlignmentType, isColumnLayout } from "../regionSettings";
+import { isPandocNumberOfColumns, pandocNumberOfColumnsToValue } from "./textParser";
 
 /**
  * Here we define all of the valid settings strings that the user can enter for each setting type.
@@ -179,9 +180,43 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     return parsedSettings;
 }
 
+const PANDOC_SETTING_REGEX = /(?<settingName>[^ ]*)=(?<settingValue>".*"|[^ =]*)/
 export function parsePandocSettings(pandocUserSettings: string, colCount: string = ""): MultiColumnSettings {
 
-    return getDefaultMultiColumnSettings();
+    function processSettings(settingMap: Map<string, string>, settings: MultiColumnSettings, colCountDefined: boolean) {
+        
+        for(let [setting, value] of settingMap) {
+
+        }
+        return settings;
+    }
+
+    let settings = getDefaultMultiColumnSettings();
+    let colCountDefined = false;
+    if(colCount !== "" && isPandocNumberOfColumns(colCount)) {
+        colCountDefined = true;
+        settings.numberOfColumns = pandocNumberOfColumnsToValue(colCount);
+    }
+    
+    if(pandocUserSettings.replace(" ", "") === "") {
+        return settings;
+    }
+
+    let workingString = pandocUserSettings;
+    let regexValue = PANDOC_SETTING_REGEX.exec(workingString);
+    let settingMap: Map<string, string> = new Map();
+    for(let i = 0; regexValue !== null; i < 100) {
+
+        let settingName = regexValue.groups['settingName']
+        let settingValue = regexValue.groups['settingValue']
+        settingMap.set(settingName, settingValue);
+        
+        workingString = workingString.slice(regexValue.index + regexValue[0].length)
+        regexValue = PANDOC_SETTING_REGEX.exec(workingString);
+    }
+    settings = processSettings(settingMap, settings, colCountDefined);
+
+    return settings;
 }
 
 function checkSettingIsNumberOfColumns(settingsLine: string, parsedSettings: MultiColumnSettings) {
