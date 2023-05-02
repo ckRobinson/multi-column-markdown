@@ -183,45 +183,6 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     return parsedSettings;
 }
 
-const PANDOC_SETTING_REGEX = /(?<settingName>[^ ]*)=(?<settingValue>".*"|[^ =]*)/
-export function parsePandocSettings(pandocUserSettings: string, colCount: string = ""): MultiColumnSettings {
-
-    function processSettings(settingMap: Map<string, string>, settings: MultiColumnSettings, colCountDefined: boolean) {
-        
-        for(let [setting, value] of settingMap) {
-
-        }
-        return settings;
-    }
-
-    let settings = getDefaultMultiColumnSettings();
-    let colCountDefined = false;
-    if(colCount !== "" && isPandocNumberOfColumns(colCount)) {
-        colCountDefined = true;
-        settings.numberOfColumns = pandocNumberOfColumnsToValue(colCount);
-    }
-    
-    if(pandocUserSettings.replace(" ", "") === "") {
-        return settings;
-    }
-
-    let workingString = pandocUserSettings;
-    let regexValue = PANDOC_SETTING_REGEX.exec(workingString);
-    let settingMap: Map<string, string> = new Map();
-    for(let i = 0; regexValue !== null; i < 100) {
-
-        let settingName = regexValue.groups['settingName']
-        let settingValue = regexValue.groups['settingValue']
-        settingMap.set(settingName, settingValue);
-        
-        workingString = workingString.slice(regexValue.index + regexValue[0].length)
-        regexValue = PANDOC_SETTING_REGEX.exec(workingString);
-    }
-    settings = processSettings(settingMap, settings, colCountDefined);
-
-    return settings;
-}
-
 function checkSettingIsNumberOfColumns(settingsLine: string, parsedSettings: MultiColumnSettings) {
 
     let settingsData = getSettingsDataFromKeys(settingsLine, NUMBER_OF_COLUMNS_REGEX_ARR);
@@ -634,4 +595,41 @@ function convertStringToSettingsRegex(originalString: String): string {
 
     let regexString = `(?:${originalString} *[:=] *)(.*)`;
     return regexString;
+}
+
+const PANDOC_SETTING_REGEX = /(?<settingName>[^ ]*)=(?<settingValue>".*"|[^ =]*)/;
+export function parsePandocSettings(pandocUserSettings: string, colCount: string = ""): MultiColumnSettings {
+
+    //TODO: Add option for column rule. 
+
+    let defaultSettings = getDefaultMultiColumnSettings();
+    let colCountDefined = false;
+    if (colCount !== "" && isPandocNumberOfColumns(colCount)) {
+        colCountDefined = true;
+        defaultSettings.numberOfColumns = pandocNumberOfColumnsToValue(colCount);
+    }
+
+    if (pandocUserSettings.replace(" ", "") === "") {
+        return defaultSettings;
+    }
+
+    let workingString = pandocUserSettings;
+    let regexValue = PANDOC_SETTING_REGEX.exec(workingString);
+    let settingList = ""
+    for (let i = 0; regexValue !== null; i < 100) {
+
+        let settingName = regexValue.groups['settingName'];
+        let settingValue = regexValue.groups['settingValue'];
+        settingList += `${settingName}: ${settingValue}\n`
+
+        workingString = workingString.slice(regexValue.index + regexValue[0].length);
+        regexValue = PANDOC_SETTING_REGEX.exec(workingString);
+    }
+
+    let parsedSettings = parseColumnSettings(settingList)
+    if(colCountDefined) {
+        parsedSettings.numberOfColumns = defaultSettings.numberOfColumns
+    }
+
+    return parsedSettings;
 }
