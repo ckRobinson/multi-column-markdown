@@ -256,11 +256,17 @@ const ALL_REGION_TYPES= [
 type RegionTypeTuple = typeof ALL_REGION_TYPES;
 export type RegionType = RegionTypeTuple[number];
 interface RegionData {
+	regionType: RegionType;
 	regionText: string;
 	remainingText: string;
 	startIndex: number;
 	endIndex: number;
 }
+interface PandocRegionData extends RegionData {
+	columnCount: string;
+	userSettings: string;
+}
+
 function getNextRegion(workingFileText: string, startIndexOffset: number, wholeDoc: string): RegionData | null {
 
 	let region = findNextRegion(workingFileText);
@@ -292,6 +298,7 @@ function getNextRegion(workingFileText: string, startIndexOffset: number, wholeD
 		 * iteration knows where we left off
 		 */
 		let data: RegionData = {
+			regionType: region.dataType,
 			regionText: elementText,
 			remainingText: workingFileText,
 			startIndex: startIndex,
@@ -306,11 +313,14 @@ function getNextRegion(workingFileText: string, startIndexOffset: number, wholeD
 		let startIndex = startIndexOffset + pandocData.startPosition;
 		let endIndex = startIndexOffset + pandocData.endPosition;
 		workingFileText = wholeDoc.slice(endIndex);
-		let data: RegionData = {
+		let data: PandocRegionData = {
+			regionType: region.dataType,
 			regionText: pandocData.content,
 			remainingText: workingFileText,
 			startIndex: startIndex,
-			endIndex: endIndex
+			endIndex: endIndex,
+			columnCount: pandocData.settingData.columnCount,
+			userSettings: pandocData.settingData.userSettings
 		}
 		return data;
 	}
