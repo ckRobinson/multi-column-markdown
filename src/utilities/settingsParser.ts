@@ -47,7 +47,7 @@ const NUMBER_OF_COLUMNS_STRS = [
     "number of columns",
     "num of cols",
     "col count",
-    "column-count"
+    "column count"
 ]
 const NUMBER_OF_COLUMNS_REGEX_ARR: RegExp[] = NUMBER_OF_COLUMNS_STRS.map(convertStringToSettingsRegex).map((value) => {
     return new RegExp(value, "i");
@@ -76,6 +76,8 @@ const AUTO_LAYOUT_REGEX_ARR: RegExp[] = AUTO_LAYOUT_SETTING_STRS.map(convertStri
 
 const COLUMN_SPACING_REGEX_ARR: RegExp[] = [
     "column spacing",
+    "column gap",
+    "column sep"
 ].map((value) => {
     return new RegExp(convertStringToSettingsRegex(value), "i");
 });
@@ -619,8 +621,8 @@ function parseForSingleColumnSize(sizeString: string): SingleColumnSize {
 
 function convertStringToSettingsRegex(originalString: String): string {
 
-    originalString = originalString.replace(" ", " *");
-    
-    let regexString = `(?:${originalString} *: *)(.*)`;
+    originalString = originalString.replace(" ", "(?:[-_]| *|)");
+
+    let regexString = `(?:${originalString} *[:=] *)(.*)`;
     return regexString;
 }
