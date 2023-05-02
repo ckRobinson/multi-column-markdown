@@ -146,10 +146,12 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 
 						let foundSettings = getSettingsData(regionData);
 						let userSettings = null;
+						let settingsText = ""
 						if(foundSettings !== null) {
 							
 							elementText = foundSettings.contentData;
 							userSettings = foundSettings.settings;
+							settingsText = foundSettings.settingsText;
 						}
 
 						// At this point if the cursor isnt in the region we pass the data to the
@@ -158,7 +160,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 							startIndex,
 							endIndex,
 							Decoration.replace({
-								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText, userSettings),
+								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText, userSettings, settingsText),
 							})
 						);
 					}
@@ -374,7 +376,7 @@ function findNextRegion(workingFileText: string): { dataType: RegionType, data: 
 	throw("Unknown type found when parsing region.")
 }
 
-function getSettingsData(regionData: RegionData): {settings: MultiColumnSettings, contentData: string} {
+function getSettingsData(regionData: RegionData): {settings: MultiColumnSettings, settingsText: string, contentData: string} {
 
 	let contentData = regionData.regionText
 	function parseCodeBlockSettings(settingsStartData: StartRegionData) {
@@ -386,6 +388,7 @@ function getSettingsData(regionData: RegionData): {settings: MultiColumnSettings
 
 		return {
 			settings: settings,
+			settingsText: settingsText,
 			contentData: contentData
 		}
 	}
@@ -412,6 +415,7 @@ function getSettingsData(regionData: RegionData): {settings: MultiColumnSettings
 		let pandocData = regionData as PandocRegionData
 		return {
 			settings: parsePandocSettings(pandocData.userSettings, pandocData.columnCount),
+			settingsText: "",
 			contentData: regionData.regionText
 		}
 	}
