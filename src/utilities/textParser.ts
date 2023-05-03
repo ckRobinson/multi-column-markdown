@@ -6,6 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
+import { RegionType } from "src/live_preview/cm6_livePreview";
 import { parseStartRegionCodeBlockID } from "./settingsParser";
 
 export const PANDOC_ENGLISH_NUMBER_OF_COLUMNS = [
@@ -139,6 +140,7 @@ export function containsPandocStartTag(text: string): boolean {
 function findPandocStart(text: string): StartRegionData {
 
     let startRegion = defaultStartRegionData();
+    startRegion.regionType = "PADOC";
 
     let regexData = PANDOC_REGEX.exec(text)
     if(regexData !== null && regexData.length > 0) {
@@ -167,7 +169,8 @@ function defaultPandocRegexData(): PandocRegexData {
         matchLength: 0,
         content: "",
         userSettings: "",
-        columnCount: ""
+        columnCount: "",
+        regionType: "PADOC"
     }
 }
 
@@ -188,26 +191,25 @@ for(let i = 0; i < START_REGEX_STRS_WHOLE_LINE.length; i++) {
 
 export function findStartTag(text: string): StartRegionData {
 
-    let found = false;
-    let startPosition = -1;
-    let matchLength = 0;
+    let startRegion = defaultStartRegionData();
+    startRegion.regionType = "DEPRECIATED";
+
     for(let i = 0; i< START_REGEX_ARR.length; i++) {
 
         let regexData = START_REGEX_ARR[i].exec(text)
         if(regexData !== null && regexData.length > 0) {
-            startPosition = regexData.index
-            matchLength = regexData[0].length;
+            startRegion.startPosition = regexData.index
+            startRegion.matchLength = regexData[0].length;
+            startRegion.endPosition = startRegion.startPosition + startRegion.matchLength;
 
-            let line = text.slice(startPosition, startPosition + matchLength);
+            let line = text.slice(startRegion.startPosition, startRegion.endPosition);
             if(START_REGEX_ARR_WHOLE_LINE[i].test(line)) {
-                found = true;
+                startRegion.found = true;
                 break;
             }
         }
     }
-    let endPosition = startPosition + matchLength;
-
-    return { found, startPosition, endPosition, matchLength };
+    return startRegion;
 }
 export function containsStartTag(text: string): boolean {
     return findStartTag(text).found
@@ -425,7 +427,8 @@ export interface StartRegionData {
     found: boolean;
     startPosition: number;
     endPosition: number;
-    matchLength: number
+    matchLength: number;
+    regionType: RegionType;
 }
 export function defaultStartRegionData(): StartRegionData {
 
@@ -433,12 +436,14 @@ export function defaultStartRegionData(): StartRegionData {
         found: false,
         startPosition: -1,
         endPosition: -1,
-        matchLength: 0
+        matchLength: 0,
+        regionType: "CODEBLOCK"
     }
 }
 export function findStartCodeblock(text: string): StartRegionData {
 
     let startRegion = defaultStartRegionData();
+    startRegion.regionType = "CODEBLOCK";
 
     let regexData = START_CODEBLOCK_REGEX.exec(text)
     if(regexData !== null && regexData.length > 0) {
