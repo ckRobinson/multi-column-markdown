@@ -68,7 +68,9 @@ const DRAW_SHADOW_REGEX_ARR: RegExp[] = DRAW_SHADOW_STRS.map(convertStringToSett
 });
 
 const AUTO_LAYOUT_SETTING_STRS = [
-    "auto layout"
+    "auto layout",
+    "fluid div",
+    "fluid divs",
 ]
 const AUTO_LAYOUT_REGEX_ARR: RegExp[] = AUTO_LAYOUT_SETTING_STRS.map(convertStringToSettingsRegex).map((value) => {
     return new RegExp(value, "i");
