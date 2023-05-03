@@ -53,13 +53,16 @@ const PANDOC_COl_SETTINGS = "colSettings"
 const PANDOC_REGEX_STR: string = (() => {
 
     let nums = PANDOC_ENGLISH_NUMBER_OF_COLUMNS.join("|")
-    let regex_strings = `(?<OpenDiv>:{3,}) *\\{ *\\.(?<${PANDOC_COL_COUNT_NAME}>(?:${nums}|))(?:[-_]|)columns(?<${PANDOC_COl_SETTINGS}>.*)\\}$\\n(?<${PANDOC_COL_CONTENT}>(?:.|\\n)*?)\\n?^(\\k<OpenDiv>)$`
+    let regex_strings = `(?<OpenDiv>:{3,}) *\\{ *\\.(?<${PANDOC_COL_COUNT_NAME}>(?:${nums}|))(?:[-_]|)columns(?<${PANDOC_COl_SETTINGS}>.*)\\}(?:[ :]*)$\\n`
     return regex_strings;
 })()
 const PANDOC_REGEX_ARR: RegExp[] = [];
 PANDOC_REGEX_ARR.push(new RegExp(PANDOC_REGEX_STR, "m"));
 
-console.log(PANDOC_REGEX_ARR);
+"(?<${PANDOC_COL_CONTENT}>(?:.|\\n)*)\\n?^(?::{3,})$"
+
+const PANDOC_OPEN_FENCE_REGEX = /^:{3,} *(?:[a-zA-Z]+|\{.*\})(?:[ :]*)$/m
+const PANDOC_CLOSE_FENCE_REGEX = /^:{3,} *$/m
 export function findPandoc(text: string): PandocRegexData {
 
     for(let i = 0; i< PANDOC_REGEX_ARR.length; i++) {
@@ -67,22 +70,61 @@ export function findPandoc(text: string): PandocRegexData {
         let regexData = PANDOC_REGEX_ARR[i].exec(text)
         if(regexData !== null) {
 
-            // console.group("Pandoc Region:");
-            // console.log("ColCount:", regexData.groups[PANDOC_COL_COUNT_NAME]);
-            // console.log("Settings:", regexData.groups[PANDOC_COl_SETTINGS]);
-            // console.log("Content:");
-            // console.log(regexData.groups[PANDOC_COL_CONTENT]);
-            // console.groupEnd();
-
             let data = defaultPandocRegexData();
             data.found = true;
             data.startPosition = regexData.index;
             data.endPosition = regexData.index + regexData[0].length;
-            data.content = regexData.groups[PANDOC_COL_CONTENT];
+
+            let regionData = reduceRegionToEndDiv(text.slice(data.endPosition));
+            data.endPosition += regionData.content.length + regionData.matchLength
+            data.content = regionData.content;
+
             data.userSettings = regexData.groups[PANDOC_COl_SETTINGS];
             data.columnCount = regexData.groups[PANDOC_COL_COUNT_NAME];
             return data;
         }
+    }
+
+    function reduceRegionToEndDiv(contentText: string) {
+
+        let workingText = contentText;
+
+        let result = {
+            content: workingText,
+            matchLength: 0
+        }
+
+        let offset = 0;
+        let openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
+        let closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+        for(let i = 0; closeResult !== null && openResult !== null; i++) {
+            if(i > 100) {
+                break;
+            }
+            
+            // if there is a close before another open we have found our end tag.
+            if(openResult.index > closeResult.index) {
+                break;
+            }
+
+            // Other wise if the open is before the next close we need to look for later
+            // close tag.
+            
+            offset += (closeResult.index + closeResult[0].length + 1);
+            workingText = contentText.slice(offset);
+
+            openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
+            closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+        }
+
+        // If we hit this point and close is not null we have either broken from
+        // the loop. Or we iterated one last time and open was null.
+        if(closeResult !== null) {
+            result.content = contentText.slice(0, offset + closeResult.index);
+            result.matchLength = closeResult[0].length
+        }
+
+        return result;
     }
 
     return defaultPandocRegexData();
