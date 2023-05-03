@@ -127,6 +127,15 @@ export function findPandoc(text: string): PandocRegexData {
 export function containsPandoc(text: string): boolean {
     return findPandoc(text).found
 }
+export function containsPandocStartTag(text: string): boolean {
+
+    let regexData = PANDOC_REGEX.exec(text)
+    if(regexData !== null) {
+        return true;
+    }
+    return false;
+}
+
 export interface PandocRegexData {
     found: boolean;
     startPosition: number;
