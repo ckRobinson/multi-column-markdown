@@ -820,3 +820,56 @@ function renderMarkdownFromLines(mdLines: string[], sourcePath: string): HTMLDiv
 
     return siblings;
 }
+
+function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileDOMManager: FileDOMManager, docString: string, regionID: string) {
+    /** 
+     * Set up the current element to act as the parent for the 
+     * multi-column region.
+     */
+    el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
+    let renderErrorRegion = el.createDiv({
+        cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
+    });
+    let renderColumnRegion = el.createDiv({
+        cls: MultiColumnLayoutCSS.RegionContentContainerDiv
+    })
+
+    if(fileDOMManager.checkKeyExists(regionID) === true) {
+
+        let { numberOfTags, keys } = multiColumnParser.countStartTags(docString);
+
+        let numMatches = 0;
+        for(let i = 0; i < numberOfTags; i++) {
+
+            // Because we checked if key exists one of these has to match.
+            if(keys[i] === regionID) {
+                numMatches++;
+            }
+        }
+
+        // We only want to display an error if there are more than 2 of the same id across
+        // the whole document. This prevents erros when obsidian reloads the whole document
+        // and there are two of the same key in the map.
+        if(numMatches >= 2) {
+            if(regionID === "") {
+                renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+            }
+            else {
+                renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
+            }
+            return;
+        }
+    }
+    el.id = `MultiColumnID:${regionID}`
+
+    let elementMarkdownRenderer = new MarkdownRenderChild(el);
+    fileDOMManager.createRegionalManager(regionID, el, renderErrorRegion, renderColumnRegion);
+    elementMarkdownRenderer.onunload = () => {
+        if(fileDOMManager) {
+
+            fileDOMManager.removeRegion(regionID);
+        }
+    };
+    ctx.addChild(elementMarkdownRenderer);
+    console.log("Finished adding region.")
+}
