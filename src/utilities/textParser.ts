@@ -47,19 +47,18 @@ export function pandocNumberOfColumnsToValue(value: PandocNumberOfColumns): numb
     }
 }
 
-const PANDOC_COL_COUNT_NAME = "colCount"
+const PANDOC_COL_DOT_COUNT_NAME = "colDotCount"
+const PANDOC_COL_NODOT_COUNT_NAME = "colCount"
 const PANDOC_COL_CONTENT = "colContent"
 const PANDOC_COl_SETTINGS = "colSettings"
 const PANDOC_REGEX_STR: string = (() => {
 
     let nums = PANDOC_ENGLISH_NUMBER_OF_COLUMNS.join("|")
-    let regex_strings = `(?<OpenDiv>:{3,}) *\\{ *\\.(?<${PANDOC_COL_COUNT_NAME}>(?:${nums}|))(?:[-_]|)columns(?<${PANDOC_COl_SETTINGS}>.*)\\}(?:[ :]*)$\\n`
+    let regex_strings = `:{3,} *(?:\\{ *\\.(?<${PANDOC_COL_DOT_COUNT_NAME}>(?:${nums}|))(?:[-_]|)columns(?<${PANDOC_COl_SETTINGS}>.*)\\}|(?<${PANDOC_COL_NODOT_COUNT_NAME}>(?:${nums}|))(?:[-_]|)columns)(?:[ :]*)$\\n`
     return regex_strings;
 })()
 const PANDOC_REGEX_ARR: RegExp[] = [];
 PANDOC_REGEX_ARR.push(new RegExp(PANDOC_REGEX_STR, "m"));
-
-"(?<${PANDOC_COL_CONTENT}>(?:.|\\n)*)\\n?^(?::{3,})$"
 
 const PANDOC_OPEN_FENCE_REGEX = /^:{3,} *(?:[a-zA-Z]+|\{.*\})(?:[ :]*)$/m
 const PANDOC_CLOSE_FENCE_REGEX = /^:{3,} *$/m
@@ -79,8 +78,8 @@ export function findPandoc(text: string): PandocRegexData {
             data.endPosition += regionData.content.length + regionData.matchLength
             data.content = regionData.content;
 
-            data.userSettings = regexData.groups[PANDOC_COl_SETTINGS];
-            data.columnCount = regexData.groups[PANDOC_COL_COUNT_NAME];
+            data.userSettings = regexData.groups[PANDOC_COl_SETTINGS] ? regexData.groups[PANDOC_COl_SETTINGS] : "";
+            data.columnCount = regexData.groups[PANDOC_COL_DOT_COUNT_NAME] ? regexData.groups[PANDOC_COL_DOT_COUNT_NAME] : regexData.groups[PANDOC_COL_NODOT_COUNT_NAME];
             return data;
         }
     }
