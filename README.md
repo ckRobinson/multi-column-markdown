@@ -408,10 +408,27 @@ These syntax options are currently still supported but are being depreciated for
         - The viewport will appear to flash as it jumps to the new cursor location. This appears to be more or less noticable depending on the machine.
         - Swapping out and back into Obsidian causes the document to jump to the bottom of the document.
         - Clicking back into an editor view without moving the cursor can cause the viewport to jump to the bottom of the document.
-- Updated column break flag to trigger properly when attached to the end of lists.
-- Added new check for custom frame plugins that fixes rendering in view mode.
-- Fixed a bug that caused theme CSS to not apply to tables when rendered in live preview.
-- Updated live preview to properly render PDFs.
+- **Pandoc Multi-Column Syntax**
+    - Added support for the fenced dives syntax used with Pandoc per FR #71.
+    - Not all of the fenced divs syntax is currently supported.
+    - If you use multiple regions on the same document you must also include an ID into the attributes: ::: {columns id=A_unique_region_ID_4}
+    - What is supported:
+        - Basic Fenced Div column definition: ::: columns or ::: {.columns}
+        - Specifying the number of columns through english up to ten: ::: twocolumns, ::: {.three-columns}, etc.
+        - Specifying the number of columns through attributes: ::: {.columns col-count=3}
+        - Specifying column gap through attributes: ::: {.columns columngap=3em}
+        - Specifying column breaks through column break div: :::: columnbreak\n::::
+    - What is not supported:
+        - Recusive Column Regions. Recusive regions are currently not supported in MCM so will not render the same as Pandoc.
+        - Spanning element. Elements that break up a column region to span across the view are not supported. You must manually end the region and start a new one.
+        - Specifying column rule, as there is currently no way to define this for other syntax. Will hopefully be added in the future.
+        - Justified or ragged column mode.
+        - "Fluid Divs" by default. The fluid divs default of Pandoc's syntax is equivalent to MCM's Auto Layout. However auto layout has significant perforamce overhead in Live preview and due to this Pandoc syntax will not automatically flag regions to auto layout. You can however manually flag them by adding the setting to the attributes: ::: {.three-columns fluid-div=true} or ::: {.three-columns auto-layout=true}
+- **Minor Changes**
+    - Updated column break flag to trigger properly when attached to the end of lists.
+    - Added new check for custom frame plugins that fixes rendering in view mode.
+    - Fixed a bug that caused theme CSS to not apply to tables when rendered in live preview.
+    - Updated live preview to properly render PDFs.
 
 ### **0.7.7**
 - Fixed bug where error message was not displayed when attempting to export to PDF from live preview.
