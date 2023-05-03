@@ -411,23 +411,29 @@ export interface StartRegionData {
     endPosition: number;
     matchLength: number
 }
+export function defaultStartRegionData(): StartRegionData {
+
+    return {
+        found: false,
+        startPosition: -1,
+        endPosition: -1,
+        matchLength: 0
+    }
+}
 export function findStartCodeblock(text: string): StartRegionData {
 
-    let found = false;
-    let startPosition = -1;
-    let endPosition = -1
-    let matchLength = 0;
+    let startRegion = defaultStartRegionData();
 
     let regexData = START_CODEBLOCK_REGEX.exec(text)
     if(regexData !== null && regexData.length > 0) {
 
-        found = true;
-        startPosition = regexData.index
-        matchLength = regexData[0].length;
-        endPosition = startPosition + matchLength;
+        startRegion.found = true;
+        startRegion.startPosition = regexData.index
+        startRegion.matchLength = regexData[0].length;
+        startRegion.endPosition = startRegion.startPosition + startRegion.matchLength;
     }
 
-    return { found, startPosition, endPosition, matchLength };
+    return startRegion;
 }
 export function containsStartCodeBlock(text: string): boolean {
     return findStartCodeblock(text).found
