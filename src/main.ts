@@ -272,8 +272,7 @@ ${editor.getDoc().getSelection()}`
              * If we encounter a start tag on the document we set the flag to start
              * parsing the rest of the document.
              */
-            if(multiColumnParser.containsStartTag(el.textContent) || 
-               multiColumnParser.containsStartCodeBlock(docString)) {
+            if(multiColumnParser.containsRegionStart(docString)) {
 
                 fileDOMManager.setHasStartTag();
             }
