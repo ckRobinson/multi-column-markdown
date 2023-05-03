@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform } from 'obsidian';
+import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
 import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
@@ -17,7 +17,7 @@ import { fileStillInView, getFileLeaf, getLeafSourceMode, getUID } from './utili
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
-import { parseStartRegionCodeBlockID } from './utilities/settingsParser';
+import { parsePandocSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
 import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
 
 interface MCM_Settings {
@@ -305,62 +305,16 @@ ${editor.getDoc().getSelection()}`
              */
             if(multiColumnParser.containsStartTag(textOfElement)) {
 
-                /** 
-                 * Set up the current element to act as the parent for the 
-                 * multi-column region.
-                 */
                 el.children[0].detach();
-                el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
-                let renderErrorRegion = el.createDiv({
-                    cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
-                });
-                let renderColumnRegion = el.createDiv({
-                    cls: MultiColumnLayoutCSS.RegionContentContainerDiv
-                })
 
                 let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
                 if(startBlockData === null) {
                     return;
                 }
                 
-                let regionKey = startBlockData.startBlockKey;
-                if(fileDOMManager.checkKeyExists(regionKey) === true) {
+                let regionID = startBlockData.startBlockKey;
 
-                    let { numberOfTags, keys } = multiColumnParser.countStartTags(info.text);
-
-                    let numMatches = 0;
-                    for(let i = 0; i < numberOfTags; i++) {
-
-                        // Because we checked if key exists one of these has to match.
-                        if(keys[i] === regionKey) {
-                            numMatches++;
-                        }
-                    }
-
-                    // We only want to display an error if there are more than 2 of the same id across
-                    // the whole document. This prevents erros when obsidian reloads the whole document
-                    // and there are two of the same key in the map.
-                    if(numMatches >= 2) {
-                        if(regionKey === "") {
-                            renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
-                        }
-                        else {
-                            renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
-                        }
-                        return;
-                    }
-                }
-                el.id = `MultiColumnID:${regionKey}`
-
-                let elementMarkdownRenderer = new MarkdownRenderChild(el);
-                fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
-                elementMarkdownRenderer.onunload = () => {
-                    if(fileDOMManager) {
-    
-                        fileDOMManager.removeRegion(startBlockData.startBlockKey);
-                    }
-                };
-                ctx.addChild(elementMarkdownRenderer);
+                setupStartTag(el, ctx, fileDOMManager, docString, regionID);
 
                 /**
                  * Now we have created our regional manager and defined what elements 
@@ -369,6 +323,18 @@ ${editor.getDoc().getSelection()}`
                 return
             }
             //#endregion Depreciated Start Tag
+
+            if(multiColumnParser.containsPandocStartTag(textOfElement)) {
+
+                console.log("Element text: ", textOfElement);
+                el.children[0].detach();
+
+                let pandocData = multiColumnParser.findPandoc(textOfElement)
+                let settings = parsePandocSettings(pandocData.userSettings)
+                setupStartTag(el, ctx, fileDOMManager, docString, settings.columnID);
+
+                return;
+            }
 
             /**
              * Check if any of the lines above us contain a start block, and if
