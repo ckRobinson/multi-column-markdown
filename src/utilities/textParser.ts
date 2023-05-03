@@ -72,7 +72,7 @@ export function findPandoc(text: string): PandocRegexData {
         data.startPosition = regexData.index;
         data.endPosition = regexData.index + regexData[0].length;
 
-        let regionData = reduceRegionToEndDiv(text.slice(data.endPosition));
+        let regionData = reducePandocRegionToEndDiv(text.slice(data.endPosition));
         data.endPosition += regionData.content.length + regionData.matchLength
         data.content = regionData.content;
         data.matchLength = data.endPosition - data.startPosition;
@@ -80,48 +80,6 @@ export function findPandoc(text: string): PandocRegexData {
         data.userSettings = regexData.groups[PANDOC_COl_SETTINGS] ? regexData.groups[PANDOC_COl_SETTINGS] : "";
         data.columnCount = regexData.groups[PANDOC_COL_DOT_COUNT_NAME] ? regexData.groups[PANDOC_COL_DOT_COUNT_NAME] : regexData.groups[PANDOC_COL_NODOT_COUNT_NAME];
         return data;
-    }
-
-    function reduceRegionToEndDiv(contentText: string) {
-
-        let workingText = contentText;
-
-        let result = {
-            content: workingText,
-            matchLength: 0
-        }
-
-        let offset = 0;
-        let openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
-        let closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
-        for(let i = 0; closeResult !== null && openResult !== null; i++) {
-            if(i > 100) {
-                break;
-            }
-            
-            // if there is a close before another open we have found our end tag.
-            if(openResult.index > closeResult.index) {
-                break;
-            }
-
-            // Other wise if the open is before the next close we need to look for later
-            // close tag.
-            
-            offset += (closeResult.index + closeResult[0].length + 1);
-            workingText = contentText.slice(offset);
-
-            openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
-            closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
-        }
-
-        // If we hit this point and close is not null we have either broken from
-        // the loop. Or we iterated one last time and open was null.
-        if(closeResult !== null) {
-            result.content = contentText.slice(0, offset + closeResult.index);
-            result.matchLength = closeResult[0].length
-        }
-
-        return result;
     }
 
     return defaultPandocRegexData();
@@ -136,6 +94,48 @@ export function containsPandocStartTag(text: string): boolean {
         return true;
     }
     return false;
+}
+
+function reducePandocRegionToEndDiv(contentText: string) {
+
+    let workingText = contentText;
+
+    let result = {
+        content: workingText,
+        matchLength: 0
+    }
+
+    let offset = 0;
+    let openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
+    let closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+    for(let i = 0; closeResult !== null && openResult !== null; i++) {
+        if(i > 100) {
+            break;
+        }
+        
+        // if there is a close before another open we have found our end tag.
+        if(openResult.index > closeResult.index) {
+            break;
+        }
+
+        // Other wise if the open is before the next close we need to look for later
+        // close tag.
+        
+        offset += (closeResult.index + closeResult[0].length + 1);
+        workingText = contentText.slice(offset);
+
+        openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
+        closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+    }
+
+    // If we hit this point and close is not null we have either broken from
+    // the loop. Or we iterated one last time and open was null.
+    if(closeResult !== null) {
+        result.content = contentText.slice(0, offset + closeResult.index);
+        result.matchLength = closeResult[0].length
+    }
+
+    return result;
 }
 function findPandocStart(text: string): StartRegionData {
 
