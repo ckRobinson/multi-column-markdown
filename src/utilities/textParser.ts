@@ -74,6 +74,7 @@ export function findPandoc(text: string): PandocRegexData {
         let regionData = reduceRegionToEndDiv(text.slice(data.endPosition));
         data.endPosition += regionData.content.length + regionData.matchLength
         data.content = regionData.content;
+        data.matchLength = data.endPosition - data.startPosition;
 
         data.userSettings = regexData.groups[PANDOC_COl_SETTINGS] ? regexData.groups[PANDOC_COl_SETTINGS] : "";
         data.columnCount = regexData.groups[PANDOC_COL_DOT_COUNT_NAME] ? regexData.groups[PANDOC_COL_DOT_COUNT_NAME] : regexData.groups[PANDOC_COL_NODOT_COUNT_NAME];
@@ -135,8 +136,22 @@ export function containsPandocStartTag(text: string): boolean {
     }
     return false;
 }
+function findPandocStart(text: string): StartRegionData {
 
-export interface PandocRegexData {
+    let startRegion = defaultStartRegionData();
+
+    let regexData = PANDOC_REGEX.exec(text)
+    if(regexData !== null && regexData.length > 0) {
+
+        startRegion.found = true;
+        startRegion.startPosition = regexData.index
+        startRegion.matchLength = regexData[0].length;
+        startRegion.endPosition = startRegion.startPosition + startRegion.matchLength;
+    }
+
+    return startRegion;
+}
+export interface PandocRegexData extends StartRegionData {
     found: boolean;
     startPosition: number;
     endPosition: number;
@@ -149,6 +164,7 @@ function defaultPandocRegexData(): PandocRegexData {
         found: false,
         startPosition: -1,
         endPosition: -1,
+        matchLength: 0,
         content: "",
         userSettings: "",
         columnCount: ""
