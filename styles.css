@@ -152,12 +152,19 @@
     padding: 0pt !important;
 }
 
-.mcm-content-overflow-hidden {
+.mcm-content-overflow-hidden-x {
     overflow-x: hidden;
 }
 
-.mcm-content-overflow-auto-scroll {
+.mcm-content-overflow-auto-scroll-x {
     overflow-x: auto;
+}
+
+.mcm-content-overflow-auto-scroll-y {
+    overflow-x: auto;
+}
+.mcm-content-overflow-hidden-y {
+    overflow-y: hidden;
 }
 
 .mcm-content-alignment-left {

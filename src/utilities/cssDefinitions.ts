@@ -16,8 +16,10 @@ export enum MultiColumnLayoutCSS {
     OriginalElementType = "mcm-original-column-element",
     ClonedElementType = "mcm-cloned-column-element",
 
-    ContentOverflowAutoScroll = "mcm-content-overflow-auto-scroll",
-    ContentOverflowHidden = "mcm-content-overflow-hidden",
+    ContentOverflowAutoScroll_X = "mcm-content-overflow-auto-scroll-x",
+    ContentOverflowAutoScroll_Y = "mcm-content-overflow-auto-scroll-y",
+    ContentOverflowHidden_X = "mcm-content-overflow-hidden-x",
+    ContentOverflowHidden_Y = "mcm-content-overflow-hidden-y",
 
     AlignmentLeft = "mcm-content-alignment-left",
     AlignmentCenter = "mcm-content-alignment-center",

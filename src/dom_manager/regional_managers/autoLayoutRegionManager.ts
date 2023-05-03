@@ -53,7 +53,10 @@ export class AutoLayoutRegionManager extends RegionManager {
     private renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
         let multiColumnParent = createDiv({
-            cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} ${MultiColumnLayoutCSS.ContentOverflowAutoScroll}`
+            cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} \
+                  ${MultiColumnLayoutCSS.ContentOverflowAutoScroll_X} \
+                  ${MultiColumnLayoutCSS.ContentOverflowHidden_Y};
+                  `
         });
         this.columnParent = multiColumnParent;
 
@@ -169,10 +172,10 @@ export class AutoLayoutRegionManager extends RegionManager {
                     regionElements[i].elementContainer = element;
     
                     if(columnOverflowState(columnIndex, settings) === ContentOverflowType.hidden) {
-                        element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden)
+                        element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden_X)
                     }
                     else {
-                        element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll)
+                        element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_X)
                     }
                     
                     let alignment = columnAlignmentState(columnIndex, settings);

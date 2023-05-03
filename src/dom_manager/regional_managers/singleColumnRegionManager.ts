@@ -35,7 +35,10 @@ export class SingleColumnRegionManager extends RegionManager {
     protected renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
         let multiColumnParent = createDiv({
-            cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} ${MultiColumnLayoutCSS.ContentOverflowAutoScroll}`
+            cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} \
+                  ${MultiColumnLayoutCSS.ContentOverflowAutoScroll_X} \
+                  ${MultiColumnLayoutCSS.ContentOverflowHidden_Y};
+                  `
         });
 
         if(isLeftLayout(this.regionalSettings.columnPosition)){
@@ -93,10 +96,10 @@ export class SingleColumnRegionManager extends RegionManager {
                 regionElements[i].elementContainer = element;
 
                 if(columnOverflowState(0, settings) === ContentOverflowType.hidden) {
-                    element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden)
+                    element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden_X)
                 }
                 else {
-                    element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll)
+                    element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_X)
                 }
                 
                 let alignment = columnAlignmentState(0, settings);

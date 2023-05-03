@@ -499,8 +499,8 @@ export abstract class RegionManager {
            isColumnLayout(settings.columnSize)     && 
            (settings.numberOfColumns === 2 || settings.numberOfColumns === 3)) {      
 
-            multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll);
-            multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowHidden);
+            multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_X);
+            multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowHidden_X);
 
             buildStandardLayouts(settings, multiColumnParent, columnContentDivs)
             setMaxColumnHeight();
@@ -512,8 +512,8 @@ export abstract class RegionManager {
            settings.columnSize === "standard" && 
            settings.numberOfColumns > 3 ){
 
-            multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll);
-            multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowHidden);
+            multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_X);
+            multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowHidden_X);
 
             buildEqualLayout(settings, multiColumnParent, columnContentDivs);
 
@@ -563,6 +563,9 @@ export abstract class RegionManager {
 
         function setMaxColumnHeight() {
             if (settings.columnHeight !== null) {
+                
+                multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowHidden_Y);
+                multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_Y);
                 columnContentDivs.forEach((column) => {
                     column.style.height = settings.columnHeight;
                     column.style.maxHeight = settings.columnHeight;
