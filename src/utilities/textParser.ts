@@ -139,7 +139,7 @@ function reducePandocRegionToEndDiv(contentText: string) {
 
     return result;
 }
-function findPandocStart(text: string): StartRegionData {
+function findPandocStart(text: string): StartTagRegexMatch {
 
     let startRegion = defaultStartRegionData();
     startRegion.regionType = "PADOC";
@@ -155,7 +155,7 @@ function findPandocStart(text: string): StartRegionData {
 
     return startRegion;
 }
-export interface PandocRegexData extends StartRegionData {
+export interface PandocRegexData extends StartTagRegexMatch {
     found: boolean;
     startPosition: number;
     endPosition: number;
@@ -191,7 +191,7 @@ for(let i = 0; i < START_REGEX_STRS_WHOLE_LINE.length; i++) {
 }
 
 
-export function findStartTag(text: string): StartRegionData {
+export function findStartTag(text: string): StartTagRegexMatch {
 
     let startRegion = defaultStartRegionData();
     startRegion.regionType = "DEPRECIATED";
@@ -425,14 +425,14 @@ const CODEBLOCK_START_REGEX_STR: string = [
 }, "")
 const START_CODEBLOCK_REGEX: RegExp = new RegExp(`\`\`\`(:?${CODEBLOCK_START_REGEX_STR})(.*?)\`\`\``, "ms");
 
-export interface StartRegionData {
+export interface StartTagRegexMatch {
     found: boolean;
     startPosition: number;
     endPosition: number;
     matchLength: number;
     regionType: RegionType;
 }
-export function defaultStartRegionData(): StartRegionData {
+export function defaultStartRegionData(): StartTagRegexMatch {
 
     return {
         found: false,
@@ -442,7 +442,7 @@ export function defaultStartRegionData(): StartRegionData {
         regionType: "CODEBLOCK"
     }
 }
-export function findStartCodeblock(text: string): StartRegionData {
+export function findStartCodeblock(text: string): StartTagRegexMatch {
 
     let startRegion = defaultStartRegionData();
     startRegion.regionType = "CODEBLOCK";
@@ -525,7 +525,7 @@ export function getStartDataAboveLine(linesAboveArray: string[]): { startBlockKe
 }
 
 export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[], 
-                                                  searchFunctions: ((text: string) => StartRegionData)[]): { startBlockKey: string, 
+                                                  searchFunctions: ((text: string) => StartTagRegexMatch)[]): { startBlockKey: string, 
                                                                                                              linesAboveArray: string[],
                                                                                                              startBlockType: RegionType  } | null {
 
@@ -539,7 +539,7 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
             break;
         }
 
-        let tagsFound: StartRegionData[] = []
+        let tagsFound: StartTagRegexMatch[] = []
         searchFunctions.forEach((func) => {
             tagsFound.push(func(workingText));
         })

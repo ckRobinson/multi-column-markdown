@@ -9,7 +9,7 @@
 import { Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
-import { PandocRegexData, StartRegionData, containsRegionStart, findEndTag, findPandoc, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
+import { PandocRegexData, StartTagRegexMatch, containsRegionStart, findEndTag, findPandoc, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
 import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
 import { editorLivePreviewField } from "obsidian";
 import { mouseState } from "src/utilities/interfaces";
@@ -338,12 +338,12 @@ function getNextRegion(workingFileText: string, startIndexOffset: number, wholeD
 	}
 }
 
-function findNextRegion(workingFileText: string): { dataType: RegionType, data: StartRegionData | PandocRegexData } {
+function findNextRegion(workingFileText: string): { dataType: RegionType, data: StartTagRegexMatch | PandocRegexData } {
 
 	// If there are multiple kinds of start blocks, the old way of parsing would cause issues.
 	// Now search for both kinds and determine what to do after search.
-	let startTagData_codeblockStart: { dataType: RegionType, data: StartRegionData } = {dataType: "CODEBLOCK", data: findStartCodeblock(workingFileText) };
-	let startTagData_depreciatedStart: { dataType: RegionType, data: StartRegionData } = {dataType: "DEPRECIATED", data: findStartTag(workingFileText) };
+	let startTagData_codeblockStart: { dataType: RegionType, data: StartTagRegexMatch } = {dataType: "CODEBLOCK", data: findStartCodeblock(workingFileText) };
+	let startTagData_depreciatedStart: { dataType: RegionType, data: StartTagRegexMatch } = {dataType: "DEPRECIATED", data: findStartTag(workingFileText) };
 	let pandocData: { dataType: RegionType, data: PandocRegexData } = {dataType: "PADOC", data: findPandoc(workingFileText) }
 
 	if(startTagData_codeblockStart.data.found === false && 
@@ -379,7 +379,7 @@ function findNextRegion(workingFileText: string): { dataType: RegionType, data: 
 function getSettingsData(regionData: RegionData): {settings: MultiColumnSettings, settingsText: string, contentData: string} {
 
 	let contentData = regionData.regionText
-	function parseCodeBlockSettings(settingsStartData: StartRegionData) {
+	function parseCodeBlockSettings(settingsStartData: StartTagRegexMatch) {
 
 		let settingsText = contentData.slice(settingsStartData.startPosition, settingsStartData.endPosition);
 		contentData = contentData.replace(settingsText, "");
