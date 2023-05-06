@@ -324,14 +324,16 @@ ${editor.getDoc().getSelection()}`
             }
             //#endregion Depreciated Start Tag
 
+            // Pandoc Start Region Tag.
             if(multiColumnParser.containsPandocStartTag(textOfElement)) {
 
-                console.log("Element text: ", textOfElement);
                 el.children[0].detach();
 
                 let pandocData = multiColumnParser.findPandoc(textOfElement)
-                let settings = parsePandocSettings(pandocData.userSettings)
-                setupStartTag(el, ctx, fileDOMManager, docString, settings.columnID);
+                let settings = parsePandocSettings(pandocData.userSettings, pandocData.columnCount);
+
+                let regionManager = setupStartTag(el, ctx, fileDOMManager, docString, settings.columnID);
+                regionManager.setRegionalSettings(settings);
 
                 return;
             }
