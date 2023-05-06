@@ -95,7 +95,10 @@ export function containsPandocStartTag(text: string): boolean {
     }
     return false;
 }
-
+export function containsPandocEndTag(text: string): boolean {
+    console.log(text)
+    return false;
+}
 function reducePandocRegionToEndDiv(contentText: string) {
 
     let workingText = contentText;
@@ -536,6 +539,10 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
         return null;
     }
 
+    if(tagMatchData.found === false) {
+        return null;
+    }
+
     if(tagMatchData.regionType === "CODEBLOCK") {
     
         let endTagSerachData = findEndTag(textAbove);
@@ -611,7 +618,7 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
             searchFunctions.forEach((func) => {
                 tagsFound.push(func(textAbove));
             });
-            tagsFound.filter((val) => {
+            tagsFound = tagsFound.filter((val) => {
                 return val.found === true;
             }).sort((a, b) => {
                 return a.startPosition - b.startPosition;
