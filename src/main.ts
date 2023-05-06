@@ -829,7 +829,7 @@ function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileD
     el.id = `MultiColumnID:${regionID}`
 
     let elementMarkdownRenderer = new MarkdownRenderChild(el);
-    fileDOMManager.createRegionalManager(regionID, el, renderErrorRegion, renderColumnRegion);
+    let regionManager = fileDOMManager.createRegionalManager(regionID, el, renderErrorRegion, renderColumnRegion);
     elementMarkdownRenderer.onunload = () => {
         if(fileDOMManager) {
 
@@ -837,5 +837,6 @@ function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileD
         }
     };
     ctx.addChild(elementMarkdownRenderer);
-    console.log("Finished adding region.")
+
+    return regionManager
 }
