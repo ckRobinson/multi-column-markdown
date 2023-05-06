@@ -101,6 +101,7 @@ function reducePandocRegionToEndDiv(contentText: string) {
     let workingText = contentText;
 
     let result = {
+        found: false,
         content: workingText,
         matchLength: 0
     }
@@ -131,6 +132,7 @@ function reducePandocRegionToEndDiv(contentText: string) {
     // If we hit this point and close is not null we have either broken from
     // the loop. Or we iterated one last time and open was null.
     if(closeResult !== null) {
+        result.found = true;
         result.content = contentText.slice(0, offset + closeResult.index);
         result.matchLength = closeResult[0].length
     }
