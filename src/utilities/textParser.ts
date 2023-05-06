@@ -529,63 +529,34 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
                                                                                                              linesAboveArray: string[],
                                                                                                              startBlockType: RegionType  } | null {
 
-    let textAbove = linesAboveArray.join("\n");
-    let workingText = textAbove;
-    let offset = 0;
-    let foundTag = null;
-    let lastFoundTag = ""
-    for(let i = 0; true; i++) {
-        if(i > 100) {
-            break;
-        }
+    let originalText = linesAboveArray.join("\n");
+    let {tagMatchData, lastFoundTag, textAbove} =  findLastValidTag(originalText);
 
-        let tagsFound: StartTagRegexMatch[] = []
-        searchFunctions.forEach((func) => {
-            tagsFound.push(func(workingText));
-        })
-        tagsFound.filter((val) => {
-            return val.found === true;
-        }).sort((a, b) => {
-            return a.startPosition - b.startPosition
-        })
-
-        if(tagsFound.length === 0) {
-            break;
-        }
-        
-        foundTag = tagsFound[0];
-        let startIndex = offset + foundTag.startPosition;
-        lastFoundTag = textAbove.slice(startIndex, startIndex + foundTag.matchLength);
-        
-        offset += (foundTag.startPosition + foundTag.matchLength);
-        workingText = textAbove.slice(offset);
-    }
-
-    if(foundTag === null) {
+    if(tagMatchData === null) {
         return null;
     }
 
-    if(foundTag.regionType === "CODEBLOCK") {
+    if(tagMatchData.regionType === "CODEBLOCK") {
     
-        let endTagSerachData = findEndTag(workingText);
+        let endTagSerachData = findEndTag(textAbove);
         if(endTagSerachData.found === true) {
             return null;
         }
 
         let startBlockKey = parseStartRegionCodeBlockID(lastFoundTag);
-        let linesAboveArray = workingText.split("\n");
+        let linesAboveArray = textAbove.split("\n");
 
         return { startBlockKey, linesAboveArray, startBlockType: "CODEBLOCK" };
     }
 
-    if(foundTag.regionType === "DEPRECIATED") {
+    if(tagMatchData.regionType === "DEPRECIATED") {
     
-        let endTagSerachData = findEndTag(workingText);
+        let endTagSerachData = findEndTag(textAbove);
         if(endTagSerachData.found === true) {
             return null;
         }
 
-        let linesAboveArray = workingText.split("\n");
+        let linesAboveArray = textAbove.split("\n");
         let startBlockKey = getStartTagKey(lastFoundTag);
 
         let codeBlockData = parseCodeBlockStart(linesAboveArray)
@@ -604,14 +575,14 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
         return { startBlockKey, linesAboveArray, startBlockType: "DEPRECIATED" };
     }
 
-    if(foundTag.regionType === "PADOC") {
+    if(tagMatchData.regionType === "PADOC") {
 
-        let endTagSerachData = reducePandocRegionToEndDiv(workingText)
+        let endTagSerachData = reducePandocRegionToEndDiv(textAbove)
         if(endTagSerachData.found === true) {
             return null;
         }
 
-        let linesAboveArray = workingText.split("\n");
+        let linesAboveArray = textAbove.split("\n");
 
         let pandocData = findPandoc(`${lastFoundTag}`);
         let startBlockKey = parsePandocSettings(pandocData.userSettings).columnID;
@@ -624,6 +595,46 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
     }
 
     return null;
+
+    function findLastValidTag(originalText: string) {
+
+        let textAbove = originalText;
+        let offset = 0;
+        let tagMatchData: StartTagRegexMatch = null;
+        let lastFoundTag = ""
+        for (let i = 0; true; i++) {
+            if (i > 100) {
+                break;
+            }
+
+            let tagsFound: StartTagRegexMatch[] = [];
+            searchFunctions.forEach((func) => {
+                tagsFound.push(func(textAbove));
+            });
+            tagsFound.filter((val) => {
+                return val.found === true;
+            }).sort((a, b) => {
+                return a.startPosition - b.startPosition;
+            });
+
+            if (tagsFound.length === 0) {
+                break;
+            }
+
+            tagMatchData = tagsFound[0];
+            let startIndex = offset + tagMatchData.startPosition;
+            lastFoundTag = originalText.slice(startIndex, startIndex + tagMatchData.matchLength);
+
+            offset += (tagMatchData.startPosition + tagMatchData.matchLength);
+            textAbove = originalText.slice(offset);
+        }
+
+        return {
+            tagMatchData,
+            lastFoundTag,
+            textAbove
+        }
+    }
 }
 
 /**
