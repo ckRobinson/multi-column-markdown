@@ -515,27 +515,9 @@ export function countStartTags(initialText: string): { numberOfTags: number, key
 }
 
 export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[]): { 
-startBlockKey: string, 
-linesAboveArray: string[] } | null {
-
-    let data = getStartAboveLine(linesAboveArray);
-    return data;
-
-    let startBlock = getStartBlockAboveLine(linesAboveArray);
-    if(startBlock !== null) {
-        return startBlock;
-    }
-
-    let codeBlock = getStartCodeBlockAboveLine(linesAboveArray)
-    if(codeBlock !== null) {
-        return codeBlock;
-    }
-    return null
-}
-
-function getStartAboveLine(linesAboveArray: string[]): { startBlockKey: string, 
-                                                         linesAboveArray: string[],
-                                                         startBlockType: RegionType } | null {
+                                                                                startBlockKey: string, 
+                                                                                linesAboveArray: string[],
+                                                                                startBlockType: RegionType  } | null {
 
     let textAbove = linesAboveArray.join("\n");
     let workingText = textAbove;
@@ -739,68 +721,6 @@ export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockK
     }
 
     return { startBlockKey, linesAboveArray };
-}
-
-export function getStartCodeBlockAboveLine(linesAboveArray: string[]): { 
-    startBlockKey: string, 
-    linesAboveArray: string[] } | null {
-    
-    let linesAboveStr = linesAboveArray.reduce((prev, current) => {
-        return prev + "\n"  + current;
-    }, "");
-
-    /*
-     * First thing we need to do is check if there are any end tags in the
-     * set of strings (which logically would close start tags and therefore
-     * the start tag it closes is not what we want). If there are we want to 
-     * slowly narrow down our set of strings until the last end tag is 
-     * removed. This makes it easier to find the closest open start tag 
-     * in the data.
-     */
-    let endTagSerachData = findEndTag(linesAboveStr);
-    while(endTagSerachData.found === true) {
-
-        // Get the index of where the first regex match in the
-        // string is. then we slice from 0 to index off of the string
-        // split it by newline, cut off the first line (which actually
-        // contains the regex) then reduce back down to a single string.
-        linesAboveStr = linesAboveStr.slice(endTagSerachData.endPosition);
-        endTagSerachData = findEndTag(linesAboveStr);
-    }
-
-    let startCodeBlockData = findStartCodeblock(linesAboveStr);
-    let codeBlockText = linesAboveStr.slice(startCodeBlockData.startPosition, startCodeBlockData.endPosition)
-
-    let startBlockKey = ""    
-    if(startCodeBlockData.found === false) {
-        return null;
-    }
-    else {
-
-        /**
-         * Now we know there is at least 1 start key left, however there
-         * may be multiple start keys if the user is not closing their
-         * blocks. We currently dont allow recusive splitting so we 
-         * want to get the last key in our remaining set. Same idea as
-         * above.
-         */
-        while(startCodeBlockData.found === true) {
-
-            // Get the index of where the first regex match in the
-            // string is. then we slice from 0 to index off of the string
-            // split it by newline, cut off the first line (which actually
-            // contains the regex) then reduce back down to a single string.
-
-            codeBlockText = linesAboveStr.slice(startCodeBlockData.startPosition, startCodeBlockData.endPosition)
-            startBlockKey = parseStartRegionCodeBlockID(codeBlockText)
-
-            linesAboveStr = linesAboveStr.slice(startCodeBlockData.endPosition);
-            startCodeBlockData = findStartCodeblock(linesAboveStr);
-        }
-    }
-
-    let retLinesAboveArray = linesAboveStr.split("\n");
-    return { startBlockKey, linesAboveArray: retLinesAboveArray };
 }
 
 export function getEndBlockBelow(linesBelow: string[]): string[] {
