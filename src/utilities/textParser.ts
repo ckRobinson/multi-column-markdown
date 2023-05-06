@@ -7,7 +7,7 @@
  */
 
 import { RegionType } from "src/live_preview/cm6_livePreview";
-import { parseStartRegionCodeBlockID } from "./settingsParser";
+import { parsePandocSettings, parseStartRegionCodeBlockID } from "./settingsParser";
 
 export const PANDOC_ENGLISH_NUMBER_OF_COLUMNS = [
     "two",
