@@ -514,10 +514,20 @@ export function countStartTags(initialText: string): { numberOfTags: number, key
     return { numberOfTags: keys.length, keys };
 }
 
-export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[]): { 
-                                                                                startBlockKey: string, 
-                                                                                linesAboveArray: string[],
-                                                                                startBlockType: RegionType  } | null {
+export function getStartDataAboveLine(linesAboveArray: string[]): { startBlockKey: string, 
+                                                                    linesAboveArray: string[],
+                                                                    startBlockType: RegionType } {
+    return getStartBlockOrCodeblockAboveLine(linesAboveArray, [
+        findStartTag,
+        findStartCodeblock,
+        findPandocStart
+    ])
+}
+
+export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[], 
+                                                  searchFunctions: ((text: string) => StartRegionData)[]): { startBlockKey: string, 
+                                                                                                             linesAboveArray: string[],
+                                                                                                             startBlockType: RegionType  } | null {
 
     let textAbove = linesAboveArray.join("\n");
     let workingText = textAbove;
@@ -529,10 +539,11 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[]): {
             break;
         }
 
-        let depreciatedStart = findStartTag(workingText);
-        let codeblockStart = findStartCodeblock(workingText);
-        let pandocStart = findPandocStart(workingText)
-        let tagsFound = [depreciatedStart, codeblockStart, pandocStart].filter((val) => {
+        let tagsFound: StartRegionData[] = []
+        searchFunctions.forEach((func) => {
+            tagsFound.push(func(workingText));
+        })
+        tagsFound.filter((val) => {
             return val.found === true;
         }).sort((a, b) => {
             return a.startPosition - b.startPosition
@@ -627,100 +638,7 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[]): {
 export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockKey: string, 
                                                         linesAboveArray: string[] } | null {
 
-    // Reduce the array down into a single string so that we can
-    // easily RegEx over the string and find the indicies we're looking for.
-    let linesAboveStr = linesAboveArray.reduce((prev, current) => {
-        return prev + "\n"  + current;
-    }, "");
-
-    /*
-        * First thing we need to do is check if there are any end tags in the
-        * set of strings (which logically would close start tags and therefore
-        * the start tag it closes is not what we want). If there are we want to 
-        * slowly narrow down our set of strings until the last end tag is 
-        * removed. This makes it easier to find the closest open start tag 
-        * in the data.
-        */
-    let endTagSerachData = findEndTag(linesAboveStr);
-    while(endTagSerachData.found === true) {
-
-        // Get the index of where the first regex match in the
-        // string is. then we slice from 0 to index off of the string
-        // split it by newline, cut off the first line (which actually
-        // contains the regex) then reduce back down to a single string.
-        //
-        // TODO: This could be simplified if we just slice the text after
-        // the end tag instead of the begining.
-        let indexOfRegex = endTagSerachData.startPosition;
-        linesAboveArray = linesAboveStr.slice(indexOfRegex).split("\n").splice(1)
-        linesAboveStr = linesAboveArray.reduce((prev, current) => {
-            return prev + "\n"  + current;
-        }, "");
-        endTagSerachData = findEndTag(linesAboveStr);
-    }
-
-    /**
-     * Now we have the set of lines after all other end tags. We now
-     * need to check if there is still a start tag left in the data. If 
-     * there is no start tag then we want to return an empty array and empty 
-     * key.
-     */ 
-    let startBlockKey = "";
-    let startTagSearchData = findStartTag(linesAboveStr);
-    if(startTagSearchData.found === false) {
-        return null;
-    }
-    else {
-
-        /**
-         * Now we know there is at least 1 start key left, however there
-         * may be multiple start keys if the user is not closing their
-         * blocks. We currently dont allow recusive splitting so we 
-         * want to get the last key in our remaining set. Same idea as
-         * above.
-         */
-        while(startTagSearchData.found === true) {
-
-            // Get the index of where the first regex match in the
-            // string is. then we slice from 0 to index off of the string
-            // split it by newline, cut off the first line (which actually
-            // contains the regex) then reduce back down to a single string.
-            //
-            // TODO: This could be simplified if we just slice the text after
-            // the end tag instead of the begining.
-            let startIndex = startTagSearchData.startPosition;
-
-            linesAboveArray = linesAboveStr.slice(startIndex).split("\n")
-            
-            let startTag = linesAboveArray[0];
-            let key = getStartTagKey(startTag);
-            if(key !== null) {
-                startBlockKey = key;
-            }
-
-            linesAboveArray = linesAboveArray.splice(1)
-            linesAboveStr = linesAboveArray.reduce((prev, current) => {
-                return prev + "\n"  + current;
-            }, "");
-
-            startTagSearchData = findStartTag(linesAboveStr);
-        }
-    }
-
-    if(startBlockKey === "") {
-
-        let codeBlockData = parseCodeBlockStart(linesAboveArray)
-        if(codeBlockData !== null) {
-            
-            startBlockKey = codeBlockData.id;
-
-            if(codeBlockData.index > 0) {
-                linesAboveArray = linesAboveArray.slice(codeBlockData.index + 1);
-            }
-        }
-    }
-
-    return { startBlockKey, linesAboveArray };
+    return getStartBlockOrCodeblockAboveLine(linesAboveArray, [findStartTag]);
 }
 
 export function getEndBlockBelow(linesBelow: string[]): string[] {

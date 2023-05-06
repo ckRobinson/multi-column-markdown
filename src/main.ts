@@ -342,7 +342,7 @@ ${editor.getDoc().getSelection()}`
              * Check if any of the lines above us contain a start block, and if
              * so get the lines from our current element to the start block.
              */
-            let startBockAbove = multiColumnParser.getStartBlockOrCodeblockAboveLine(linesAboveArray);
+            let startBockAbove = multiColumnParser.getStartDataAboveLine(linesAboveArray);
             if(startBockAbove === null) {
                 return;
             }
