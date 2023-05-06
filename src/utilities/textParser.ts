@@ -518,6 +518,9 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[]): {
 startBlockKey: string, 
 linesAboveArray: string[] } | null {
 
+    let data = getStartAboveLine(linesAboveArray);
+    return data;
+
     let startBlock = getStartBlockAboveLine(linesAboveArray);
     if(startBlock !== null) {
         return startBlock;
@@ -528,6 +531,106 @@ linesAboveArray: string[] } | null {
         return codeBlock;
     }
     return null
+}
+
+function getStartAboveLine(linesAboveArray: string[]): { startBlockKey: string, 
+                                                         linesAboveArray: string[],
+                                                         startBlockType: RegionType } | null {
+
+    let textAbove = linesAboveArray.join("\n");
+    let workingText = textAbove;
+    let offset = 0;
+    let foundTag = null;
+    let lastFoundTag = ""
+    for(let i = 0; true; i++) {
+        if(i > 100) {
+            break;
+        }
+
+        let depreciatedStart = findStartTag(workingText);
+        let codeblockStart = findStartCodeblock(workingText);
+        let pandocStart = findPandocStart(workingText)
+        let tagsFound = [depreciatedStart, codeblockStart, pandocStart].filter((val) => {
+            return val.found === true;
+        }).sort((a, b) => {
+            return a.startPosition - b.startPosition
+        })
+
+        if(tagsFound.length === 0) {
+            break;
+        }
+        
+        foundTag = tagsFound[0];
+        let startIndex = offset + foundTag.startPosition;
+        lastFoundTag = textAbove.slice(startIndex, startIndex + foundTag.matchLength);
+        
+        offset += (foundTag.startPosition + foundTag.matchLength);
+        workingText = textAbove.slice(offset);
+    }
+
+    if(foundTag === null) {
+        return null;
+    }
+
+    if(foundTag.regionType === "CODEBLOCK") {
+    
+        let endTagSerachData = findEndTag(workingText);
+        if(endTagSerachData.found === true) {
+            return null;
+        }
+
+        let startBlockKey = parseStartRegionCodeBlockID(lastFoundTag);
+        let linesAboveArray = workingText.split("\n");
+
+        return { startBlockKey, linesAboveArray, startBlockType: "CODEBLOCK" };
+    }
+
+    if(foundTag.regionType === "DEPRECIATED") {
+    
+        let endTagSerachData = findEndTag(workingText);
+        if(endTagSerachData.found === true) {
+            return null;
+        }
+
+        let linesAboveArray = workingText.split("\n");
+        let startBlockKey = getStartTagKey(lastFoundTag);
+
+        let codeBlockData = parseCodeBlockStart(linesAboveArray)
+        if(codeBlockData !== null) {
+            
+            startBlockKey = codeBlockData.id;
+            if(codeBlockData.index > 0) {
+                linesAboveArray = linesAboveArray.slice(codeBlockData.index + 1);
+            }
+        }
+
+        if(startBlockKey === null) {
+            startBlockKey = "";
+        }
+
+        return { startBlockKey, linesAboveArray, startBlockType: "DEPRECIATED" };
+    }
+
+    if(foundTag.regionType === "PADOC") {
+
+        let endTagSerachData = reducePandocRegionToEndDiv(workingText)
+        if(endTagSerachData.found === true) {
+            return null;
+        }
+
+        let linesAboveArray = workingText.split("\n");
+
+        let pandocData = findPandoc(`${lastFoundTag}`);
+        let startBlockKey = parsePandocSettings(pandocData.userSettings).columnID;
+
+        return {
+            startBlockKey,
+            linesAboveArray,
+            startBlockType: "PADOC"
+        }
+    }
+
+    return null;
 }
 
 /**
