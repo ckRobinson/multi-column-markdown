@@ -434,6 +434,7 @@ ${editor.getDoc().getSelection()}`
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
             }
             if(multiColumnParser.containsPandocEndTag(el.textContent) === true &&
+               multiColumnParser.isValidPandocEndTag(linesAboveArray) &&
                startBockAbove.startBlockType === "PADOC") {
 
                 currentObject.elementType = ElementRenderType.unRendered

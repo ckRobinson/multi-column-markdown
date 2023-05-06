@@ -103,6 +103,36 @@ export function containsPandocEndTag(text: string): boolean {
     }
     return false;
 }
+export function isValidPandocEndTag(linesAbove: string[]): boolean {
+
+    let textAbove = linesAbove.join("\n");
+    let workingText = textAbove;
+    let offset = 0;
+
+    let openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
+    let closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+    for(let i = 0; closeResult !== null && openResult !== null; i++) {
+        if(i > 100) {
+            break;
+        }
+
+        // Other wise if the open is before the next close we need to look for later
+        // close tag.
+        
+        offset += (closeResult.index + closeResult[0].length + 1);
+        workingText = textAbove.slice(offset);
+
+        openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
+        closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+    }
+
+    if(openResult !== null) {
+        return false;
+    }
+
+    return true;
+}
+
 function reducePandocRegionToEndDiv(contentText: string) {
 
     let workingText = contentText;
