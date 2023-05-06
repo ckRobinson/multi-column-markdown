@@ -425,7 +425,16 @@ ${editor.getDoc().getSelection()}`
              * Now we check if our current element is a special flag so we can
              * properly set the element tag within the regional manager.
              */
-            if(multiColumnParser.containsEndTag(el.textContent) === true) {
+
+            if(multiColumnParser.containsEndTag(el.textContent) === true &&
+               startBockAbove.startBlockType !== "PADOC") {
+
+                currentObject.elementType = ElementRenderType.unRendered
+                el.addClass(MultiColumnStyleCSS.RegionEndTag)
+                regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
+            }
+            if(multiColumnParser.containsPandocEndTag(el.textContent) === true &&
+               startBockAbove.startBlockType === "PADOC") {
 
                 currentObject.elementType = ElementRenderType.unRendered
                 el.addClass(MultiColumnStyleCSS.RegionEndTag)

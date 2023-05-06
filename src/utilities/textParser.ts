@@ -96,7 +96,11 @@ export function containsPandocStartTag(text: string): boolean {
     return false;
 }
 export function containsPandocEndTag(text: string): boolean {
-    console.log(text)
+
+    let regexData = PANDOC_CLOSE_FENCE_REGEX.exec(text)
+    if(regexData !== null) {
+        return true;
+    }
     return false;
 }
 function reducePandocRegionToEndDiv(contentText: string) {
