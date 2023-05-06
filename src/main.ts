@@ -522,6 +522,7 @@ ${editor.getDoc().getSelection()}`
                     let regionKey = "";
 
                     let blockData = multiColumnParser.isStartTagWithID(child.textContent);
+                    let pandocData = multiColumnParser.findPandoc(child.textContent)
                     if (blockData.isStartTag === true) {
 
                         // If an old-style start tag.
@@ -548,6 +549,12 @@ ${editor.getDoc().getSelection()}`
                             foundBlockData = true;
                             regionKey = id;
                         }
+                    }
+                    else if(pandocData.found) {
+                        let settings = parsePandocSettings(pandocData.userSettings, pandocData.columnCount);
+
+                        foundBlockData = true;
+                        regionKey = settings.columnID;
                     }
 
                     if(foundBlockData === true && regionKey !== "") {
@@ -581,7 +588,8 @@ ${editor.getDoc().getSelection()}`
                 }
                 else {
 
-                    if (multiColumnParser.containsEndTag(child.textContent) === true) {
+                    if (multiColumnParser.containsEndTag(child.textContent) === true ||
+                        multiColumnParser.containsPandocEndTag(child.textContent) === true) {
 
                         inBlock = false;
                     }
