@@ -109,7 +109,8 @@ const ALIGNMENT_REGEX_ARR: RegExp[] = [
     "content align",
     "align content",
     "text align",
-    "align text"
+    "align text",
+    "Text Alignment"
 ].map((value) => {
     return new RegExp(convertStringToSettingsRegex(value), "i");
 });
