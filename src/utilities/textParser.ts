@@ -103,42 +103,14 @@ export function containsPandocEndTag(text: string): boolean {
     }
     return false;
 }
-export function isValidPandocEndTag(linesAbove: string[]): boolean {
+export function isValidPandocEndTag(linesAbove: string[], currentLine: string): boolean {
 
-    let contentText = linesAbove.join("\n");
-    let workingText = contentText;
-
-    let state = -1;
-    let offset = 0;
-    for(let i = 0; true; i++) {
-        if(i > 100) {
-            break;
-        }
-        
-        let fence = getNextPandocFence(workingText);
-        if(fence === null) {
-            break;
+    if(containsPandocEndTag(currentLine) === false) {
+        return false;
         }
 
-        let result = fence.result;
-        if(fence.type === "close") {
-            console.log(workingText.slice(result.index, result.index + result[0].length));
-            offset += (result.index + result[0].length);
-            state--;
-        }
-        else {
-            console.log(workingText.slice(result.index, result.index + result[0].length));
-            offset += (result.index + result[0].length);
-            state++;
-        }
-
-        if(state === -1) {
-            return true;
-        }
-
-        workingText = contentText.slice(offset);
-    }
-    return false;
+    let contentText = linesAbove.concat(currentLine).join("\n");
+    return reducePandocRegionToEndDiv(contentText).found;
 }
 function reducePandocRegionToEndDiv(contentText: string) {
 
