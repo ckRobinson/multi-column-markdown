@@ -73,7 +73,7 @@ export function findPandoc(text: string): PandocRegexData {
         data.endPosition = regexData.index + regexData[0].length;
 
         let regionData = reducePandocRegionToEndDiv(text.slice(data.endPosition));
-        data.endPosition += regionData.content.length + regionData.matchLength
+        data.endPosition += regionData.content.length;// + regionData.matchLength;
         data.content = regionData.content;
         data.matchLength = data.endPosition - data.startPosition;
 
@@ -105,34 +105,41 @@ export function containsPandocEndTag(text: string): boolean {
 }
 export function isValidPandocEndTag(linesAbove: string[]): boolean {
 
-    let textAbove = linesAbove.join("\n");
-    let workingText = textAbove;
-    let offset = 0;
+    let contentText = linesAbove.join("\n");
+    let workingText = contentText;
 
-    let openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
-    let closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
-    for(let i = 0; closeResult !== null && openResult !== null; i++) {
+    let state = -1;
+    let offset = 0;
+    for(let i = 0; true; i++) {
         if(i > 100) {
             break;
         }
-
-        // Other wise if the open is before the next close we need to look for later
-        // close tag.
         
-        offset += (closeResult.index + closeResult[0].length + 1);
-        workingText = textAbove.slice(offset);
+        let fence = getNextPandocFence(workingText);
+        if(fence === null) {
+            break;
+        }
 
-        openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
-        closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+        let result = fence.result;
+        if(fence.type === "close") {
+            console.log(workingText.slice(result.index, result.index + result[0].length));
+            offset += (result.index + result[0].length);
+            state--;
+        }
+        else {
+            console.log(workingText.slice(result.index, result.index + result[0].length));
+            offset += (result.index + result[0].length);
+            state++;
+        }
+
+        if(state === -1) {
+            return true;
+        }
+
+        workingText = contentText.slice(offset);
     }
-
-    if(openResult !== null) {
-        return false;
-    }
-
-    return true;
+    return false;
 }
-
 function reducePandocRegionToEndDiv(contentText: string) {
 
     let workingText = contentText;
@@ -143,38 +150,82 @@ function reducePandocRegionToEndDiv(contentText: string) {
         matchLength: 0
     }
 
+    let state = 0;
     let offset = 0;
-    let openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
-    let closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
-    for(let i = 0; closeResult !== null && openResult !== null; i++) {
+    for(let i = 0; true; i++) {
         if(i > 100) {
             break;
         }
         
-        // if there is a close before another open we have found our end tag.
-        if(openResult.index > closeResult.index) {
+        let fence = getNextPandocFence(workingText);
+        if(fence === null) {
             break;
         }
 
-        // Other wise if the open is before the next close we need to look for later
-        // close tag.
-        
-        offset += (closeResult.index + closeResult[0].length + 1);
-        workingText = contentText.slice(offset);
+        let result = fence.result;
+        if(fence.type === "close") {
+            // console.log(workingText.slice(result.index, result.index + result[0].length));
+            offset += (result.index + result[0].length);
+            state--;
+        }
+        else {
+            // console.log(workingText.slice(result.index, result.index + result[0].length));
+            offset += (result.index + result[0].length);
+            state++;
+        }
 
-        openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
-        closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+        if(state === -1) {
+            // We have found our last close tag.
+            return buildReturnData(result);
+        }
+
+        workingText = contentText.slice(offset);
     }
 
-    // If we hit this point and close is not null we have either broken from
-    // the loop. Or we iterated one last time and open was null.
-    if(closeResult !== null) {
+    function buildReturnData(matchResult: RegExpExecArray) {
+        result.content = contentText.slice(0, offset);
+        result.matchLength = matchResult[0].length
         result.found = true;
-        result.content = contentText.slice(0, offset + closeResult.index);
-        result.matchLength = closeResult[0].length
+        return result;
     }
 
     return result;
+}
+function getNextPandocFence(workingText: string): { result: RegExpExecArray, type: "open" | "close" } {
+
+    let openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
+    let closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+
+    if(openResult === null && closeResult === null) {
+        return null;
+    }
+
+    if(openResult === null && closeResult !== null) {
+        return {
+            result: closeResult,
+            type: "close"
+        }
+    }
+
+    if(closeResult === null && openResult !== null) {
+        return {
+            result: openResult,
+            type: "open"
+        }
+    }
+
+    if(closeResult.index < openResult.index) {
+        return {
+            result: closeResult,
+            type: "close"
+        }
+    }
+    else {
+        return {
+            result: openResult,
+            type: "open"
+        }
+    }
 }
 function findPandocStart(text: string): StartTagRegexMatch {
 
@@ -421,7 +472,7 @@ export function containsColSettingsTag(text: string): boolean {
     return found;
 }
 
-export function findSettingsCodeblock(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+export function findSettingsCodeblock(text: string): StartTagRegexMatch {
 
     let found = false;
     let startPosition = -1;
@@ -448,7 +499,13 @@ export function findSettingsCodeblock(text: string): { found: boolean, startPosi
         }
     }
 
-    return { found, startPosition, endPosition, matchLength };
+    return { 
+        found, 
+        startPosition, 
+        endPosition, 
+        matchLength,
+        regionType: "CODEBLOCK"
+    };
 }
 
 const CODEBLOCK_START_REGEX_STR: string = [
