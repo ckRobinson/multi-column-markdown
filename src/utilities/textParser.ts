@@ -713,7 +713,7 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
 
             tagMatchData = tagsFound[0];
             let startIndex = offset + tagMatchData.startPosition;
-            lastFoundTag = originalText.slice(startIndex, startIndex + tagMatchData.matchLength);
+            lastFoundTag = originalText.slice(startIndex, startIndex + tagMatchData.matchLength).trimEnd();
 
             offset += (tagMatchData.startPosition + tagMatchData.matchLength);
             textAbove = originalText.slice(offset);
