@@ -74,7 +74,7 @@ export function findPandoc(text: string): PandocRegexData {
         data.endPosition = regexData.index + regexData[0].length;
 
         let regionData = reducePandocRegionToEndDiv(text.slice(data.endPosition));
-        data.endPosition += regionData.content.length;// + regionData.matchLength;
+        data.endPosition += regionData.content.length + regionData.matchLength;
         data.content = regionData.content;
         data.matchLength = data.endPosition - data.startPosition;
 
@@ -175,7 +175,7 @@ function reducePandocRegionToEndDiv(contentText: string) {
     }
 
     function buildReturnData(matchResult: RegExpExecArray) {
-        result.content = contentText.slice(0, offset);
+        result.content = contentText.slice(0, offset - matchResult[0].length);
         result.matchLength = matchResult[0].length
         result.found = true;
         return result;
