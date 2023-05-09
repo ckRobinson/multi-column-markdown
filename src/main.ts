@@ -265,6 +265,16 @@ ${editor.getDoc().getSelection()}`
                 return;
             }
 
+            if(ctx.frontmatter && 
+               ctx.frontmatter["Multi-Column Reflow"] !== undefined) {
+
+                console.log(ctx.frontmatter["Multi-Column Markdown"]);
+                return;
+            }
+            else {
+                fileDOMManager.removeRegion("Multi-Column Reflow Region");
+            }
+
             let docString = info.text;
             let docLines = docString.split("\n");
 
@@ -644,24 +654,6 @@ ${editor.getDoc().getSelection()}`
                 return;
             }
         
-            // Check the type of the leaf
-            let foundFileLeaf = false;
-            for(let i = 0; i < markdownLeaves.length; i++) {
-        
-                let fileLeaf = getFileLeaf(sourcePath);
-                if(fileLeaf === null) {
-                    continue;
-                }
-                foundFileLeaf = true;
-        
-                if(getLeafSourceMode(fileLeaf) === "source") {
-                    // This was added when implementing live preview, but the reason it was originally added appears to no longer be an issue.
-                    // Removing the return from here to fix bug where opening multiple copies of the document causes regions to not render.
-                    console.debug("Leaf of file is in source mode. Should we be ignoring post processing here?")
-                    // return;
-                }
-            }
-        
             if(this.globalManager === null || this.globalManager === undefined) {
                 // console.log("Global manager is undefined?");
                 return;
@@ -672,6 +664,14 @@ ${editor.getDoc().getSelection()}`
                 return;
             }
             
+            if(ctx.frontmatter && 
+               ctx.frontmatter["Multi-Column Reflow"] !== undefined) {
+                return;
+            }
+            else {
+                fileDOMManager.removeRegion("Multi-Column Reflow Region");
+            }
+
             // Set file to have start tag.
             fileDOMManager.setHasStartTag();
         
