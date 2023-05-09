@@ -6,7 +6,255 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { parseStartRegionCodeBlockID } from "./settingsParser";
+import { RegionType } from "src/live_preview/cm6_livePreview";
+import { parsePandocSettings, parseStartRegionCodeBlockID } from "./settingsParser";
+import { MultiColumnSettings, getDefaultMultiColumnSettings } from "src/regionSettings";
+
+export const PANDOC_ENGLISH_NUMBER_OF_COLUMNS = [
+    "two",
+    "three", 
+    "four", 
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten"
+] as const;
+type PandocNumberOfColumnsTuple = typeof PANDOC_ENGLISH_NUMBER_OF_COLUMNS;
+export type PandocNumberOfColumns = PandocNumberOfColumnsTuple[number];
+export function isPandocNumberOfColumns(value: string): value is PandocNumberOfColumns {
+  return PANDOC_ENGLISH_NUMBER_OF_COLUMNS.includes(value as PandocNumberOfColumns)
+}
+export function pandocNumberOfColumnsToValue(value: PandocNumberOfColumns): number {
+    switch(value) {
+        case "two":
+            return 2;
+        case "three":
+            return 3;
+        case "four":
+            return 4;
+        case "five":
+            return 5;
+        case "six":
+            return 6;
+        case "seven":
+            return 7;
+        case "eight":
+            return 8;
+        case "nine":
+            return 9;
+        case "ten":
+            return 10;
+    }
+}
+
+const PANDOC_COL_DOT_COUNT_NAME = "colDotCount"
+const PANDOC_COL_NODOT_COUNT_NAME = "colCount"
+const PANDOC_COL_CONTENT = "colContent"
+const PANDOC_COl_SETTINGS = "colSettings"
+const PANDOC_REGEX_STR: string = (() => {
+
+    let nums = PANDOC_ENGLISH_NUMBER_OF_COLUMNS.join("|")
+    let regex_strings = `:{3,} *(?:\\{ *\\.(?<${PANDOC_COL_DOT_COUNT_NAME}>(?:${nums}|))(?:[-_]|)columns(?<${PANDOC_COl_SETTINGS}>.*)\\}|(?<${PANDOC_COL_NODOT_COUNT_NAME}>(?:${nums}|))(?:[-_]|)columns)(?:[ :]*)$\\n?`
+    return regex_strings;
+})()
+const PANDOC_REGEX = new RegExp(PANDOC_REGEX_STR, "m");
+
+const PANDOC_OPEN_FENCE_REGEX = /^:{3,} *(?:[a-zA-Z]+|\{.*\})(?:[ :]*)$/m
+const PANDOC_CLOSE_FENCE_REGEX = /^:{3,} *$/m
+export function findPandoc(text: string): PandocRegexData {
+
+    let regexData = PANDOC_REGEX.exec(text)
+    if(regexData !== null) {
+
+        let data = defaultPandocRegexData();
+        data.found = true;
+        data.startPosition = regexData.index;
+        data.endPosition = regexData.index + regexData[0].length;
+
+        let regionData = reducePandocRegionToEndDiv(text.slice(data.endPosition));
+        data.endPosition += regionData.content.length + regionData.matchLength;
+        data.content = regionData.content;
+        data.matchLength = data.endPosition - data.startPosition;
+
+        data.userSettings = regexData.groups[PANDOC_COl_SETTINGS] ? regexData.groups[PANDOC_COl_SETTINGS] : "";
+        data.columnCount = regexData.groups[PANDOC_COL_DOT_COUNT_NAME] ? regexData.groups[PANDOC_COL_DOT_COUNT_NAME] : regexData.groups[PANDOC_COL_NODOT_COUNT_NAME];
+        return data;
+    }
+
+    return defaultPandocRegexData();
+}
+export interface PandocStartData {
+    found: boolean;
+    userSettings: MultiColumnSettings;
+}
+export function getPandocStartData(text: string): PandocStartData {
+
+    let data = findPandoc(text)
+    if(data.found === false) {
+        return {
+            found: false,
+            userSettings: getDefaultMultiColumnSettings()
+        }
+    }
+
+    return {
+        found: true,
+        userSettings: parsePandocSettings(data.userSettings, data.columnCount)
+    }
+}
+export function containsPandoc(text: string): boolean {
+    return findPandoc(text).found
+}
+export function containsPandocStartTag(text: string): boolean {
+
+    let regexData = PANDOC_REGEX.exec(text)
+    if(regexData !== null) {
+        return true;
+    }
+    return false;
+}
+export function containsPandocEndTag(text: string): boolean {
+
+    let regexData = PANDOC_CLOSE_FENCE_REGEX.exec(text)
+    if(regexData !== null) {
+        return true;
+    }
+    return false;
+}
+export function isValidPandocEndTag(linesAbove: string[], currentLine: string): boolean {
+
+    if(containsPandocEndTag(currentLine) === false) {
+        return false;
+    }
+
+    let contentText = linesAbove.concat(currentLine).join("\n");
+    return reducePandocRegionToEndDiv(contentText).found;
+}
+function reducePandocRegionToEndDiv(contentText: string) {
+
+    let workingText = contentText;
+
+    let result = {
+        found: false,
+        content: workingText,
+        matchLength: 0
+    }
+
+    let state = 0;
+    let offset = 0;
+    for(let i = 0; true; i++) {
+        if(i > 100) {
+            break;
+        }
+        
+        let fence = getNextPandocFence(workingText);
+        if(fence === null) {
+            break;
+        }
+
+        let result = fence.result;
+        if(fence.type === "close") {
+            // console.log(workingText.slice(result.index, result.index + result[0].length));
+            offset += (result.index + result[0].length);
+            state--;
+        }
+        else {
+            // console.log(workingText.slice(result.index, result.index + result[0].length));
+            offset += (result.index + result[0].length);
+            state++;
+        }
+
+        if(state === -1) {
+            // We have found our last close tag.
+            return buildReturnData(result);
+        }
+
+        workingText = contentText.slice(offset);
+    }
+
+    function buildReturnData(matchResult: RegExpExecArray) {
+        result.content = contentText.slice(0, offset - matchResult[0].length);
+        result.matchLength = matchResult[0].length
+        result.found = true;
+        return result;
+    }
+
+    return result;
+}
+function getNextPandocFence(workingText: string): { result: RegExpExecArray, type: "open" | "close" } {
+
+    let openResult = PANDOC_OPEN_FENCE_REGEX.exec(workingText);
+    let closeResult = PANDOC_CLOSE_FENCE_REGEX.exec(workingText);
+
+    if(openResult === null && closeResult === null) {
+        return null;
+    }
+
+    if(openResult === null && closeResult !== null) {
+        return {
+            result: closeResult,
+            type: "close"
+        }
+    }
+
+    if(closeResult === null && openResult !== null) {
+        return {
+            result: openResult,
+            type: "open"
+        }
+    }
+
+    if(closeResult.index < openResult.index) {
+        return {
+            result: closeResult,
+            type: "close"
+        }
+    }
+    else {
+        return {
+            result: openResult,
+            type: "open"
+        }
+    }
+}
+function findPandocStart(text: string): StartTagRegexMatch {
+
+    let startRegion = defaultStartRegionData();
+    startRegion.regionType = "PADOC";
+
+    let regexData = PANDOC_REGEX.exec(text)
+    if(regexData !== null && regexData.length > 0) {
+
+        startRegion.found = true;
+        startRegion.startPosition = regexData.index
+        startRegion.matchLength = regexData[0].length;
+        startRegion.endPosition = startRegion.startPosition + startRegion.matchLength;
+    }
+
+    return startRegion;
+}
+export interface PandocRegexData extends StartTagRegexMatch {
+    found: boolean;
+    startPosition: number;
+    endPosition: number;
+    content: string;
+    userSettings: string,
+    columnCount: string
+}
+function defaultPandocRegexData(): PandocRegexData {
+    return {
+        found: false,
+        startPosition: -1,
+        endPosition: -1,
+        matchLength: 0,
+        content: "",
+        userSettings: "",
+        columnCount: "",
+        regionType: "PADOC"
+    }
+}
 
 const START_REGEX_STRS = ["=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
                           "=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?"]
@@ -23,28 +271,27 @@ for(let i = 0; i < START_REGEX_STRS_WHOLE_LINE.length; i++) {
 }
 
 
-export function findStartTag(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+export function findStartTag(text: string): StartTagRegexMatch {
 
-    let found = false;
-    let startPosition = -1;
-    let matchLength = 0;
+    let startRegion = defaultStartRegionData();
+    startRegion.regionType = "DEPRECIATED";
+
     for(let i = 0; i< START_REGEX_ARR.length; i++) {
 
         let regexData = START_REGEX_ARR[i].exec(text)
         if(regexData !== null && regexData.length > 0) {
-            startPosition = regexData.index
-            matchLength = regexData[0].length;
+            startRegion.startPosition = regexData.index
+            startRegion.matchLength = regexData[0].length;
+            startRegion.endPosition = startRegion.startPosition + startRegion.matchLength;
 
-            let line = text.slice(startPosition, startPosition + matchLength);
+            let line = text.slice(startRegion.startPosition, startRegion.endPosition);
             if(START_REGEX_ARR_WHOLE_LINE[i].test(line)) {
-                found = true;
+                startRegion.found = true;
                 break;
             }
         }
     }
-    let endPosition = startPosition + matchLength;
-
-    return { found, startPosition, endPosition, matchLength };
+    return startRegion;
 }
 export function containsStartTag(text: string): boolean {
     return findStartTag(text).found
@@ -122,17 +369,19 @@ function getEndTagData(text: string) {
     return { found, startPosition, endPosition, matchLength };
 }
 
-const COL_REGEX_STRS: string[] = ["^===\\s*?column-end\\s*?===\\s*?$",
-                                  "^===\\s*?end-column\\s*?===\\s*?$",
-                                  "^===\\s*?column-break\\s*?===\\s*?$",
-                                  "^===\\s*?break-column\\s*?===\\s*?$",
-                                  "^---\\s*?column-end\\s*?---\\s*?$",
-                                  "^---\\s*?end-column\\s*?---\\s*?$",
-                                  "^---\\s*?column-break\\s*?---\\s*?$",
-                                  "^---\\s*?break-column\\s*?---\\s*?$"];
+const COL_REGEX_STRS: [string,string][] = [["^===\\s*?column-end\\s*?===\\s*?$"   ,""], // [Regex, Regex Flags]
+                                           ["^===\\s*?end-column\\s*?===\\s*?$"   ,""],
+                                           ["^===\\s*?column-break\\s*?===\\s*?$" ,""],
+                                           ["^===\\s*?break-column\\s*?===\\s*?$" ,""],
+                                           ["^---\\s*?column-end\\s*?---\\s*?$"   ,""],
+                                           ["^---\\s*?end-column\\s*?---\\s*?$"   ,""],
+                                           ["^---\\s*?column-break\\s*?---\\s*?$" ,""],
+                                           ["^---\\s*?break-column\\s*?---\\s*?$" ,""],
+                                           ["^ *?(?:\\?)\\columnbreak *?$"        ,""],
+                                           ["^:{3,} *column-?break *(?:(?:$\\n^)?| *):{3,} *$" ,"m"]];
 const COL_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < COL_REGEX_STRS.length; i++) {
-    COL_REGEX_ARR.push(new RegExp(COL_REGEX_STRS[i]));
+    COL_REGEX_ARR.push(new RegExp(COL_REGEX_STRS[i][0], COL_REGEX_STRS[i][1]));
 }
 export function containsColEndTag(text: string): boolean {
 
@@ -156,7 +405,9 @@ const INNER_COL_END_REGEX_ARR: RegExp[] = [
     /^={3}\s*?column-end\s*?={3}\s*?$\n?/m,
     /^={3}\s*?end-column\s*?={3}\s*?$\n?/m,
     /^={3}\s*?column-break\s*?={3}\s*?$\n?/m,
-    /^={3}\s*?break-column\s*?={3}\s*?$\n?/m
+    /^={3}\s*?break-column\s*?={3}\s*?$\n?/m,
+    /^ *?(?:\\?)\\columnbreak *?$\n?/m,
+    /^:{3,} *column-?break *(?:(?:$\n^)?| *):{3,} *$/m
 ]
 export function checkForParagraphInnerColEndTag(text: string): RegExpExecArray | null {
 
@@ -213,7 +464,7 @@ export function containsColSettingsTag(text: string): boolean {
     return found;
 }
 
-export function findSettingsCodeblock(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+export function findSettingsCodeblock(text: string): StartTagRegexMatch {
 
     let found = false;
     let startPosition = -1;
@@ -240,7 +491,13 @@ export function findSettingsCodeblock(text: string): { found: boolean, startPosi
         }
     }
 
-    return { found, startPosition, endPosition, matchLength };
+    return { 
+        found, 
+        startPosition, 
+        endPosition, 
+        matchLength,
+        regionType: "CODEBLOCK"
+    };
 }
 
 const CODEBLOCK_START_REGEX_STR: string = [
@@ -254,30 +511,45 @@ const CODEBLOCK_START_REGEX_STR: string = [
 }, "")
 const START_CODEBLOCK_REGEX: RegExp = new RegExp(`\`\`\`(:?${CODEBLOCK_START_REGEX_STR})(.*?)\`\`\``, "ms");
 
-export function findStartCodeblock(text: string): { found: boolean, startPosition: number, endPosition: number, matchLength: number } {
+export interface StartTagRegexMatch {
+    found: boolean;
+    startPosition: number;
+    endPosition: number;
+    matchLength: number;
+    regionType: RegionType;
+}
+export function defaultStartRegionData(): StartTagRegexMatch {
 
-    let found = false;
-    let startPosition = -1;
-    let endPosition = -1
-    let matchLength = 0;
+    return {
+        found: false,
+        startPosition: -1,
+        endPosition: -1,
+        matchLength: 0,
+        regionType: "CODEBLOCK"
+    }
+}
+export function findStartCodeblock(text: string): StartTagRegexMatch {
+
+    let startRegion = defaultStartRegionData();
+    startRegion.regionType = "CODEBLOCK";
 
     let regexData = START_CODEBLOCK_REGEX.exec(text)
     if(regexData !== null && regexData.length > 0) {
 
-        found = true;
-        startPosition = regexData.index
-        matchLength = regexData[0].length;
-        endPosition = startPosition + matchLength;
+        startRegion.found = true;
+        startRegion.startPosition = regexData.index
+        startRegion.matchLength = regexData[0].length;
+        startRegion.endPosition = startRegion.startPosition + startRegion.matchLength;
     }
 
-    return { found, startPosition, endPosition, matchLength };
+    return startRegion;
 }
 export function containsStartCodeBlock(text: string): boolean {
     return findStartCodeblock(text).found
 }
 
 export function containsRegionStart(text: string): boolean {
-    return containsStartCodeBlock(text) || containsStartTag(text);
+    return containsStartCodeBlock(text) || containsStartTag(text) || containsPandoc(text);
 }
 
 export function countStartTags(initialText: string): { numberOfTags: number, keys: string[] } {
@@ -328,20 +600,131 @@ export function countStartTags(initialText: string): { numberOfTags: number, key
     return { numberOfTags: keys.length, keys };
 }
 
-export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[]): { 
-startBlockKey: string, 
-linesAboveArray: string[] } | null {
+export function getStartDataAboveLine(linesAboveArray: string[]): { startBlockKey: string, 
+                                                                    linesAboveArray: string[],
+                                                                    startBlockType: RegionType } {
+    return getStartBlockOrCodeblockAboveLine(linesAboveArray, [
+        findStartTag,
+        findStartCodeblock,
+        findPandocStart
+    ])
+}
 
-    let startBlock = getStartBlockAboveLine(linesAboveArray);
-    if(startBlock !== null) {
-        return startBlock;
+export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[], 
+                                                  searchFunctions: ((text: string) => StartTagRegexMatch)[]): { startBlockKey: string, 
+                                                                                                             linesAboveArray: string[],
+                                                                                                             startBlockType: RegionType  } | null {
+
+    let originalText = linesAboveArray.join("\n");
+    let {tagMatchData, lastFoundTag, textAbove} =  findLastValidTag(originalText);
+
+    if(tagMatchData === null) {
+        return null;
     }
 
-    let codeBlock = getStartCodeBlockAboveLine(linesAboveArray)
-    if(codeBlock !== null) {
-        return codeBlock;
+    if(tagMatchData.found === false) {
+        return null;
     }
-    return null
+
+    if(tagMatchData.regionType === "CODEBLOCK") {
+    
+        let endTagSerachData = findEndTag(textAbove);
+        if(endTagSerachData.found === true) {
+            return null;
+        }
+
+        let startBlockKey = parseStartRegionCodeBlockID(lastFoundTag);
+        let linesAboveArray = textAbove.split("\n");
+
+        return { startBlockKey, linesAboveArray, startBlockType: "CODEBLOCK" };
+    }
+
+    if(tagMatchData.regionType === "DEPRECIATED") {
+    
+        let endTagSerachData = findEndTag(textAbove);
+        if(endTagSerachData.found === true) {
+            return null;
+        }
+
+        let linesAboveArray = textAbove.split("\n");
+        let startBlockKey = getStartTagKey(lastFoundTag);
+
+        let codeBlockData = parseCodeBlockStart(linesAboveArray)
+        if(codeBlockData !== null) {
+            
+            startBlockKey = codeBlockData.id;
+            if(codeBlockData.index > 0) {
+                linesAboveArray = linesAboveArray.slice(codeBlockData.index + 1);
+            }
+        }
+
+        if(startBlockKey === null) {
+            startBlockKey = "";
+        }
+
+        return { startBlockKey, linesAboveArray, startBlockType: "DEPRECIATED" };
+    }
+
+    if(tagMatchData.regionType === "PADOC") {
+
+        let endTagSerachData = reducePandocRegionToEndDiv(textAbove)
+        if(endTagSerachData.found === true) {
+            return null;
+        }
+
+        let linesAboveArray = textAbove.split("\n");
+
+        let pandocData = getPandocStartData(`${lastFoundTag}`);
+        let startBlockKey = pandocData.userSettings.columnID;
+
+        return {
+            startBlockKey,
+            linesAboveArray,
+            startBlockType: "PADOC"
+        }
+    }
+
+    return null;
+
+    function findLastValidTag(originalText: string) {
+
+        let textAbove = originalText;
+        let offset = 0;
+        let tagMatchData: StartTagRegexMatch = null;
+        let lastFoundTag = ""
+        for (let i = 0; true; i++) {
+            if (i > 100) {
+                break;
+            }
+
+            let tagsFound: StartTagRegexMatch[] = [];
+            searchFunctions.forEach((func) => {
+                tagsFound.push(func(textAbove));
+            });
+            tagsFound = tagsFound.filter((val) => {
+                return val.found === true;
+            }).sort((a, b) => {
+                return a.startPosition - b.startPosition;
+            });
+
+            if (tagsFound.length === 0) {
+                break;
+            }
+
+            tagMatchData = tagsFound[0];
+            let startIndex = offset + tagMatchData.startPosition;
+            lastFoundTag = originalText.slice(startIndex, startIndex + tagMatchData.matchLength).trimEnd();
+
+            offset += (tagMatchData.startPosition + tagMatchData.matchLength);
+            textAbove = originalText.slice(offset);
+        }
+
+        return {
+            tagMatchData,
+            lastFoundTag,
+            textAbove
+        }
+    }
 }
 
 /**
@@ -356,162 +739,7 @@ linesAboveArray: string[] } | null {
 export function getStartBlockAboveLine(linesAboveArray: string[]): { startBlockKey: string, 
                                                         linesAboveArray: string[] } | null {
 
-    // Reduce the array down into a single string so that we can
-    // easily RegEx over the string and find the indicies we're looking for.
-    let linesAboveStr = linesAboveArray.reduce((prev, current) => {
-        return prev + "\n"  + current;
-    }, "");
-
-    /*
-        * First thing we need to do is check if there are any end tags in the
-        * set of strings (which logically would close start tags and therefore
-        * the start tag it closes is not what we want). If there are we want to 
-        * slowly narrow down our set of strings until the last end tag is 
-        * removed. This makes it easier to find the closest open start tag 
-        * in the data.
-        */
-    let endTagSerachData = findEndTag(linesAboveStr);
-    while(endTagSerachData.found === true) {
-
-        // Get the index of where the first regex match in the
-        // string is. then we slice from 0 to index off of the string
-        // split it by newline, cut off the first line (which actually
-        // contains the regex) then reduce back down to a single string.
-        //
-        // TODO: This could be simplified if we just slice the text after
-        // the end tag instead of the begining.
-        let indexOfRegex = endTagSerachData.startPosition;
-        linesAboveArray = linesAboveStr.slice(indexOfRegex).split("\n").splice(1)
-        linesAboveStr = linesAboveArray.reduce((prev, current) => {
-            return prev + "\n"  + current;
-        }, "");
-        endTagSerachData = findEndTag(linesAboveStr);
-    }
-
-    /**
-     * Now we have the set of lines after all other end tags. We now
-     * need to check if there is still a start tag left in the data. If 
-     * there is no start tag then we want to return an empty array and empty 
-     * key.
-     */ 
-    let startBlockKey = "";
-    let startTagSearchData = findStartTag(linesAboveStr);
-    if(startTagSearchData.found === false) {
-        return null;
-    }
-    else {
-
-        /**
-         * Now we know there is at least 1 start key left, however there
-         * may be multiple start keys if the user is not closing their
-         * blocks. We currently dont allow recusive splitting so we 
-         * want to get the last key in our remaining set. Same idea as
-         * above.
-         */
-        while(startTagSearchData.found === true) {
-
-            // Get the index of where the first regex match in the
-            // string is. then we slice from 0 to index off of the string
-            // split it by newline, cut off the first line (which actually
-            // contains the regex) then reduce back down to a single string.
-            //
-            // TODO: This could be simplified if we just slice the text after
-            // the end tag instead of the begining.
-            let startIndex = startTagSearchData.startPosition;
-
-            linesAboveArray = linesAboveStr.slice(startIndex).split("\n")
-            
-            let startTag = linesAboveArray[0];
-            let key = getStartTagKey(startTag);
-            if(key !== null) {
-                startBlockKey = key;
-            }
-
-            linesAboveArray = linesAboveArray.splice(1)
-            linesAboveStr = linesAboveArray.reduce((prev, current) => {
-                return prev + "\n"  + current;
-            }, "");
-
-            startTagSearchData = findStartTag(linesAboveStr);
-        }
-    }
-
-    if(startBlockKey === "") {
-
-        let codeBlockData = parseCodeBlockStart(linesAboveArray)
-        if(codeBlockData !== null) {
-            
-            startBlockKey = codeBlockData.id;
-
-            if(codeBlockData.index > 0) {
-                linesAboveArray = linesAboveArray.slice(codeBlockData.index + 1);
-            }
-        }
-    }
-
-    return { startBlockKey, linesAboveArray };
-}
-
-export function getStartCodeBlockAboveLine(linesAboveArray: string[]): { 
-    startBlockKey: string, 
-    linesAboveArray: string[] } | null {
-    
-    let linesAboveStr = linesAboveArray.reduce((prev, current) => {
-        return prev + "\n"  + current;
-    }, "");
-
-    /*
-     * First thing we need to do is check if there are any end tags in the
-     * set of strings (which logically would close start tags and therefore
-     * the start tag it closes is not what we want). If there are we want to 
-     * slowly narrow down our set of strings until the last end tag is 
-     * removed. This makes it easier to find the closest open start tag 
-     * in the data.
-     */
-    let endTagSerachData = findEndTag(linesAboveStr);
-    while(endTagSerachData.found === true) {
-
-        // Get the index of where the first regex match in the
-        // string is. then we slice from 0 to index off of the string
-        // split it by newline, cut off the first line (which actually
-        // contains the regex) then reduce back down to a single string.
-        linesAboveStr = linesAboveStr.slice(endTagSerachData.endPosition);
-        endTagSerachData = findEndTag(linesAboveStr);
-    }
-
-    let startCodeBlockData = findStartCodeblock(linesAboveStr);
-    let codeBlockText = linesAboveStr.slice(startCodeBlockData.startPosition, startCodeBlockData.endPosition)
-
-    let startBlockKey = ""    
-    if(startCodeBlockData.found === false) {
-        return null;
-    }
-    else {
-
-        /**
-         * Now we know there is at least 1 start key left, however there
-         * may be multiple start keys if the user is not closing their
-         * blocks. We currently dont allow recusive splitting so we 
-         * want to get the last key in our remaining set. Same idea as
-         * above.
-         */
-        while(startCodeBlockData.found === true) {
-
-            // Get the index of where the first regex match in the
-            // string is. then we slice from 0 to index off of the string
-            // split it by newline, cut off the first line (which actually
-            // contains the regex) then reduce back down to a single string.
-
-            codeBlockText = linesAboveStr.slice(startCodeBlockData.startPosition, startCodeBlockData.endPosition)
-            startBlockKey = parseStartRegionCodeBlockID(codeBlockText)
-
-            linesAboveStr = linesAboveStr.slice(startCodeBlockData.endPosition);
-            startCodeBlockData = findStartCodeblock(linesAboveStr);
-        }
-    }
-
-    let retLinesAboveArray = linesAboveStr.split("\n");
-    return { startBlockKey, linesAboveArray: retLinesAboveArray };
+    return getStartBlockOrCodeblockAboveLine(linesAboveArray, [findStartTag]);
 }
 
 export function getEndBlockBelow(linesBelow: string[]): string[] {

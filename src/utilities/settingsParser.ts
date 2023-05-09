@@ -8,6 +8,7 @@
 
 import { HTMLSizing } from "src/utilities/interfaces";
 import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType, AlignmentType, isColumnLayout } from "../regionSettings";
+import { isPandocNumberOfColumns, pandocNumberOfColumnsToValue } from "./textParser";
 
 /**
  * Here we define all of the valid settings strings that the user can enter for each setting type.
@@ -44,8 +45,9 @@ const COL_SIZE_OPTION_REGEX_ARR: RegExp[] = COL_SIZE_OPTION_STRS.map(convertStri
 
 const NUMBER_OF_COLUMNS_STRS = [
     "number of columns",
-    "Num of Cols",
-    "Col Count"
+    "num of cols",
+    "col count",
+    "column count"
 ]
 const NUMBER_OF_COLUMNS_REGEX_ARR: RegExp[] = NUMBER_OF_COLUMNS_STRS.map(convertStringToSettingsRegex).map((value) => {
     return new RegExp(value, "i");
@@ -66,7 +68,9 @@ const DRAW_SHADOW_REGEX_ARR: RegExp[] = DRAW_SHADOW_STRS.map(convertStringToSett
 });
 
 const AUTO_LAYOUT_SETTING_STRS = [
-    "auto layout"
+    "auto layout",
+    "fluid div",
+    "fluid divs",
 ]
 const AUTO_LAYOUT_REGEX_ARR: RegExp[] = AUTO_LAYOUT_SETTING_STRS.map(convertStringToSettingsRegex).map((value) => {
     return new RegExp(value, "i");
@@ -74,6 +78,8 @@ const AUTO_LAYOUT_REGEX_ARR: RegExp[] = AUTO_LAYOUT_SETTING_STRS.map(convertStri
 
 const COLUMN_SPACING_REGEX_ARR: RegExp[] = [
     "column spacing",
+    "column gap",
+    "column sep"
 ].map((value) => {
     return new RegExp(convertStringToSettingsRegex(value), "i");
 });
@@ -164,6 +170,7 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
     for (let i = 0; i < settingsLines.length; i++) {
         let settingsLine = settingsLines[i];
 
+        checkSettingIsRegionID(settingsLine, parsedSettings);
         checkSettingIsNumberOfColumns(settingsLine, parsedSettings);
         checkSettingDefinesColumnSize(settingsLine, parsedSettings);
         checkSettingIsDrawBorder(settingsLine, parsedSettings);
@@ -196,6 +203,14 @@ function checkSettingIsNumberOfColumns(settingsLine: string, parsedSettings: Mul
     }
 }
 
+function checkSettingIsRegionID(settingsLine: string, parsedSettings: MultiColumnSettings) {
+    let settingsData = getSettingsDataFromKeys(settingsLine, CODEBLOCK_REGION_ID_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+    parsedSettings.columnID = settingsData;
+}
 
 function checkSettingDefinesColumnSize(settingsLine: string, parsedSettings: MultiColumnSettings) {
 
@@ -578,8 +593,45 @@ function parseForSingleColumnSize(sizeString: string): SingleColumnSize {
 
 function convertStringToSettingsRegex(originalString: String): string {
 
-    originalString = originalString.replace(" ", " *");
-    
-    let regexString = `(?:${originalString} *: *)(.*)`;
+    originalString = originalString.replace(" ", "(?:[-_]| *|)");
+
+    let regexString = `(?:${originalString} *[:=] *)(.*)`;
     return regexString;
+}
+
+const PANDOC_SETTING_REGEX = /(?<settingName>[^ ]*)=(?<settingValue>".*"|[^ =]*)/;
+export function parsePandocSettings(pandocUserSettings: string, colCount: string = ""): MultiColumnSettings {
+
+    //TODO: Add option for column rule. 
+
+    let defaultSettings = getDefaultMultiColumnSettings();
+    let colCountDefined = false;
+    if (colCount !== "" && isPandocNumberOfColumns(colCount)) {
+        colCountDefined = true;
+        defaultSettings.numberOfColumns = pandocNumberOfColumnsToValue(colCount);
+    }
+
+    if (pandocUserSettings.replace(" ", "") === "") {
+        return defaultSettings;
+    }
+
+    let workingString = pandocUserSettings;
+    let regexValue = PANDOC_SETTING_REGEX.exec(workingString);
+    let settingList = ""
+    for (let i = 0; regexValue !== null; i < 100) {
+
+        let settingName = regexValue.groups['settingName'];
+        let settingValue = regexValue.groups['settingValue'];
+        settingList += `${settingName}: ${settingValue}\n`
+
+        workingString = workingString.slice(regexValue.index + regexValue[0].length);
+        regexValue = PANDOC_SETTING_REGEX.exec(workingString);
+    }
+
+    let parsedSettings = parseColumnSettings(settingList)
+    if(colCountDefined) {
+        parsedSettings.numberOfColumns = defaultSettings.numberOfColumns
+    }
+
+    return parsedSettings;
 }

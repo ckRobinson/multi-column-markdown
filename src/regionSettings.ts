@@ -68,6 +68,7 @@ export enum AlignmentType {
 }
 
 export type MultiColumnSettings = {
+    columnID: string,
     numberOfColumns: number,
     drawBorder: boolean[],
     drawShadow: boolean,
@@ -83,6 +84,7 @@ export type MultiColumnSettings = {
 export function getDefaultMultiColumnSettings(): MultiColumnSettings {
 
     return {
+        columnID: "",
         numberOfColumns: 2,
         drawBorder: [true],
         drawShadow: true,
