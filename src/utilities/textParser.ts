@@ -8,6 +8,7 @@
 
 import { RegionType } from "src/live_preview/cm6_livePreview";
 import { parsePandocSettings, parseStartRegionCodeBlockID } from "./settingsParser";
+import { MultiColumnSettings, getDefaultMultiColumnSettings } from "src/regionSettings";
 
 export const PANDOC_ENGLISH_NUMBER_OF_COLUMNS = [
     "two",
@@ -84,6 +85,25 @@ export function findPandoc(text: string): PandocRegexData {
 
     return defaultPandocRegexData();
 }
+export interface PandocStartData {
+    found: boolean;
+    userSettings: MultiColumnSettings;
+}
+export function getPandocStartData(text: string): PandocStartData {
+
+    let data = findPandoc(text)
+    if(data.found === false) {
+        return {
+            found: false,
+            userSettings: getDefaultMultiColumnSettings()
+        }
+    }
+
+    return {
+        found: true,
+        userSettings: parsePandocSettings(data.userSettings, data.columnCount)
+    }
+}
 export function containsPandoc(text: string): boolean {
     return findPandoc(text).found
 }
@@ -107,7 +127,7 @@ export function isValidPandocEndTag(linesAbove: string[], currentLine: string): 
 
     if(containsPandocEndTag(currentLine) === false) {
         return false;
-        }
+    }
 
     let contentText = linesAbove.concat(currentLine).join("\n");
     return reducePandocRegionToEndDiv(contentText).found;
@@ -654,8 +674,8 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
 
         let linesAboveArray = textAbove.split("\n");
 
-        let pandocData = findPandoc(`${lastFoundTag}`);
-        let startBlockKey = parsePandocSettings(pandocData.userSettings).columnID;
+        let pandocData = getPandocStartData(`${lastFoundTag}`);
+        let startBlockKey = pandocData.userSettings.columnID;
 
         return {
             startBlockKey,

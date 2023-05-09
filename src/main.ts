@@ -329,8 +329,8 @@ ${editor.getDoc().getSelection()}`
 
                 el.children[0].detach();
 
-                let pandocData = multiColumnParser.findPandoc(textOfElement)
-                let settings = parsePandocSettings(pandocData.userSettings, pandocData.columnCount);
+                let pandocData = multiColumnParser.getPandocStartData(textOfElement)
+                let settings = pandocData.userSettings;
 
                 let regionManager = setupStartTag(el, ctx, fileDOMManager, docString, settings.columnID);
                 regionManager.setRegionalSettings(settings);
@@ -433,8 +433,7 @@ ${editor.getDoc().getSelection()}`
                 el.addClass(MultiColumnStyleCSS.RegionEndTag)
                 regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
             }
-            if(multiColumnParser.containsPandocEndTag(el.textContent) === true &&
-               multiColumnParser.isValidPandocEndTag(linesAboveArray) &&
+            if(multiColumnParser.isValidPandocEndTag(linesAboveArray, el.textContent) === true &&
                startBockAbove.startBlockType === "PADOC") {
 
                 currentObject.elementType = ElementRenderType.unRendered
@@ -523,7 +522,7 @@ ${editor.getDoc().getSelection()}`
                     let regionKey = "";
 
                     let blockData = multiColumnParser.isStartTagWithID(child.textContent);
-                    let pandocData = multiColumnParser.findPandoc(child.textContent)
+                    let pandocData = multiColumnParser.getPandocStartData(child.textContent)
                     if (blockData.isStartTag === true) {
 
                         // If an old-style start tag.
@@ -552,10 +551,8 @@ ${editor.getDoc().getSelection()}`
                         }
                     }
                     else if(pandocData.found) {
-                        let settings = parsePandocSettings(pandocData.userSettings, pandocData.columnCount);
-
                         foundBlockData = true;
-                        regionKey = settings.columnID;
+                        regionKey = pandocData.userSettings.columnID;
                     }
 
                     if(foundBlockData === true && regionKey !== "") {
