@@ -600,9 +600,12 @@ export function countStartTags(initialText: string): { numberOfTags: number, key
     return { numberOfTags: keys.length, keys };
 }
 
-export function getStartDataAboveLine(linesAboveArray: string[]): { startBlockKey: string, 
-                                                                    linesAboveArray: string[],
-                                                                    startBlockType: RegionType } {
+export interface StartTagData {
+    startBlockKey: string;
+    linesAboveArray: string[];
+    startBlockType: RegionType;
+}
+export function getStartDataAboveLine(linesAboveArray: string[]): StartTagData {
     return getStartBlockOrCodeblockAboveLine(linesAboveArray, [
         findStartTag,
         findStartCodeblock,
