@@ -65,10 +65,12 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
     function removeRegion(regionKey: string): void {
 
         let regionContainer = regionMap.get(regionKey);
-        if(regionContainer) {
-            let regionalManager = regionContainer.getRegion();
-            regionalManager.displayOriginalElements();
+        if(regionContainer === undefined) {
+            return;
         }
+
+        let regionalManager = regionContainer.getRegion();
+        regionalManager.displayOriginalElements();
 
         regionMap.delete(regionKey);
         
