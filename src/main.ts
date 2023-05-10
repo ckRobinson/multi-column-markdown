@@ -587,9 +587,21 @@ ${editor.getDoc().getSelection()}`
             regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
         }
         else {
-            setupStartTag(el, ctx, fileDOMManager, docString, "Multi-Column Reflow Region");
+
+            // The first element to hit this point appears to be the yaml information which we can use
+            // as our root div since the whole doc is going to be re-formatted.
+            let parentEl = createDiv()
+            el.appendChild(parentEl);
+
+            setupStartTag(parentEl, ctx, fileDOMManager, docString, "Multi-Column Reflow Region");
             regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+            return;
         }
+
+        if(regionalContainer === null) {
+            return;
+        }
+
         let docLines = docString.split("\n");
         
         let relativeTexts: ElementRelativeLocationData = extractElementRelativeLocationData(docLines, info);
