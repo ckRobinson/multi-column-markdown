@@ -265,18 +265,19 @@ ${editor.getDoc().getSelection()}`
                 return;
             }
 
-            if(ctx.frontmatter && 
-               ctx.frontmatter["Multi-Column Reflow"] !== undefined) {
+            let docString = info.text;
+            let docLines = docString.split("\n");
 
-                console.log(ctx.frontmatter["Multi-Column Markdown"]);
+            if(ctx.frontmatter && 
+                ctx.frontmatter["Multi-Column Reflow"] !== undefined) {
+ 
+                console.log(ctx.frontmatter["Multi-Column Reflow"]);
+                this.renderDocReflow(el, ctx, sourcePath, fileDOMManager, docString, info);
                 return;
             }
             else {
                 fileDOMManager.removeRegion("Multi-Column Reflow Region");
             }
-
-            let docString = info.text;
-            let docLines = docString.split("\n");
 
             /**
              * If we encounter a start tag on the document we set the flag to start
@@ -578,6 +579,54 @@ ${editor.getDoc().getSelection()}`
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
+
+    renderDocReflow(el: HTMLElement, ctx: MarkdownPostProcessorContext, sourcePath: string, fileDOMManager: FileDOMManager, docString: string, info: MarkdownSectionInformation) {
+
+        let regionalContainer: RegionManagerContainer = null;
+        if(fileDOMManager.checkKeyExists("Multi-Column Reflow Region") === true) {
+            regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+        }
+        else {
+            setupStartTag(el, ctx, fileDOMManager, docString, "Multi-Column Reflow Region");
+            regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+        }
+        let docLines = docString.split("\n");
+        
+        let relativeTexts: ElementRelativeLocationData = extractElementRelativeLocationData(docLines, info);
+        console.log("Got:", relativeTexts);
+
+        /**
+         * Check if any of the lines above us contain a start block, and if
+         * so get the lines from our current element to the start block.
+         */
+        let startBockAbove: multiColumnParser.StartTagData = {
+            linesAboveArray: relativeTexts.linesAboveArray,
+            startBlockKey: "Multi-Column Reflow Region",
+            startBlockType: "DEPRECIATED"
+        }
+
+        /**
+         * We now know we're within a multi-column region, so we update our
+         * list of lines above to just be the items within this region.
+         */
+        relativeTexts.linesAboveArray = startBockAbove.linesAboveArray;
+
+        /**
+         * To make sure we're placing the item in the right location (and 
+         * overwrite elements that are now gone) we now want all of the
+         * lines after this element up to the end tag.
+         */
+        relativeTexts.linesBelowArray =  multiColumnParser.getEndBlockBelow(relativeTexts.linesBelowArray);
+
+        /**
+         * Now we take the lines above our current element up until the
+         * start region tag and render that into an HTML element. We will 
+         * use these elements to determine where to place our current element.
+         */
+        this.appendToRegionalManager(el, regionalContainer, ctx, relativeTexts, sourcePath, startBockAbove, (domObj: DOMObject) => {
+            onUnloadElement(domObj, regionalContainer);
+        });
+    }
 
     //#region PDF Exporting.
     private isStartCodeblockInExport(node: HTMLElement): boolean {
