@@ -6,19 +6,20 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext, MarkdownSectionInformation } from 'obsidian';
+import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext, MarkdownSectionInformation, parseFrontMatterEntry, parseFrontMatterStringArray, parseFrontMatterAliases } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
 import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
 import { RegionManager } from "./dom_manager/regional_managers/regionManager";
 import { RegionManagerContainer } from "./dom_manager/regional_managers/regionManagerContainer";
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObject';
-import { fileStillInView, getFileLeaf, getLeafSourceMode, getUID } from './utilities/utils';
+import { fileStillInView, getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
-import { parsePandocSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
+import { parseColumnSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
 import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
+import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSettings';
 
 interface MCM_Settings {
     renderOnMobile: boolean;
@@ -268,10 +269,9 @@ ${editor.getDoc().getSelection()}`
             let docString = info.text;
             let docLines = docString.split("\n");
 
-            if(ctx.frontmatter && 
-                ctx.frontmatter["Multi-Column Reflow"] !== undefined) {
+            let reflowFrontmatter = isMultiColumnReflow(ctx);
+            if(reflowFrontmatter !== null) {
  
-                console.log(ctx.frontmatter["Multi-Column Reflow"]);
                 this.renderDocReflow(el, ctx, sourcePath, fileDOMManager, docString, info);
                 return;
             }
@@ -595,6 +595,10 @@ ${editor.getDoc().getSelection()}`
 
             setupStartTag(parentEl, ctx, fileDOMManager, docString, "Multi-Column Reflow Region");
             regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+
+            let settings = getMultiColumnSettingsFromFrontmatter(ctx);
+            regionalContainer.setRegionParsedSettings(settings);
+
             return;
         }
 
@@ -935,4 +939,58 @@ function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileD
     ctx.addChild(elementMarkdownRenderer);
 
     return regionManager
+}
+
+const FRONTMATTER_REGEX: RegExp[] =
+[
+/Multi-?Column *Reflow/i
+]
+function isMultiColumnReflow(ctx: MarkdownPostProcessorContext): boolean {
+
+    if(ctx.frontmatter === null) {
+        return false;
+    }
+
+    for(let regex of FRONTMATTER_REGEX) {
+
+        let frontmatterReflowData = parseFrontMatterEntry(ctx.frontmatter, regex);
+        if(frontmatterReflowData !== null) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function getMultiColumnSettingsFromFrontmatter(ctx: MarkdownPostProcessorContext): MultiColumnSettings {
+    if(ctx.frontmatter === null) {
+        return getDefaultMultiColumnSettings()
+    }
+
+    for(let regex of FRONTMATTER_REGEX) {
+
+        let frontmatterReflowData = parseFrontMatterEntry(ctx.frontmatter, regex);
+        if(frontmatterReflowData !== null &&
+           Array.isArray(frontmatterReflowData)) {
+
+            return parseFrontmatterSettings(frontmatterReflowData);
+        }
+    }
+
+    return getDefaultMultiColumnSettings()
+}
+
+function parseFrontmatterSettings(frontmatterReflowData: any[]): MultiColumnSettings {
+
+    let str = "";
+    for(let obj of frontmatterReflowData) {
+
+        let [key, value] = Object.entries(obj)[0];
+        str += `${key}: ${value}\n`;
+    }
+
+    let settings = parseColumnSettings(str);
+    settings.autoLayout = true;
+
+
+    return settings;
 }

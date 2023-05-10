@@ -37,6 +37,11 @@ export class RegionManagerContainer {
 
             regionalSettings = parseSingleColumnSettings(settingsText, regionalSettings);
         }
+        return this.setRegionParsedSettings(regionalSettings);
+    }
+
+    public setRegionParsedSettings(regionalSettings: MultiColumnSettings): RegionManager {
+
         this.region.setRegionalSettings(regionalSettings);
 
         if (regionalSettings.numberOfColumns === 1) {
