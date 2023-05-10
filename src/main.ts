@@ -603,38 +603,15 @@ ${editor.getDoc().getSelection()}`
         }
 
         let docLines = docString.split("\n");
-        
         let relativeTexts: ElementRelativeLocationData = extractElementRelativeLocationData(docLines, info);
-        console.log("Got:", relativeTexts);
+        relativeTexts.linesBelowArray =  multiColumnParser.getEndBlockBelow(relativeTexts.linesBelowArray);
 
-        /**
-         * Check if any of the lines above us contain a start block, and if
-         * so get the lines from our current element to the start block.
-         */
         let startBockAbove: multiColumnParser.StartTagData = {
             linesAboveArray: relativeTexts.linesAboveArray,
             startBlockKey: "Multi-Column Reflow Region",
             startBlockType: "DEPRECIATED"
         }
 
-        /**
-         * We now know we're within a multi-column region, so we update our
-         * list of lines above to just be the items within this region.
-         */
-        relativeTexts.linesAboveArray = startBockAbove.linesAboveArray;
-
-        /**
-         * To make sure we're placing the item in the right location (and 
-         * overwrite elements that are now gone) we now want all of the
-         * lines after this element up to the end tag.
-         */
-        relativeTexts.linesBelowArray =  multiColumnParser.getEndBlockBelow(relativeTexts.linesBelowArray);
-
-        /**
-         * Now we take the lines above our current element up until the
-         * start region tag and render that into an HTML element. We will 
-         * use these elements to determine where to place our current element.
-         */
         this.appendToRegionalManager(el, regionalContainer, ctx, relativeTexts, sourcePath, startBockAbove, (domObj: DOMObject) => {
             onUnloadElement(domObj, regionalContainer);
         });
