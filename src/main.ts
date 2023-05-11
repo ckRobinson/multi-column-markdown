@@ -270,7 +270,7 @@ ${editor.getDoc().getSelection()}`
             let docLines = docString.split("\n");
 
             let reflowFrontmatter = isMultiColumnReflow(ctx);
-            if(reflowFrontmatter !== null) {
+            if(reflowFrontmatter === true) {
  
                 this.renderDocReflow(el, ctx, sourcePath, fileDOMManager, docString, info);
                 return;
