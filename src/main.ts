@@ -596,6 +596,12 @@ ${editor.getDoc().getSelection()}`
             setupStartTag(parentEl, ctx, fileDOMManager, docString, "Multi-Column Reflow Region");
             regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
             let settings = getMultiColumnSettingsFromFrontmatter(ctx);
+            
+            let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
+            if(leaf) {
+                let clientHeight = leaf.view.containerEl.clientHeight
+                settings.columnHeight = `${clientHeight}px`;
+            }
             regionalContainer.setRegionParsedSettings(settings);
             
             // Append all items to region.
@@ -632,6 +638,12 @@ ${editor.getDoc().getSelection()}`
             regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
 
             let settings = getMultiColumnSettingsFromFrontmatter(ctx);
+
+            let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
+            if(leaf) {
+                let clientHeight = leaf.view.containerEl.clientHeight
+                settings.columnHeight = `${clientHeight}px`;
+            }
             regionalContainer.setRegionParsedSettings(settings);
 
             return;
