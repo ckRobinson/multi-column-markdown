@@ -81,125 +81,125 @@ export class ReflowRegionManager extends RegionManager {
 
     private appendElementsToColumns(regionElements: DOMObject[], columnContentDivs: HTMLDivElement[], settings: MultiColumnSettings) {
 
-            let maxColumnContentHeight = settings.columnHeight.sizeValue
-            for(let i = 0; i < columnContentDivs.length; i++) {
-                for (let j = columnContentDivs[i].children.length - 1; j >= 0; j--) {
-                    columnContentDivs[i].children[j].detach();
-                }
+        let maxColumnContentHeight = settings.columnHeight.sizeValue
+        for(let i = 0; i < columnContentDivs.length; i++) {
+            for (let j = columnContentDivs[i].children.length - 1; j >= 0; j--) {
+                columnContentDivs[i].children[j].detach();
             }
+        }
 
-            let columnIndex = 0;
-            let currentColumnHeight = 0;
-            function checkShouldSwitchColumns(nextElementHeight: number) {
-    
-                if (currentColumnHeight + nextElementHeight > maxColumnContentHeight &&
-                    (columnIndex + 1) < settings.numberOfColumns) {
-    
-                    columnIndex++;
-                    currentColumnHeight = 0;
-                }
+        let columnIndex = 0;
+        let currentColumnHeight = 0;
+        function checkShouldSwitchColumns(nextElementHeight: number) {
+
+            if (currentColumnHeight + nextElementHeight > maxColumnContentHeight &&
+                (columnIndex + 1) < settings.numberOfColumns) {
+
+                columnIndex++;
+                currentColumnHeight = 0;
             }
+        }
 
-            for (let i = 0; i < regionElements.length; i++) {
+        for (let i = 0; i < regionElements.length; i++) {
 
-                if (regionElements[i].tag === DOMObjectTag.none ||
-                    regionElements[i].tag === DOMObjectTag.columnBreak) {
-    
-                    /**
-                     * Here we check if we need to swap to the next column for the current element.
-                     * If the user wants to keep headings with the content below it we also make sure
-                     * that the last item in a column is not a header element by using the header and
-                     * the next element's height as the height value. 
-                     */
-                    if(hasHeader(regionElements[i].originalElement) === true) { // TODO: Add this as selectable option.
-    
-                        let headerAndNextElementHeight = regionElements[i].elementRenderedHeight;
-                        if(i < regionElements.length - 1) {
-    
-                            headerAndNextElementHeight += regionElements[i + 1].elementRenderedHeight;
-                        }
-    
-                        checkShouldSwitchColumns(headerAndNextElementHeight);
-                    }
-                    else {
-    
-                        checkShouldSwitchColumns(regionElements[i].elementRenderedHeight);
-                    }
-                    currentColumnHeight += regionElements[i].elementRenderedHeight
-    
-    
-                    /**
-                     * We store the elements in a wrapper container until we determine if we want to 
-                     * use the original element or a clone of the element. This helps us by allowing 
-                     * us to create a visual only clone while the update loop moves the original element 
-                     * into the columns.
-                     */
-                    let element = createDiv({
-                        cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
-                    });
-                    regionElements[i].elementContainer = element;
-    
-                    if(columnOverflowState(columnIndex, settings) === ContentOverflowType.hidden) {
-                        element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden_X)
-                    }
-                    else {
-                        element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_X)
-                    }
-                    
-                    let alignment = columnAlignmentState(columnIndex, settings);
-                    if(alignment === AlignmentType.center) {
-                        element.addClass(MultiColumnLayoutCSS.AlignmentCenter)
-                    }
-                    else if (alignment === AlignmentType.right) {
-                        element.addClass(MultiColumnLayoutCSS.AlignmentRight)
-                    }
-                    else {
-                        element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
+            if (regionElements[i].tag === DOMObjectTag.none ||
+                regionElements[i].tag === DOMObjectTag.columnBreak) {
+
+                /**
+                 * Here we check if we need to swap to the next column for the current element.
+                 * If the user wants to keep headings with the content below it we also make sure
+                 * that the last item in a column is not a header element by using the header and
+                 * the next element's height as the height value. 
+                 */
+                if(hasHeader(regionElements[i].originalElement) === true) { // TODO: Add this as selectable option.
+
+                    let headerAndNextElementHeight = regionElements[i].elementRenderedHeight;
+                    if(i < regionElements.length - 1) {
+
+                        headerAndNextElementHeight += regionElements[i + 1].elementRenderedHeight;
                     }
 
-                    let clonedElement = regionElements[i].clonedElement;
-                    if(regionElements[i].clonedElement === null) {
-
-                        clonedElement = regionElements[i].originalElement.cloneNode(true) as HTMLDivElement;
-                        let headingCollapseElement = getHeadingCollapseElement(clonedElement);
-                        if(headingCollapseElement !== null) {
-                            // This removes the collapse arrow from the view if it exists.
-                            headingCollapseElement.detach();
-                        }
-        
-                        regionElements[i].clonedElement = clonedElement;
-                    }
-                    element.appendChild(clonedElement);
-    
-                    if (regionElements[i] instanceof TaskListDOMObject) {
-    
-                        this.fixClonedCheckListButtons(regionElements[i] as TaskListDOMObject, true);
-                    }
-    
-                    if (element !== null && 
-                        columnContentDivs[columnIndex] && 
-                        regionElements[i].tag !== DOMObjectTag.columnBreak) {
-    
-                        columnContentDivs[columnIndex].appendChild(element);
-                        regionElements[i].elementRenderedHeight = element.clientHeight;
-                    }
-    
-                    /**
-                     * If the tag is a column break we update the column index after
-                     * appending the item to the column div. This keeps the main DOM
-                     * cleaner by removing other items and placing them all within
-                     * a region container.
-                     * 
-                     * Removing the end column tag as an option for now.
-                     */
-                    // if (regionElements[i].tag === DOMObjectTag.columnBreak &&
-                    //    (columnIndex + 1) < settings.numberOfColumns) {
-    
-                    //     columnIndex++;
-                    //     currentColumnHeight = 0;
-                    // }
+                    checkShouldSwitchColumns(headerAndNextElementHeight);
                 }
+                else {
+
+                    checkShouldSwitchColumns(regionElements[i].elementRenderedHeight);
+                }
+                currentColumnHeight += regionElements[i].elementRenderedHeight
+
+
+                /**
+                 * We store the elements in a wrapper container until we determine if we want to 
+                 * use the original element or a clone of the element. This helps us by allowing 
+                 * us to create a visual only clone while the update loop moves the original element 
+                 * into the columns.
+                 */
+                let element = createDiv({
+                    cls: MultiColumnLayoutCSS.ColumnDualElementContainer,
+                });
+                regionElements[i].elementContainer = element;
+
+                if(columnOverflowState(columnIndex, settings) === ContentOverflowType.hidden) {
+                    element.addClass(MultiColumnLayoutCSS.ContentOverflowHidden_X)
+                }
+                else {
+                    element.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_X)
+                }
+                
+                let alignment = columnAlignmentState(columnIndex, settings);
+                if(alignment === AlignmentType.center) {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentCenter)
+                }
+                else if (alignment === AlignmentType.right) {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentRight)
+                }
+                else {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
+                }
+
+                let clonedElement = regionElements[i].clonedElement;
+                if(regionElements[i].clonedElement === null) {
+
+                    clonedElement = regionElements[i].originalElement.cloneNode(true) as HTMLDivElement;
+                    let headingCollapseElement = getHeadingCollapseElement(clonedElement);
+                    if(headingCollapseElement !== null) {
+                        // This removes the collapse arrow from the view if it exists.
+                        headingCollapseElement.detach();
+                    }
+    
+                    regionElements[i].clonedElement = clonedElement;
+                }
+                element.appendChild(clonedElement);
+
+                if (regionElements[i] instanceof TaskListDOMObject) {
+
+                    this.fixClonedCheckListButtons(regionElements[i] as TaskListDOMObject, true);
+                }
+
+                if (element !== null && 
+                    columnContentDivs[columnIndex] && 
+                    regionElements[i].tag !== DOMObjectTag.columnBreak) {
+
+                    columnContentDivs[columnIndex].appendChild(element);
+                    regionElements[i].elementRenderedHeight = element.clientHeight;
+                }
+
+                /**
+                 * If the tag is a column break we update the column index after
+                 * appending the item to the column div. This keeps the main DOM
+                 * cleaner by removing other items and placing them all within
+                 * a region container.
+                 * 
+                 * Removing the end column tag as an option for now.
+                 */
+                // if (regionElements[i].tag === DOMObjectTag.columnBreak &&
+                //    (columnIndex + 1) < settings.numberOfColumns) {
+
+                //     columnIndex++;
+                //     currentColumnHeight = 0;
+                // }
             }
+        }
     }
 }
 
