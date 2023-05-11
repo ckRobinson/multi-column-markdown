@@ -1040,6 +1040,7 @@ function parseFrontmatterSettings(frontmatterReflowData: any[]): MultiColumnSett
 
     let settings = parseColumnSettings(str);
     settings.autoLayout = true;
+    settings.fullDocReflow = true;
 
 
     return settings;
