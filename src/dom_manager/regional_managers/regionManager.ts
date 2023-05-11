@@ -567,9 +567,9 @@ export abstract class RegionManager {
                 multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowHidden_Y);
                 multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_Y);
                 columnContentDivs.forEach((column) => {
-                    column.style.height = settings.columnHeight;
-                    column.style.maxHeight = settings.columnHeight;
-                    column.style.minHeight = settings.columnHeight;
+                    column.style.height = settings.columnHeight.toString();
+                    column.style.maxHeight = settings.columnHeight.toString();
+                    column.style.minHeight = settings.columnHeight.toString();
                 });
             }
         }

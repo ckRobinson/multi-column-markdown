@@ -20,6 +20,7 @@ import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
 import { parseColumnSettings, parsePandocSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
 import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
 import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSettings';
+import { HTMLSizing } from './utilities/interfaces';
 
 interface MCM_Settings {
     renderOnMobile: boolean;
@@ -600,7 +601,7 @@ ${editor.getDoc().getSelection()}`
             let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
             if(leaf) {
                 let clientHeight = leaf.view.containerEl.clientHeight
-                settings.columnHeight = `${clientHeight}px`;
+                settings.columnHeight = HTMLSizing.create().setWidth(clientHeight).setUnits("px");
             }
             regionalContainer.setRegionParsedSettings(settings);
             
@@ -643,7 +644,7 @@ ${editor.getDoc().getSelection()}`
             let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
             if(leaf) {
                 let clientHeight = leaf.view.containerEl.clientHeight
-                settings.columnHeight = `${clientHeight}px`;
+                settings.columnHeight = HTMLSizing.create().setWidth(clientHeight).setUnits("px");
             }
             regionalContainer.setRegionParsedSettings(settings);
 

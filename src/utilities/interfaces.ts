@@ -1,9 +1,15 @@
 export class HTMLSizing {
-    private sizeWidth: number = 0;
+    private _sizeValue: number = 0;
+    public get sizeValue(): number {
+        return this._sizeValue;
+    }
+    public set sizeValue(value: number) {
+        this._sizeValue = value;
+    }
     private widthSet: boolean = false;
     private sizeUnits: string = "px";
     private constructor(value: number, units: string) {
-        this.sizeWidth = value;
+        this.sizeValue = value;
         this.sizeUnits = units;
     }
     public setWidth(value: number): HTMLSizing {
@@ -11,10 +17,10 @@ export class HTMLSizing {
         return new HTMLSizing(value, this.sizeUnits);
     }
     public setUnits(units: string): HTMLSizing {
-        return new HTMLSizing(this.sizeWidth, units);
+        return new HTMLSizing(this.sizeValue, units);
     }
     public toString(): string {
-        return `${this.sizeWidth}${this.sizeUnits}`;
+        return `${this.sizeValue}${this.sizeUnits}`;
     }
 
     public static create(): HTMLSizing {

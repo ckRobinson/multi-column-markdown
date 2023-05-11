@@ -78,7 +78,7 @@ export type MultiColumnSettings = {
     columnSpacing: string[],
     contentOverflow: ContentOverflowType[],
     alignment: AlignmentType[],
-    columnHeight: string | null,
+    columnHeight: HTMLSizing | null,
     fullDocReflow: boolean
 }
 
