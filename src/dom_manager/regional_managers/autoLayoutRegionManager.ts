@@ -21,10 +21,12 @@ export class AutoLayoutRegionManager extends RegionManager {
 
     private columnParent: HTMLDivElement;
     private columnDivs: HTMLDivElement[];
+    private docReflow: boolean;
 
     constructor(data: RegionManagerData, balanceIterations: number = 5) {
         super(data);
         this.autoLayoutBalanceIterations = balanceIterations;
+        this.docReflow = data.regionalSettings.fullDocReflow;
     }
 
     public renderRegionElementsToScreen(): void {
@@ -274,6 +276,11 @@ export class AutoLayoutRegionManager extends RegionManager {
     }
 
     public updateRenderedMarkdown() {
+
+        if(this.docReflow === true) {
+            super.updateRenderedMarkdown();
+            return;
+        }
 
         for (let i = 0; i < this.domList.length; i++) {
 
