@@ -604,22 +604,23 @@ ${editor.getDoc().getSelection()}`
             }
             regionalContainer.setRegionParsedSettings(settings);
             
-            // Append all items to region.
-            let regionalManager = regionalContainer.getRegion();
-            let listLength = domList.length;
-            for(let i = 0; i < listLength; i++) {
-
-                let domObj = domList.shift()
-                regionalManager.addObjectAtIndex(domObj, i);
-
-                setElementCSS(domObj, domObj.originalElement);
-            }
-
             // Re-Render after small delay.
             // Delay is so the auto layout check can properly read the client height.
             async function delayRender() {
 
                 setTimeout(()=> {                    
+
+                    // Append all items to region.
+                    let regionalManager = regionalContainer.getRegion();
+                    let listLength = domList.length;
+                    for(let i = 0; i < listLength; i++) {
+
+                        let domObj = domList.shift()
+                        regionalManager.addObjectAtIndex(domObj, i);
+
+                        setElementCSS(domObj, domObj.originalElement);
+                    }
+
                     regionalContainer.getRegion().renderRegionElementsToScreen();
                 }, 50)
             }
