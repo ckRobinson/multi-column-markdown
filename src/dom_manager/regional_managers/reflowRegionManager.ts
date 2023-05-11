@@ -8,13 +8,6 @@ import { RegionManagerData } from './regionManagerContainer';
 
 export class ReflowRegionManager extends RegionManager {
 
-    private balanceIterations: number = 5;
-
-    private previousColumnHeights: number[] = []
-
-    private columnParent: HTMLDivElement;
-    private columnDivs: HTMLDivElement[];
-
     public renderRegionElementsToScreen(): void {
 
          this.renderColumnMarkdown(this.regionParent, this.domList, this.regionalSettings);
@@ -40,32 +33,14 @@ export class ReflowRegionManager extends RegionManager {
      */
     private renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
-        let multiColumnParent = createDiv({
-            cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} \
-                  ${MultiColumnLayoutCSS.ContentOverflowAutoScroll_X} \
-                  ${MultiColumnLayoutCSS.ContentOverflowHidden_Y};
-                  `
+        let verticalColumnParent = createDiv({
+            cls: ``
         });
-        this.columnParent = multiColumnParent;
 
         /**
          * Pass our parent div and settings to parser to create the required
          * column divs as children of the parent.
          */
-        this.columnDivs = this.getColumnContentDivs(settings, multiColumnParent);
-
-        if (settings.drawShadow === true) {
-            multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
-        }
-        for (let i = 0; i < this.columnDivs.length; i++) {
-            if(shouldDrawColumnBorder(i, settings) === true) {
-                this.columnDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
-            }
-
-            if (settings.drawShadow === true) {
-                this.columnDivs[i].addClass(MultiColumnStyleCSS.ColumnShadow);
-            }
-        }
 
         // Remove every other child from the parent so 
         // we dont end up with multiple sets of data. This should
@@ -74,22 +49,45 @@ export class ReflowRegionManager extends RegionManager {
         for (let i = parentElement.children.length - 1; i >= 0; i--) {
             parentElement.children[i].detach();
         }
-        parentElement.appendChild(multiColumnParent);
+        parentElement.appendChild(verticalColumnParent);
 
-        this.appendElementsToColumns(regionElements, this.columnDivs, settings);
+        this.appendElementsToColumns(verticalColumnParent, regionElements, settings);
     }
 
-    private appendElementsToColumns(regionElements: DOMObject[], columnContentDivs: HTMLDivElement[], settings: MultiColumnSettings) {
+    private getFormattedColumnDivs(settings: MultiColumnSettings, verticalColumnParent: HTMLDivElement) {
+        
+        let multiColumnParent = verticalColumnParent.createDiv({
+            cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} \
+                  ${MultiColumnLayoutCSS.ContentOverflowAutoScroll_X} \
+                  ${MultiColumnLayoutCSS.ContentOverflowHidden_Y};
+                  `
+        });
 
-        let maxColumnContentHeight = settings.columnHeight.sizeValue
-        for(let i = 0; i < columnContentDivs.length; i++) {
-            for (let j = columnContentDivs[i].children.length - 1; j >= 0; j--) {
-                columnContentDivs[i].children[j].detach();
+        let columnDivs = this.getColumnContentDivs(settings, multiColumnParent);
+        if (settings.drawShadow === true) {
+            multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
+        }
+        for (let i = 0; i < columnDivs.length; i++) {
+            if (shouldDrawColumnBorder(i, settings) === true) {
+                columnDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
+            }
+
+            if (settings.drawShadow === true) {
+                columnDivs[i].addClass(MultiColumnStyleCSS.ColumnShadow);
             }
         }
 
+        return columnDivs
+    }
+
+    private appendElementsToColumns(verticalColumnParent: HTMLDivElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
+
+        let maxColumnContentHeight = settings.columnHeight.sizeValue
+
         let columnIndex = 0;
         let currentColumnHeight = 0;
+        let columns = this.getFormattedColumnDivs(settings, verticalColumnParent);
+
         function checkShouldSwitchColumns(nextElementHeight: number) {
 
             if (currentColumnHeight + nextElementHeight > maxColumnContentHeight &&
@@ -177,10 +175,10 @@ export class ReflowRegionManager extends RegionManager {
                 }
 
                 if (element !== null && 
-                    columnContentDivs[columnIndex] && 
+                    columns[columnIndex] && 
                     regionElements[i].tag !== DOMObjectTag.columnBreak) {
 
-                    columnContentDivs[columnIndex].appendChild(element);
+                    columns[columnIndex].appendChild(element);
                     regionElements[i].elementRenderedHeight = element.clientHeight;
                 }
 
