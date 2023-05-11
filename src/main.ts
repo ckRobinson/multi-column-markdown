@@ -13,11 +13,11 @@ import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionMan
 import { RegionManager } from "./dom_manager/regional_managers/regionManager";
 import { RegionManagerContainer } from "./dom_manager/regional_managers/regionManagerContainer";
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObject';
-import { fileStillInView, getUID } from './utilities/utils';
+import { fileStillInView, getFileLeaf, getLeafSourceMode, getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
-import { parseColumnSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
+import { parseColumnSettings, parsePandocSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
 import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
 import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSettings';
 
@@ -407,32 +407,26 @@ ${editor.getDoc().getSelection()}`
             parentStartBlock.startBlockType !== "PADOC") {
 
             currentObject.elementType = ElementRenderType.unRendered;
-            el.addClass(MultiColumnStyleCSS.RegionEndTag);
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
         }
         if (multiColumnParser.isValidPandocEndTag(linesAboveArray, el.textContent) === true &&
             parentStartBlock.startBlockType === "PADOC") {
 
             currentObject.elementType = ElementRenderType.unRendered;
-            el.addClass(MultiColumnStyleCSS.RegionEndTag);
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
         }
         else if (multiColumnParser.containsColEndTag(textOfElement) === true) {
 
             currentObject.elementType = ElementRenderType.unRendered;
-            el.addClass(MultiColumnStyleCSS.ColumnEndTag);
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
         }
         else if (multiColumnParser.containsColSettingsTag(textOfElement) === true) {
 
             currentObject.elementType = ElementRenderType.unRendered;
-            el.addClass(MultiColumnStyleCSS.RegionSettings);
             regionalManager = regionalContainer.setRegionSettings(textOfElement);
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.regionSettings);
         }
-        else {
-            el.addClass(MultiColumnStyleCSS.RegionContent);
-        }
+        setElementCSS(currentObject, el);
 
         regionalManager.renderRegionElementsToScreen();
         return regionalManager;
@@ -583,8 +577,49 @@ ${editor.getDoc().getSelection()}`
     renderDocReflow(el: HTMLElement, ctx: MarkdownPostProcessorContext, sourcePath: string, fileDOMManager: FileDOMManager, docString: string, info: MarkdownSectionInformation) {
 
         let regionalContainer: RegionManagerContainer = null;
-        if(fileDOMManager.checkKeyExists("Multi-Column Reflow Region") === true) {
+        if(fileDOMManager.checkKeyExists("Multi-Column Reflow Region") === true &&
+           el.getElementsByClassName("frontmatter").length === 0) {
             regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+        }
+        else if(fileDOMManager.checkKeyExists("Multi-Column Reflow Region") === true &&
+                el.getElementsByClassName("frontmatter").length === 1) {
+
+            let parentEl = createDiv()
+            el.appendChild(parentEl);
+
+            // Get current data, remove old region.
+            regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+            let domList = regionalContainer.getRegion().getRegionData().domList.slice();
+            fileDOMManager.removeRegion("Multi-Column Reflow Region");
+
+            // Create new region.
+            setupStartTag(parentEl, ctx, fileDOMManager, docString, "Multi-Column Reflow Region");
+            regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+            let settings = getMultiColumnSettingsFromFrontmatter(ctx);
+            regionalContainer.setRegionParsedSettings(settings);
+            
+            // Append all items to region.
+            let regionalManager = regionalContainer.getRegion();
+            let listLength = domList.length;
+            for(let i = 0; i < listLength; i++) {
+
+                let domObj = domList.shift()
+                regionalManager.addObjectAtIndex(domObj, i);
+
+                setElementCSS(domObj, domObj.originalElement);
+            }
+
+            // Re-Render after small delay.
+            // Delay is so the auto layout check can properly read the client height.
+            async function delayRender() {
+
+                setTimeout(()=> {                    
+                    regionalContainer.getRegion().renderRegionElementsToScreen();
+                }, 50)
+            }
+            delayRender();
+
+            return;
         }
         else {
 
@@ -781,6 +816,21 @@ ${editor.getDoc().getSelection()}`
         return false;
     }
     //#endregion PDF Exporting.
+}
+
+function setElementCSS(currentObject: DOMObject, el: HTMLElement) {
+    if (currentObject.tag === DOMObjectTag.endRegion) {
+        el.addClass(MultiColumnStyleCSS.RegionEndTag);
+    }
+    else if (currentObject.tag === DOMObjectTag.columnBreak) {
+        el.addClass(MultiColumnStyleCSS.ColumnEndTag);
+    }
+    else if (currentObject.tag === DOMObjectTag.regionSettings) {
+        el.addClass(MultiColumnStyleCSS.RegionSettings);
+    }
+    else {
+        el.addClass(MultiColumnStyleCSS.RegionContent);
+    }
 }
 
 function onUnloadElement(currentObject: DOMObject, regionalContainer: RegionManagerContainer): void {
