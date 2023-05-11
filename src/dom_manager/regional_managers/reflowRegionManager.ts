@@ -83,24 +83,7 @@ export class ReflowRegionManager extends RegionManager {
 
         function balanceElements() {
 
-            let totalHeight = regionElements.map((el: DOMObject, index: number) => { 
-
-                // We only want to attempt to update the elementRenderedHeight if it is 0 and if it is not an unrendered element such as a endregion tag.
-                if(el.elementRenderedHeight === 0 &&
-                    el.tag !== DOMObjectTag.columnBreak &&
-                    el.tag !== DOMObjectTag.endRegion &&
-                    el.tag !== DOMObjectTag.regionSettings &&
-                    el.tag !== DOMObjectTag.startRegion) {
-    
-                    // Add element to rendered div so we can extract the rendered height.
-                    columnContentDivs[0].appendChild(el.originalElement)
-                    el.elementRenderedHeight = el.originalElement.clientHeight
-                    columnContentDivs[0].removeChild(el.originalElement)
-                }
-    
-                return el.elementRenderedHeight 
-            }).reduce((prev: number, curr: number) => { return prev + curr }, 0);
-            let maxColumnContentHeight = Math.trunc(totalHeight / settings.numberOfColumns);
+            let maxColumnContentHeight = Math.trunc(settings.columnHeight.sizeValue / settings.numberOfColumns);
 
             for(let i = 0; i < columnContentDivs.length; i++) {
                 for (let j = columnContentDivs[i].children.length - 1; j >= 0; j--) {
