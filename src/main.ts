@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext, MarkdownSectionInformation, parseFrontMatterEntry, parseFrontMatterStringArray, parseFrontMatterAliases } from 'obsidian';
+import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext, MarkdownSectionInformation, parseFrontMatterEntry, Workspace, WorkspaceLeaf } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
 import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
@@ -1042,6 +1042,58 @@ function parseFrontmatterSettings(frontmatterReflowData: any[]): MultiColumnSett
     settings.autoLayout = true;
     settings.fullDocReflow = true;
 
-
     return settings;
+}
+
+function getLeafFromFilePath(workspace: Workspace, filePath: string): WorkspaceLeaf | null {
+
+    function checkState(state: any) {
+
+        if(state["type"] === undefined ||
+           state["type"] !== "markdown") {
+            return false;
+        }
+
+        if(state["state"] === undefined) {
+            return false
+        }
+
+        if(state["state"]["file"] === undefined) {
+            return false;
+        }
+
+        let stateFilePath = state["state"]["file"];
+        return stateFilePath === filePath;
+    }
+
+    let entries = Object.entries(workspace.getLayout());
+    let items = Array.from(entries).map((val) => {
+        return val[1]
+    })
+    while(items.length > 0) {
+
+        let entryObj = items.shift() as any;
+        if(entryObj["id"] !== undefined && entryObj["type"] !== undefined) {
+
+            if(entryObj["type"] === "split" ||
+               entryObj["type"] === "tabs" ) {
+                items = items.concat(entryObj['children']);
+                continue;
+            }
+
+            if(entryObj["type"] === "leaf" && 
+               entryObj["id"] !== undefined &&
+               entryObj["state"] !== undefined) {
+
+                let id = entryObj["id"];
+                let state = entryObj["state"];
+
+                let valid = checkState(state);
+                if(valid) {
+                    return workspace.getLeafById(id);
+                }
+            }
+        }
+    }
+    return null;
 }
