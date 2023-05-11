@@ -81,10 +81,7 @@ export class ReflowRegionManager extends RegionManager {
 
     private appendElementsToColumns(regionElements: DOMObject[], columnContentDivs: HTMLDivElement[], settings: MultiColumnSettings) {
 
-        function balanceElements() {
-
-            let maxColumnContentHeight = Math.trunc(settings.columnHeight.sizeValue / settings.numberOfColumns);
-
+            let maxColumnContentHeight = settings.columnHeight.sizeValue
             for(let i = 0; i < columnContentDivs.length; i++) {
                 for (let j = columnContentDivs[i].children.length - 1; j >= 0; j--) {
                     columnContentDivs[i].children[j].detach();
@@ -203,45 +200,6 @@ export class ReflowRegionManager extends RegionManager {
                     // }
                 }
             }
-        }
-
-        /**
-         * Attempt to balanced the elements. We need to iterate over the elements multiple times because
-         * our initial balance estimate may not be perfectly balanced due to different column widths causing 
-         * elements within them to be of different heights. This can cause the elements to jump around on 
-         * subsiquent update loops which is not ideal. Here we render the elements to the screen and update 
-         * their height after being rendered into the estimated position. 
-         * 
-         * Once everything is rendered we check all of the column heights against our last iteration and 
-         * if nothing has changed we know we are balanced.
-         * 
-         * There is probably a better way of accomplishing this task but this works for the time being.
-         */
-        for(let i = 0; i < this.balanceIterations; i++) {
-            
-            balanceElements()
-
-            let balanced = true;
-            for(let j = 0; j < columnContentDivs.length; j++) {
-
-                // If the column heights are undefined we set default to zero so not to encounter an error.
-                if(!this.previousColumnHeights[j]) {
-                    this.previousColumnHeights.push(0)
-                }
-
-                // if this render height is not the same as the previous height we are still balancing.
-                if(this.previousColumnHeights[j] !== columnContentDivs[j].clientHeight) {
-                    this.previousColumnHeights[j] = columnContentDivs[j].clientHeight
-                    balanced = false
-                }
-            }
-
-            // if we made it out of the loop and all of the columns are the same height as last update
-            // we're balanced so we can break out of the loop.
-            if(balanced === true) {
-                break;
-            }
-        }
     }
 }
 
