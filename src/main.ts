@@ -1043,8 +1043,12 @@ function isMultiColumnReflow(ctx: MarkdownPostProcessorContext): boolean {
 }
 
 function getMultiColumnSettingsFromFrontmatter(ctx: MarkdownPostProcessorContext): MultiColumnSettings {
-    if(ctx.frontmatter === null) {
-        return getDefaultMultiColumnSettings()
+
+    let settings = getDefaultMultiColumnSettings();
+    settings.fullDocReflow = true;
+    if(ctx.frontmatter === null ||
+       ctx.frontmatter === undefined) {
+        return settings;
     }
 
     for(let regex of FRONTMATTER_REGEX) {
@@ -1052,12 +1056,13 @@ function getMultiColumnSettingsFromFrontmatter(ctx: MarkdownPostProcessorContext
         let frontmatterReflowData = parseFrontMatterEntry(ctx.frontmatter, regex);
         if(frontmatterReflowData !== null &&
            Array.isArray(frontmatterReflowData)) {
-
-            return parseFrontmatterSettings(frontmatterReflowData);
+            settings = parseFrontmatterSettings(frontmatterReflowData);
+            settings.fullDocReflow = true;
+            break;
         }
     }
 
-    return getDefaultMultiColumnSettings()
+    return settings;
 }
 
 function parseFrontmatterSettings(frontmatterReflowData: any[]): MultiColumnSettings {
@@ -1070,7 +1075,6 @@ function parseFrontmatterSettings(frontmatterReflowData: any[]): MultiColumnSett
     }
 
     let settings = parseColumnSettings(str);
-    settings.fullDocReflow = true;
 
     return settings;
 }
