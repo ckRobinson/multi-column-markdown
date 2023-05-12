@@ -601,7 +601,7 @@ ${editor.getDoc().getSelection()}`
             
             let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
             if(leaf) {
-                let clientHeight = leaf.view.containerEl.clientHeight
+                let clientHeight = getContentHeightFromLeaf(leaf);
                 settings.columnHeight = HTMLSizing.create().setWidth(clientHeight).setUnits("px");
             }
             regionalContainer.setRegionParsedSettings(settings);
@@ -641,25 +641,6 @@ ${editor.getDoc().getSelection()}`
             regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
 
             let settings = getMultiColumnSettingsFromFrontmatter(ctx);
-
-            function getContentHeightFromLeaf(leaf: WorkspaceLeaf): number {
-
-                let contentEl = (leaf.view as any)["contentEl"] as HTMLElement
-                if(contentEl !== undefined &&
-                   contentEl.clientHeight > 0) {
-                    return contentEl.clientHeight;
-                }
-
-                let clientHeight = leaf.view.containerEl.clientHeight;
-                let titleContainer = (leaf.view as any)["titleContainerEl"] as HTMLElement 
-                if(titleContainer !== undefined &&
-                   titleContainer.clientHeight > 0) {
-                    return clientHeight - titleContainer.clientHeight;
-                }
-
-                return clientHeight - 50;
-            }
-
             let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
             if(leaf) {
                 let clientHeight = getContentHeightFromLeaf(leaf);
@@ -1128,4 +1109,22 @@ function getLeafFromFilePath(workspace: Workspace, filePath: string): WorkspaceL
         }
     }
     return null;
+}
+
+function getContentHeightFromLeaf(leaf: WorkspaceLeaf): number {
+
+    let contentEl = (leaf.view as any)["contentEl"] as HTMLElement
+    if(contentEl !== undefined &&
+       contentEl.clientHeight > 0) {
+        return contentEl.clientHeight;
+    }
+
+    let clientHeight = leaf.view.containerEl.clientHeight;
+    let titleContainer = (leaf.view as any)["titleContainerEl"] as HTMLElement 
+    if(titleContainer !== undefined &&
+       titleContainer.clientHeight > 0) {
+        return clientHeight - titleContainer.clientHeight;
+    }
+
+    return clientHeight - 50;
 }
