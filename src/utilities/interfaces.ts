@@ -1,3 +1,10 @@
+/**
+ * File: /src/utilities/interfaces.ts                                          *
+ * Author: Cameron Robinson                                                    *
+ *                                                                             *
+ * Copyright (c) 2023 Cameron Robinson                                         *
+ */
+
 export class HTMLSizing {
     private _sizeValue: number = 0;
     public get sizeValue(): number {
@@ -41,3 +48,29 @@ addEventListener("mousedown", () => {
 addEventListener("mouseup", () => {
 	mouseState = "up"
 })
+
+export interface StartTagRegexMatch {
+    found: boolean;
+    startPosition: number;
+    endPosition: number;
+    matchLength: number;
+    regionType: RegionType;
+}
+export function defaultStartRegionData(): StartTagRegexMatch {
+
+    return {
+        found: false,
+        startPosition: -1,
+        endPosition: -1,
+        matchLength: 0,
+        regionType: "CODEBLOCK"
+    }
+}
+
+const ALL_REGION_TYPES= [
+    "CODEBLOCK",
+    "DEPRECIATED", 
+    "PADOC"
+] as const;
+type RegionTypeTuple = typeof ALL_REGION_TYPES;
+export type RegionType = RegionTypeTuple[number];

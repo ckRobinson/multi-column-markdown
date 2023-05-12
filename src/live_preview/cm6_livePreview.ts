@@ -9,12 +9,13 @@
 import { Extension, Line, RangeSetBuilder, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
-import { PandocRegexData, StartTagRegexMatch, containsRegionStart, findEndTag, findPandoc, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
+import { containsRegionStart, findEndTag, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
+import { PandocRegexData, findPandoc, parsePandocSettings } from "src/utilities/pandocParser";
 import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
 import { editorLivePreviewField } from "obsidian";
-import { mouseState } from "src/utilities/interfaces";
+import { RegionType, StartTagRegexMatch, mouseState } from "src/utilities/interfaces";
 import { MultiColumnSettings } from "src/regionSettings";
-import { parseColumnSettings, parsePandocSettings } from "src/utilities/settingsParser";
+import { parseColumnSettings } from "src/utilities/settingsParser";
 
 let selecting = false;
 export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
@@ -260,13 +261,6 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 	},
 });
 
-const ALL_REGION_TYPES= [
-    "CODEBLOCK",
-    "DEPRECIATED", 
-    "PADOC"
-] as const;
-type RegionTypeTuple = typeof ALL_REGION_TYPES;
-export type RegionType = RegionTypeTuple[number];
 interface RegionData {
 	regionType: RegionType;
 	regionText: string;

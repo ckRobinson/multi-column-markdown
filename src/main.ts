@@ -8,16 +8,17 @@
 
 import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext, MarkdownSectionInformation, parseFrontMatterEntry, Workspace, WorkspaceLeaf } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
+import * as containsPandoc from "./utilities/pandocParser";
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
 import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
 import { RegionManager } from "./dom_manager/regional_managers/regionManager";
 import { RegionManagerContainer } from "./dom_manager/regional_managers/regionManagerContainer";
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObject';
-import { fileStillInView, getFileLeaf, getLeafSourceMode, getUID } from './utilities/utils';
+import { fileStillInView, getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
-import { parseColumnSettings, parsePandocSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
+import { parseColumnSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
 import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
 import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSettings';
 import { HTMLSizing } from './utilities/interfaces';
@@ -320,7 +321,7 @@ ${editor.getDoc().getSelection()}`
             //#endregion Depreciated Start Tag
 
             // Pandoc Start Region Tag.
-            if(multiColumnParser.containsPandocStartTag(relativeTexts.textOfElement)) {
+            if(containsPandoc.containsPandocStartTag(relativeTexts.textOfElement)) {
 
                 createPandocStartElement(el, relativeTexts.textOfElement, ctx, fileDOMManager, docString);
                 return;
@@ -410,7 +411,7 @@ ${editor.getDoc().getSelection()}`
             currentObject.elementType = ElementRenderType.unRendered;
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
         }
-        if (multiColumnParser.isValidPandocEndTag(linesAboveArray, el.textContent) === true &&
+        if (containsPandoc.isValidPandocEndTag(linesAboveArray, el.textContent) === true &&
             parentStartBlock.startBlockType === "PADOC") {
 
             currentObject.elementType = ElementRenderType.unRendered;
@@ -749,7 +750,7 @@ ${editor.getDoc().getSelection()}`
                     let regionKey = "";
 
                     let blockData = multiColumnParser.isStartTagWithID(child.textContent);
-                    let pandocData = multiColumnParser.getPandocStartData(child.textContent)
+                    let pandocData = containsPandoc.getPandocStartData(child.textContent)
                     if (blockData.isStartTag === true) {
 
                         // If an old-style start tag.
@@ -814,7 +815,7 @@ ${editor.getDoc().getSelection()}`
                 else {
 
                     if (multiColumnParser.containsEndTag(child.textContent) === true ||
-                        multiColumnParser.containsPandocEndTag(child.textContent) === true) {
+                        containsPandoc.containsPandocEndTag(child.textContent) === true) {
 
                         inBlock = false;
                     }
@@ -936,7 +937,7 @@ function createDepreciatedStartElement(el: HTMLElement, linesOfElement: string[]
 function createPandocStartElement(el: HTMLElement, textOfElement: string, ctx: MarkdownPostProcessorContext, fileDOMManager: FileDOMManager, docString: string) {
     el.children[0].detach();
 
-    let pandocData = multiColumnParser.getPandocStartData(textOfElement);
+    let pandocData = containsPandoc.getPandocStartData(textOfElement);
     let settings = pandocData.userSettings;
 
     let regionManager = setupStartTag(el, ctx, fileDOMManager, docString, settings.columnID);

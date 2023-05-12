@@ -9,8 +9,7 @@
 import { MarkdownRenderChild, MarkdownRenderer, TFile, WorkspaceLeaf } from "obsidian";
 import { WidgetType } from "@codemirror/view";
 import { getDefaultMultiColumnSettings, MultiColumnSettings } from "../regionSettings";
-import { findSettingsCodeblock, findStartCodeblock } from "../utilities/textParser";
-import { parseColumnSettings, parseSingleColumnSettings } from "../utilities/settingsParser";
+import { parseSingleColumnSettings } from "../utilities/settingsParser";
 import { StandardMultiColumnRegionManager } from "../dom_manager/regional_managers/standardMultiColumnRegionManager";
 import { RegionManagerData } from "../dom_manager/regional_managers/regionManagerContainer";
 import { getUID } from "../utilities/utils";
@@ -18,7 +17,6 @@ import { DOMObject } from "../dom_manager/domObject";
 import { RegionManager } from "../dom_manager/regional_managers/regionManager";
 import { SingleColumnRegionManager } from "../dom_manager/regional_managers/singleColumnRegionManager";
 import { AutoLayoutRegionManager } from "../dom_manager/regional_managers/autoLayoutRegionManager";
-import { RegionType } from "./cm6_livePreview";
 
 export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 

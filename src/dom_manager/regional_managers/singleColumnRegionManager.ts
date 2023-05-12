@@ -1,10 +1,16 @@
+/**
+ * File: /src/dom_manager/regional_managers/singleColumnRegionManager.ts       *
+ * Author: Cameron Robinson                                                    *
+ *                                                                             *
+ * Copyright (c) 2023 Cameron Robinson                                         *
+ */
+
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout, SingleColumnSize, ContentOverflowType, AlignmentType, columnOverflowState, columnAlignmentState, shouldDrawColumnBorder } from "../../regionSettings";
+import { MultiColumnSettings, ColumnLayout, ContentOverflowType, AlignmentType, columnOverflowState, columnAlignmentState, shouldDrawColumnBorder } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
 import { getHeadingCollapseElement } from 'src/utilities/elementRenderTypeParser';
-
 
 export class SingleColumnRegionManager extends RegionManager {
 

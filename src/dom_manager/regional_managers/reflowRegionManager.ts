@@ -1,10 +1,16 @@
+/**
+ * File: /src/dom_manager/regional_managers/reflowRegionManager.ts             *
+ * Created Date: Thursday, May 11th 2023, 9:59 pm                              *
+ * Author: Cameron Robinson                                                    *
+ *                                                                             *
+ * Copyright (c) 2023 Cameron Robinson                                         *
+ */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
 import { AlignmentType, ContentOverflowType, MultiColumnSettings, columnAlignmentState, columnOverflowState, shouldDrawColumnBorder } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { RegionManager } from './regionManager';
 import { getHeadingCollapseElement, hasHeader } from 'src/utilities/elementRenderTypeParser';
-import { RegionManagerData } from './regionManagerContainer';
 
 export class ReflowRegionManager extends RegionManager {
 

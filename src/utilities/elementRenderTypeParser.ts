@@ -1,3 +1,10 @@
+/**
+ * File: /src/utilities/elementRenderTypeParser.ts                             *
+ * Author: Cameron Robinson                                                    *
+ *                                                                             *
+ * Copyright (c) 2023 Cameron Robinson                                         *
+ */
+
 import { searchChildrenForNodeType } from "./utils";
 
 export enum ElementRenderType {
