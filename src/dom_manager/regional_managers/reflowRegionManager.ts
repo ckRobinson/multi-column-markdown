@@ -78,16 +78,23 @@ export class ReflowRegionManager extends RegionManager {
 
         let columnIndex = 0;
         let currentColumnHeight = 0;
-        let columns = this.getFormattedColumnDivs(settings, verticalColumnParent);
+
+        let colDivsCallback = (settings: MultiColumnSettings, multiColumnParent: HTMLDivElement) => {
+            return this.getColumnContentDivs(settings, multiColumnParent);
+        };
+        let columns = getFormattedColumnDivs(settings, verticalColumnParent, colDivsCallback);
 
         function checkShouldSwitchColumns(nextElementHeight: number) {
 
-            if (currentColumnHeight + nextElementHeight > maxColumnContentHeight &&
-                (columnIndex + 1) < settings.numberOfColumns) {
-
-                columnIndex++;
-                currentColumnHeight = 0;
+            if (currentColumnHeight + nextElementHeight < maxColumnContentHeight) {
+                return;
             }
+
+            if((columnIndex + 1) >= columns.length) {
+                columns = columns.concat(getFormattedColumnDivs(settings, verticalColumnParent, colDivsCallback));
+            }
+            columnIndex++;
+            currentColumnHeight = 0;
         }
 
         for (let i = 0; i < regionElements.length; i++) {
@@ -116,7 +123,6 @@ export class ReflowRegionManager extends RegionManager {
                     checkShouldSwitchColumns(regionElements[i].elementRenderedHeight);
                 }
                 currentColumnHeight += regionElements[i].elementRenderedHeight
-
 
                 /**
                  * We store the elements in a wrapper container until we determine if we want to 
