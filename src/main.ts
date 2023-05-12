@@ -1011,8 +1011,25 @@ const FRONTMATTER_REGEX: RegExp[] =
 ]
 function isMultiColumnReflow(ctx: MarkdownPostProcessorContext): boolean {
 
-    if(ctx.frontmatter === null) {
+    if(ctx.frontmatter === null ||
+       ctx.frontmatter === undefined) {
         return false;
+    }
+
+    let [keys, values] = Object.entries(ctx.frontmatter);
+    for(let key of keys) {
+
+        if(typeof key !== "string") {
+            continue;
+        }
+
+        for(let regex of FRONTMATTER_REGEX) {
+
+            let regexResult = regex.exec(key);
+            if(regexResult !== null) {
+                return true;
+            }
+        }
     }
 
     for(let regex of FRONTMATTER_REGEX) {
