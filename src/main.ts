@@ -1007,7 +1007,8 @@ function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileD
 
 const FRONTMATTER_REGEX: RegExp[] =
 [
-/Multi-?Column *Reflow/i
+/Multi[- ]*Column *Markdown/i,
+/Multi[- ]*Column *Reflow/i
 ]
 function isMultiColumnReflow(ctx: MarkdownPostProcessorContext): boolean {
 
