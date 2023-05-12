@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext } from 'obsidian';
+import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext, MarkdownSectionInformation, parseFrontMatterEntry, Workspace, WorkspaceLeaf } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
 import { MultiColumnRenderData } from "./dom_manager/regional_managers/regionManager";
@@ -17,8 +17,10 @@ import { fileStillInView, getFileLeaf, getLeafSourceMode, getUID } from './utili
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
-import { parsePandocSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
+import { parseColumnSettings, parsePandocSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
 import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
+import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSettings';
+import { HTMLSizing } from './utilities/interfaces';
 
 interface MCM_Settings {
     renderOnMobile: boolean;
@@ -268,6 +270,16 @@ ${editor.getDoc().getSelection()}`
             let docString = info.text;
             let docLines = docString.split("\n");
 
+            let reflowFrontmatter = isMultiColumnReflow(ctx);
+            if(reflowFrontmatter === true) {
+ 
+                this.renderDocReflow(el, ctx, sourcePath, fileDOMManager, docString, info);
+                return;
+            }
+            else {
+                fileDOMManager.removeRegion("Multi-Column Reflow Region");
+            }
+
             /**
              * If we encounter a start tag on the document we set the flag to start
              * parsing the rest of the document.
@@ -290,10 +302,7 @@ ${editor.getDoc().getSelection()}`
              * Take the info provided and generate the required variables from 
              * the line start and end values.
              */
-            let linesAboveArray = docLines.slice(0, info.lineStart)
-            let linesOfElement = docLines.slice(info.lineStart, info.lineEnd + 1);
-            let textOfElement = linesOfElement.join("\n")
-            let linesBelowArray = docLines.slice(info.lineEnd + 1)
+            let relativeTexts: ElementRelativeLocationData = extractElementRelativeLocationData(docLines, info);
 
             //#region Depreciated Start Tag
             /**
@@ -303,38 +312,17 @@ ${editor.getDoc().getSelection()}`
              * file manager we got above above takes care of all regional 
              * managers in each file.
              */
-            if(multiColumnParser.containsStartTag(textOfElement)) {
-
-                el.children[0].detach();
-
-                let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
-                if(startBlockData === null) {
-                    return;
-                }
+            if(multiColumnParser.containsStartTag(relativeTexts.textOfElement)) {
                 
-                let regionID = startBlockData.startBlockKey;
-
-                setupStartTag(el, ctx, fileDOMManager, docString, regionID);
-
-                /**
-                 * Now we have created our regional manager and defined what elements 
-                 * need to be rendered into. So we can return without any more processing.
-                 */
-                return
+                createDepreciatedStartElement(el, relativeTexts.linesOfElement, ctx, fileDOMManager, docString);
+                return;
             }
             //#endregion Depreciated Start Tag
 
             // Pandoc Start Region Tag.
-            if(multiColumnParser.containsPandocStartTag(textOfElement)) {
+            if(multiColumnParser.containsPandocStartTag(relativeTexts.textOfElement)) {
 
-                el.children[0].detach();
-
-                let pandocData = multiColumnParser.getPandocStartData(textOfElement)
-                let settings = pandocData.userSettings;
-
-                let regionManager = setupStartTag(el, ctx, fileDOMManager, docString, settings.columnID);
-                regionManager.setRegionalSettings(settings);
-
+                createPandocStartElement(el, relativeTexts.textOfElement, ctx, fileDOMManager, docString);
                 return;
             }
 
@@ -342,7 +330,7 @@ ${editor.getDoc().getSelection()}`
              * Check if any of the lines above us contain a start block, and if
              * so get the lines from our current element to the start block.
              */
-            let startBockAbove = multiColumnParser.getStartDataAboveLine(linesAboveArray);
+            let startBockAbove = multiColumnParser.getStartDataAboveLine(relativeTexts.linesAboveArray);
             if(startBockAbove === null) {
                 return;
             }
@@ -350,7 +338,7 @@ ${editor.getDoc().getSelection()}`
              * We now know we're within a multi-column region, so we update our
              * list of lines above to just be the items within this region.
              */
-            linesAboveArray = startBockAbove.linesAboveArray;
+            relativeTexts.linesAboveArray = startBockAbove.linesAboveArray;
 
             /**
              * We use the start block's key to get our regional manager. If this
@@ -358,7 +346,7 @@ ${editor.getDoc().getSelection()}`
              */
             let regionalContainer: RegionManagerContainer = fileDOMManager.getRegionalContainer(startBockAbove.startBlockKey);
             if(regionalContainer === null) {
-                return
+                return;
             }
             let regionalManager: RegionManager = regionalContainer.getRegion();
 
@@ -367,101 +355,340 @@ ${editor.getDoc().getSelection()}`
              * overwrite elements that are now gone) we now want all of the
              * lines after this element up to the end tag.
              */
-            linesBelowArray =  multiColumnParser.getEndBlockBelow(linesBelowArray);
+            relativeTexts.linesBelowArray =  multiColumnParser.getEndBlockBelow(relativeTexts.linesBelowArray);
 
             /**
              * Now we take the lines above our current element up until the
              * start region tag and render that into an HTML element. We will 
              * use these elements to determine where to place our current element.
              */
-            let siblingsAbove: HTMLDivElement = renderMarkdownFromLines(linesAboveArray, sourcePath);
-
-            let siblingsBelow: HTMLDivElement = renderMarkdownFromLines(linesBelowArray, sourcePath);
-
-            /**
-             * Set up our dom object to be added to the manager.
-             */
-            let currentObject: DOMObject = new DOMObject(el, linesOfElement)
-            el.id = currentObject.UID;
-
-            currentObject = TaskListDOMObject.checkForTaskListElement(currentObject)
-
-            /**
-             * Now we add the object to the manager and then setup the
-             * callback for when the object is removed from view that will remove 
-             * the item from the manager.
-             */
-            let addIndex = regionalManager.addObject(siblingsAbove, siblingsBelow, currentObject);
-
-            let elementMarkdownRenderer = new MarkdownRenderChild(el);
-            elementMarkdownRenderer.onunload = () => {
-
-                if(regionalContainer === null) {
-                    return
-                }
-                
-                let regionalManager: RegionManager = regionalContainer.getRegion();
-                if(regionalManager) {
-                    
-                    // We can attempt to update the view here after the item is removed
-                    // but need to get the item's parent element before removing object from manager.
-                    let regionRenderData: MultiColumnRenderData = regionalManager.getRegionRenderData();
-
-                    regionalManager.removeObject(currentObject.UID);
-
-                    /**
-                     * Need to check here if element is null as this closure will be called
-                     * repeatedly on file change.
-                     */
-                    if(regionRenderData.parentRenderElement === null) {
-                        return;
-                    }
-                    regionalManager.renderRegionElementsToScreen()
-                }
-            };
-            ctx.addChild(elementMarkdownRenderer);
-
-            /**
-             * Now we check if our current element is a special flag so we can
-             * properly set the element tag within the regional manager.
-             */
-
-            if(multiColumnParser.containsEndTag(el.textContent) === true &&
-               startBockAbove.startBlockType !== "PADOC") {
-
-                currentObject.elementType = ElementRenderType.unRendered
-                el.addClass(MultiColumnStyleCSS.RegionEndTag)
-                regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
-            }
-            if(multiColumnParser.isValidPandocEndTag(linesAboveArray, el.textContent) === true &&
-               startBockAbove.startBlockType === "PADOC") {
-
-                currentObject.elementType = ElementRenderType.unRendered
-                el.addClass(MultiColumnStyleCSS.RegionEndTag)
-                regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
-            }
-            else if(multiColumnParser.containsColEndTag(textOfElement) === true) {
-
-                currentObject.elementType = ElementRenderType.unRendered
-                el.addClass(MultiColumnStyleCSS.ColumnEndTag)
-                regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
-            }
-            else if(multiColumnParser.containsColSettingsTag(textOfElement) === true) {
-
-                currentObject.elementType = ElementRenderType.unRendered
-                el.addClass(MultiColumnStyleCSS.RegionSettings)
-                regionalManager = regionalContainer.setRegionSettings(textOfElement)
-                regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.regionSettings);
-            }
-            else {
-                el.addClass(MultiColumnStyleCSS.RegionContent)
-            }
-            
-            regionalManager.renderRegionElementsToScreen()
+            regionalManager = this.appendToRegionalManager(el, regionalContainer, ctx, relativeTexts, sourcePath, startBockAbove, (domObj: DOMObject) => {
+                onUnloadElement(domObj, regionalContainer);
+            });
             return;
         });
     }
 
+    private appendToRegionalManager(el: HTMLElement, regionalContainer: RegionManagerContainer, ctx: MarkdownPostProcessorContext, relativeLines: ElementRelativeLocationData, sourcePath: string, parentStartBlock: multiColumnParser.StartTagData, onUnloadCallback: (domObj: DOMObject) => void) {
+
+        let { linesAboveArray, linesOfElement, linesBelowArray, textOfElement } = relativeLines;
+
+        let siblingsAbove: HTMLDivElement = renderMarkdownFromLines(linesAboveArray, sourcePath);
+
+        let siblingsBelow: HTMLDivElement = renderMarkdownFromLines(linesBelowArray, sourcePath);
+        
+        let regionalManager: RegionManager = regionalContainer.getRegion();
+
+        /**
+         * Set up our dom object to be added to the manager.
+         */
+        let currentObject: DOMObject = new DOMObject(el, linesOfElement);
+        el.id = currentObject.UID;
+
+        currentObject = TaskListDOMObject.checkForTaskListElement(currentObject);
+
+        /**
+         * Now we add the object to the manager and then setup the
+         * callback for when the object is removed from view that will remove
+         * the item from the manager.
+         */
+        let addIndex = regionalManager.addObject(siblingsAbove, siblingsBelow, currentObject);
+
+        let elementMarkdownRenderer = new MarkdownRenderChild(el);
+        elementMarkdownRenderer.onunload = () => {
+            onUnloadCallback(currentObject);
+        }
+        ctx.addChild(elementMarkdownRenderer);
+
+        /**
+         * Now we check if our current element is a special flag so we can
+         * properly set the element tag within the regional manager.
+         */
+        if (multiColumnParser.containsEndTag(el.textContent) === true &&
+            parentStartBlock.startBlockType !== "PADOC") {
+
+            currentObject.elementType = ElementRenderType.unRendered;
+            regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
+        }
+        if (multiColumnParser.isValidPandocEndTag(linesAboveArray, el.textContent) === true &&
+            parentStartBlock.startBlockType === "PADOC") {
+
+            currentObject.elementType = ElementRenderType.unRendered;
+            regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
+        }
+        else if (multiColumnParser.containsColEndTag(textOfElement) === true) {
+
+            currentObject.elementType = ElementRenderType.unRendered;
+            regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
+        }
+        else if (multiColumnParser.containsColSettingsTag(textOfElement) === true) {
+
+            currentObject.elementType = ElementRenderType.unRendered;
+            regionalManager = regionalContainer.setRegionSettings(textOfElement);
+            regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.regionSettings);
+        }
+        setElementCSS(currentObject, el);
+
+        regionalManager.renderRegionElementsToScreen();
+        return regionalManager;
+    }
+
+    setupMarkdownCodeblockPostProcessor(startStr: string) {
+
+        this.registerMarkdownCodeBlockProcessor(startStr, (source, el, ctx) => {
+
+            if(this.settings.renderOnMobile === false &&
+                Platform.isMobile === true) {
+ 
+                 return;
+            }
+
+            const sourcePath = ctx.sourcePath;
+        
+            // Set up our CSS so that the codeblock only renders this data in reading mode
+            // source/live preview mode is handled by the CM6 implementation.
+            el.parentElement?.addClass("preivew-mcm-start-block");
+        
+            // To determine what kind of view we are rendering in we need a markdown leaf.
+            // Really this should never return here since rendering is only done in markdown leaves.
+            let markdownLeaves = app.workspace.getLeavesOfType("markdown");
+            if(markdownLeaves.length === 0) {
+                return;
+            }
+        
+            if(this.globalManager === null || this.globalManager === undefined) {
+                // console.log("Global manager is undefined?");
+                return;
+            }
+
+            let fileDOMManager = this.globalManager.getFileManager(sourcePath);
+            if(fileDOMManager === null) {
+                return;
+            }
+            
+            if(ctx.frontmatter && 
+               ctx.frontmatter["Multi-Column Reflow"] !== undefined) {
+                return;
+            }
+            else {
+                fileDOMManager.removeRegion("Multi-Column Reflow Region");
+            }
+
+            // Set file to have start tag.
+            fileDOMManager.setHasStartTag();
+        
+            // Get the info for our current context and then check
+            // if the entire text contains a start tag. If there is
+            // no start tag in the document we can just return and
+            // ignore the rest of the parsing.
+            let info = ctx.getSectionInfo(el);
+        
+            /**
+             * We need the context info to properly parse so returning here 
+             * info is null. TODO: Set error in view if this occurs.
+             */
+            if(!info) {
+                return;
+            }
+        
+            /** 
+             * Set up the current element to act as the parent for the 
+             * multi-column region.
+             */
+            el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
+            let renderErrorRegion = el.createDiv({
+                cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
+            });
+            let renderColumnRegion = el.createDiv({
+                cls: MultiColumnLayoutCSS.RegionContentContainerDiv
+            })
+        
+            let regionKey = parseStartRegionCodeBlockID(source);
+        
+            let createNewRegionManager = true;
+            if(fileDOMManager.checkKeyExists(regionKey) === true) {
+                
+                createNewRegionManager = false;
+                let { numberOfTags, keys } = multiColumnParser.countStartTags(info.text);
+        
+                let numMatches = 0;
+                for(let i = 0; i < numberOfTags; i++) {
+        
+                    // Because we checked if key exists one of these has to match.
+                    if(keys[i] === regionKey) {
+                        numMatches++;
+                    }
+                }
+        
+                // We only want to display an error if there are more than 2 of the same id across
+                // the whole document. This prevents erros when obsidian reloads the whole document
+                // and there are two of the same key in the map.
+                if(numMatches >= 2) {
+                    if(regionKey === "") {
+                        renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                    }
+                    else {
+                        renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
+                    }
+                    return;
+                }
+            }
+            el.id = `MultiColumnID:${regionKey}`
+        
+            // If something changes in the codeblock we dont necessarily want to update our
+            // old reference to the region manager. This could be a potential bug area.
+            if(createNewRegionManager === true) {
+        
+                // Create a new regional manager.
+                let elementMarkdownRenderer = new MarkdownRenderChild(el);
+                fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
+        
+                // Set up the on unload callback. This can be called if the user changes
+                // the start/settings codeblock in any way. We only want to unload
+                // if the file is being removed from view.
+                elementMarkdownRenderer.onunload = () => {
+        
+                    if(fileDOMManager && fileStillInView(sourcePath) === false) {
+        
+                        // console.debug("File not in any markdown leaf. Removing region from dom manager.")
+                        fileDOMManager.removeRegion(regionKey);
+                    }
+                };
+                ctx.addChild(elementMarkdownRenderer);
+            }
+        
+            let regionalManagerContainer = fileDOMManager.getRegionalContainer(regionKey);
+            if(regionalManagerContainer !== null) {
+        
+                let regionalManager = regionalManagerContainer.setRegionSettings(source);
+                regionalManager.regionParent = el;
+            }
+        })
+    }
+
+    async loadSettings() {
+
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
+
+    renderDocReflow(el: HTMLElement, ctx: MarkdownPostProcessorContext, sourcePath: string, fileDOMManager: FileDOMManager, docString: string, info: MarkdownSectionInformation) {
+
+        let regionalContainer: RegionManagerContainer = null;
+        if(fileDOMManager.checkKeyExists("Multi-Column Reflow Region") === true &&
+           el.getElementsByClassName("frontmatter").length === 0) {
+            regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+        }
+        else if(fileDOMManager.checkKeyExists("Multi-Column Reflow Region") === true &&
+                el.getElementsByClassName("frontmatter").length === 1) {
+
+            let parentEl = createDiv()
+            el.appendChild(parentEl);
+
+            // Get current data, remove old region.
+            regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+            let domList = regionalContainer.getRegion().getRegionData().domList.slice();
+            fileDOMManager.removeRegion("Multi-Column Reflow Region");
+
+            // Create new region.
+            setupStartTag(parentEl, ctx, fileDOMManager, docString, "Multi-Column Reflow Region");
+            regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+            let settings = getMultiColumnSettingsFromFrontmatter(ctx);
+            
+            let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
+            if(leaf) {
+                let clientHeight = leaf.view.containerEl.clientHeight
+                settings.columnHeight = HTMLSizing.create().setWidth(clientHeight).setUnits("px");
+            }
+            regionalContainer.setRegionParsedSettings(settings);
+            
+            // Re-Render after small delay.
+            // Delay is so the auto layout check can properly read the client height.
+            async function delayRender() {
+
+                setTimeout(()=> {                    
+
+                    // Append all items to region.
+                    let regionalManager = regionalContainer.getRegion();
+                    let listLength = domList.length;
+                    for(let i = 0; i < listLength; i++) {
+
+                        let domObj = domList.shift()
+                        regionalManager.addObjectAtIndex(domObj, i);
+
+                        setElementCSS(domObj, domObj.originalElement);
+                    }
+
+                    regionalContainer.getRegion().renderRegionElementsToScreen();
+                }, 50)
+            }
+            delayRender();
+
+            return;
+        }
+        else {
+
+            // The first element to hit this point appears to be the yaml information which we can use
+            // as our root div since the whole doc is going to be re-formatted.
+            let parentEl = createDiv()
+            el.appendChild(parentEl);
+
+            setupStartTag(parentEl, ctx, fileDOMManager, docString, "Multi-Column Reflow Region");
+            regionalContainer = fileDOMManager.getRegionalContainer("Multi-Column Reflow Region");
+
+            let settings = getMultiColumnSettingsFromFrontmatter(ctx);
+
+            function getContentHeightFromLeaf(leaf: WorkspaceLeaf): number {
+
+                let contentEl = (leaf.view as any)["contentEl"] as HTMLElement
+                if(contentEl !== undefined &&
+                   contentEl.clientHeight > 0) {
+                    return contentEl.clientHeight;
+                }
+
+                let clientHeight = leaf.view.containerEl.clientHeight;
+                let titleContainer = (leaf.view as any)["titleContainerEl"] as HTMLElement 
+                if(titleContainer !== undefined &&
+                   titleContainer.clientHeight > 0) {
+                    return clientHeight - titleContainer.clientHeight;
+                }
+
+                return clientHeight - 50;
+            }
+
+            let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
+            if(leaf) {
+                let clientHeight = getContentHeightFromLeaf(leaf);
+                settings.columnHeight = HTMLSizing.create().setWidth(clientHeight).setUnits("px");
+            }
+            regionalContainer.setRegionParsedSettings(settings);
+
+            return;
+        }
+
+        if(regionalContainer === null) {
+            return;
+        }
+
+        let docLines = docString.split("\n");
+        let relativeTexts: ElementRelativeLocationData = extractElementRelativeLocationData(docLines, info);
+        relativeTexts.linesBelowArray =  multiColumnParser.getEndBlockBelow(relativeTexts.linesBelowArray);
+
+        let startBockAbove: multiColumnParser.StartTagData = {
+            linesAboveArray: relativeTexts.linesAboveArray,
+            startBlockKey: "Multi-Column Reflow Region",
+            startBlockType: "DEPRECIATED"
+        }
+
+        this.appendToRegionalManager(el, regionalContainer, ctx, relativeTexts, sourcePath, startBockAbove, (domObj: DOMObject) => {
+            onUnloadElement(domObj, regionalContainer);
+        });
+    }
+
+    //#region PDF Exporting.
     private isStartCodeblockInExport(node: HTMLElement): boolean {
 
         for(let i = 0; i < CODEBLOCK_START_STRS.length; i++) {
@@ -620,165 +847,103 @@ ${editor.getDoc().getSelection()}`
 
         return false;
     }
-
-    setupMarkdownCodeblockPostProcessor(startStr: string) {
-
-        this.registerMarkdownCodeBlockProcessor(startStr, (source, el, ctx) => {
-
-            if(this.settings.renderOnMobile === false &&
-                Platform.isMobile === true) {
- 
-                 return;
-            }
-
-            const sourcePath = ctx.sourcePath;
-        
-            // Set up our CSS so that the codeblock only renders this data in reading mode
-            // source/live preview mode is handled by the CM6 implementation.
-            el.parentElement?.addClass("preivew-mcm-start-block");
-        
-            // To determine what kind of view we are rendering in we need a markdown leaf.
-            // Really this should never return here since rendering is only done in markdown leaves.
-            let markdownLeaves = app.workspace.getLeavesOfType("markdown");
-            if(markdownLeaves.length === 0) {
-                return;
-            }
-        
-            // Check the type of the leaf
-            let foundFileLeaf = false;
-            for(let i = 0; i < markdownLeaves.length; i++) {
-        
-                let fileLeaf = getFileLeaf(sourcePath);
-                if(fileLeaf === null) {
-                    continue;
-                }
-                foundFileLeaf = true;
-        
-                if(getLeafSourceMode(fileLeaf) === "source") {
-                    // This was added when implementing live preview, but the reason it was originally added appears to no longer be an issue.
-                    // Removing the return from here to fix bug where opening multiple copies of the document causes regions to not render.
-                    console.debug("Leaf of file is in source mode. Should we be ignoring post processing here?")
-                    // return;
-                }
-            }
-        
-            if(this.globalManager === null || this.globalManager === undefined) {
-                // console.log("Global manager is undefined?");
-                return;
-            }
-
-            let fileDOMManager = this.globalManager.getFileManager(sourcePath);
-            if(fileDOMManager === null) {
-                return;
-            }
-            
-            // Set file to have start tag.
-            fileDOMManager.setHasStartTag();
-        
-            // Get the info for our current context and then check
-            // if the entire text contains a start tag. If there is
-            // no start tag in the document we can just return and
-            // ignore the rest of the parsing.
-            let info = ctx.getSectionInfo(el);
-        
-            /**
-             * We need the context info to properly parse so returning here 
-             * info is null. TODO: Set error in view if this occurs.
-             */
-            if(!info) {
-                return;
-            }
-        
-            /** 
-             * Set up the current element to act as the parent for the 
-             * multi-column region.
-             */
-            el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
-            let renderErrorRegion = el.createDiv({
-                cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
-            });
-            let renderColumnRegion = el.createDiv({
-                cls: MultiColumnLayoutCSS.RegionContentContainerDiv
-            })
-        
-            let regionKey = parseStartRegionCodeBlockID(source);
-        
-            let createNewRegionManager = true;
-            if(fileDOMManager.checkKeyExists(regionKey) === true) {
-                
-                createNewRegionManager = false;
-                let { numberOfTags, keys } = multiColumnParser.countStartTags(info.text);
-        
-                let numMatches = 0;
-                for(let i = 0; i < numberOfTags; i++) {
-        
-                    // Because we checked if key exists one of these has to match.
-                    if(keys[i] === regionKey) {
-                        numMatches++;
-                    }
-                }
-        
-                // We only want to display an error if there are more than 2 of the same id across
-                // the whole document. This prevents erros when obsidian reloads the whole document
-                // and there are two of the same key in the map.
-                if(numMatches >= 2) {
-                    if(regionKey === "") {
-                        renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
-                    }
-                    else {
-                        renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
-                    }
-                    return;
-                }
-            }
-            el.id = `MultiColumnID:${regionKey}`
-        
-            // If something changes in the codeblock we dont necessarily want to update our
-            // old reference to the region manager. This could be a potential bug area.
-            if(createNewRegionManager === true) {
-        
-                // Create a new regional manager.
-                let elementMarkdownRenderer = new MarkdownRenderChild(el);
-                fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
-        
-                // Set up the on unload callback. This can be called if the user changes
-                // the start/settings codeblock in any way. We only want to unload
-                // if the file is being removed from view.
-                elementMarkdownRenderer.onunload = () => {
-        
-                    if(fileDOMManager && fileStillInView(sourcePath) === false) {
-        
-                        // console.debug("File not in any markdown leaf. Removing region from dom manager.")
-                        fileDOMManager.removeRegion(regionKey);
-                    }
-                };
-                ctx.addChild(elementMarkdownRenderer);
-            }
-        
-            let regionalManagerContainer = fileDOMManager.getRegionalContainer(regionKey);
-            if(regionalManagerContainer !== null) {
-        
-                let regionalManager = regionalManagerContainer.setRegionSettings(source);
-                regionalManager.regionParent = el;
-            }
-        })
-    }
-
-    async loadSettings() {
-
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
-
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
+    //#endregion PDF Exporting.
 }
 
+function setElementCSS(currentObject: DOMObject, el: HTMLElement) {
+    if (currentObject.tag === DOMObjectTag.endRegion) {
+        el.addClass(MultiColumnStyleCSS.RegionEndTag);
+    }
+    else if (currentObject.tag === DOMObjectTag.columnBreak) {
+        el.addClass(MultiColumnStyleCSS.ColumnEndTag);
+    }
+    else if (currentObject.tag === DOMObjectTag.regionSettings) {
+        el.addClass(MultiColumnStyleCSS.RegionSettings);
+    }
+    else {
+        el.addClass(MultiColumnStyleCSS.RegionContent);
+    }
+}
+
+function onUnloadElement(currentObject: DOMObject, regionalContainer: RegionManagerContainer): void {
+
+    if (regionalContainer === null) {
+        return;
+    }
+
+    let regionalManager: RegionManager = regionalContainer.getRegion();
+    if (regionalManager) {
+
+        // We can attempt to update the view here after the item is removed
+        // but need to get the item's parent element before removing object from manager.
+        let regionRenderData: MultiColumnRenderData = regionalManager.getRegionRenderData();
+
+        regionalManager.removeObject(currentObject.UID);
+
+        /**
+         * Need to check here if element is null as this closure will be called
+         * repeatedly on file change.
+         */
+        if (regionRenderData.parentRenderElement === null) {
+            return;
+        }
+        regionalManager.renderRegionElementsToScreen();
+    }
+};
+
+interface ElementRelativeLocationData {
+    linesAboveArray: string[];
+    linesOfElement: string[];
+    linesBelowArray: string[];
+    textOfElement: string;
+}
 
 export type nearbySiblings = { 
     siblingsAbove: HTMLDivElement,
     currentObject: DOMObject, 
 }
+
+function extractElementRelativeLocationData(docLines: string[], info: MarkdownSectionInformation): ElementRelativeLocationData {
+
+    let linesAboveArray = docLines.slice(0, info.lineStart);
+    let linesOfElement = docLines.slice(info.lineStart, info.lineEnd + 1);
+    let textOfElement = linesOfElement.join("\n");
+    let linesBelowArray = docLines.slice(info.lineEnd + 1);
+
+    return {
+        linesAboveArray,
+        linesOfElement,
+        linesBelowArray,
+        textOfElement
+    };
+}
+
+function createDepreciatedStartElement(el: HTMLElement, linesOfElement: string[], ctx: MarkdownPostProcessorContext, fileDOMManager: FileDOMManager, docString: string) {
+
+    el.children[0].detach();
+
+    let startBlockData = multiColumnParser.getStartBlockAboveLine(linesOfElement)
+    if(startBlockData === null) {
+        return;
+    }
+
+    let regionID = startBlockData.startBlockKey;
+
+    setupStartTag(el, ctx, fileDOMManager, docString, regionID);
+    return;
+}
+
+function createPandocStartElement(el: HTMLElement, textOfElement: string, ctx: MarkdownPostProcessorContext, fileDOMManager: FileDOMManager, docString: string) {
+    el.children[0].detach();
+
+    let pandocData = multiColumnParser.getPandocStartData(textOfElement);
+    let settings = pandocData.userSettings;
+
+    let regionManager = setupStartTag(el, ctx, fileDOMManager, docString, settings.columnID);
+    regionManager.setRegionalSettings(settings);
+    return;
+}
+
 function renderMarkdownFromLines(mdLines: string[], sourcePath: string): HTMLDivElement {
 
     /**
@@ -856,4 +1021,110 @@ function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileD
     ctx.addChild(elementMarkdownRenderer);
 
     return regionManager
+}
+
+const FRONTMATTER_REGEX: RegExp[] =
+[
+/Multi-?Column *Reflow/i
+]
+function isMultiColumnReflow(ctx: MarkdownPostProcessorContext): boolean {
+
+    if(ctx.frontmatter === null) {
+        return false;
+    }
+
+    for(let regex of FRONTMATTER_REGEX) {
+
+        let frontmatterReflowData = parseFrontMatterEntry(ctx.frontmatter, regex);
+        if(frontmatterReflowData !== null) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function getMultiColumnSettingsFromFrontmatter(ctx: MarkdownPostProcessorContext): MultiColumnSettings {
+    if(ctx.frontmatter === null) {
+        return getDefaultMultiColumnSettings()
+    }
+
+    for(let regex of FRONTMATTER_REGEX) {
+
+        let frontmatterReflowData = parseFrontMatterEntry(ctx.frontmatter, regex);
+        if(frontmatterReflowData !== null &&
+           Array.isArray(frontmatterReflowData)) {
+
+            return parseFrontmatterSettings(frontmatterReflowData);
+        }
+    }
+
+    return getDefaultMultiColumnSettings()
+}
+
+function parseFrontmatterSettings(frontmatterReflowData: any[]): MultiColumnSettings {
+
+    let str = "";
+    for(let obj of frontmatterReflowData) {
+
+        let [key, value] = Object.entries(obj)[0];
+        str += `${key}: ${value}\n`;
+    }
+
+    let settings = parseColumnSettings(str);
+    settings.fullDocReflow = true;
+
+    return settings;
+}
+
+function getLeafFromFilePath(workspace: Workspace, filePath: string): WorkspaceLeaf | null {
+
+    function checkState(state: any) {
+
+        if(state["type"] === undefined ||
+           state["type"] !== "markdown") {
+            return false;
+        }
+
+        if(state["state"] === undefined) {
+            return false
+        }
+
+        if(state["state"]["file"] === undefined) {
+            return false;
+        }
+
+        let stateFilePath = state["state"]["file"];
+        return stateFilePath === filePath;
+    }
+
+    let entries = Object.entries(workspace.getLayout());
+    let items = Array.from(entries).map((val) => {
+        return val[1]
+    })
+    while(items.length > 0) {
+
+        let entryObj = items.shift() as any;
+        if(entryObj["id"] !== undefined && entryObj["type"] !== undefined) {
+
+            if(entryObj["type"] === "split" ||
+               entryObj["type"] === "tabs" ) {
+                items = items.concat(entryObj['children']);
+                continue;
+            }
+
+            if(entryObj["type"] === "leaf" && 
+               entryObj["id"] !== undefined &&
+               entryObj["state"] !== undefined) {
+
+                let id = entryObj["id"];
+                let state = entryObj["state"];
+
+                let valid = checkState(state);
+                if(valid) {
+                    return workspace.getLeafById(id);
+                }
+            }
+        }
+    }
+    return null;
 }

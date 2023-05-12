@@ -441,7 +441,7 @@ function checkSettingIsColumnHeight(settingsLine: string, parsedSettings: MultiC
     settingsData = settingValues[0];
 
     let parsed = getLengthUnit(settingsData.trim());
-    let spacingValue = "";
+    let spacingValue = 0;
 
     if (parsed.isValid) {
 
@@ -449,7 +449,7 @@ function checkSettingIsColumnHeight(settingsLine: string, parsedSettings: MultiC
         let noUnitsNum = parseInt(noUnitsStr);
         if (isNaN(noUnitsNum) === false) {
 
-            spacingValue = `${noUnitsStr}${parsed.unitStr}`;
+            parsedSettings.columnHeight = HTMLSizing.create().setWidth(noUnitsNum).setUnits(parsed.unitStr);
         }
     }
     else {
@@ -457,12 +457,8 @@ function checkSettingIsColumnHeight(settingsLine: string, parsedSettings: MultiC
         let noUnitsNum = parseInt(settingsData.trim());
         if (isNaN(noUnitsNum) === false) {
 
-            spacingValue = `${noUnitsNum}pt`;
+            parsedSettings.columnHeight = HTMLSizing.create().setWidth(noUnitsNum).setUnits("pt")
         }
-    }
-
-    if (spacingValue !== "") {
-        parsedSettings.columnHeight = spacingValue;
     }
 }
 

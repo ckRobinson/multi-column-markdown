@@ -27,6 +27,8 @@ export enum MultiColumnLayoutCSS {
 
     NoFlexShrink = "mcm-no-flex-shrink",
 
+    ReflowContainerDiv = "mcm-doc-reflow-container",
+
     // ------------------------------------------------------ //
 
     SingleColumnSmall = "mcm-single-column-small",

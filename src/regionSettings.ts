@@ -78,7 +78,8 @@ export type MultiColumnSettings = {
     columnSpacing: string[],
     contentOverflow: ContentOverflowType[],
     alignment: AlignmentType[],
-    columnHeight: string | null
+    columnHeight: HTMLSizing | null,
+    fullDocReflow: boolean
 }
 
 export function getDefaultMultiColumnSettings(): MultiColumnSettings {
@@ -94,7 +95,8 @@ export function getDefaultMultiColumnSettings(): MultiColumnSettings {
         columnSpacing: [""],
         contentOverflow: [ContentOverflowType.scroll],
         alignment: [AlignmentType.left],
-        columnHeight: null
+        columnHeight: null,
+        fullDocReflow: false
     }
 }
 

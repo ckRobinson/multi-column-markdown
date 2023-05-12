@@ -14,6 +14,7 @@ import { StandardMultiColumnRegionManager as StandardMultiColumnRegionManager } 
 import { SingleColumnRegionManager } from "./singleColumnRegionManager";
 import { RegionManager } from "./regionManager";
 import { AutoLayoutRegionManager } from './autoLayoutRegionManager';
+import { ReflowRegionManager } from "./reflowRegionManager";
 
 /**
  * This class acts as an abstraction for the actual regional manager. It is used to update the
@@ -37,6 +38,11 @@ export class RegionManagerContainer {
 
             regionalSettings = parseSingleColumnSettings(settingsText, regionalSettings);
         }
+        return this.setRegionParsedSettings(regionalSettings);
+    }
+
+    public setRegionParsedSettings(regionalSettings: MultiColumnSettings): RegionManager {
+
         this.region.setRegionalSettings(regionalSettings);
 
         if (regionalSettings.numberOfColumns === 1) {
@@ -54,6 +60,13 @@ export class RegionManagerContainer {
                 // console.debug("Converting region to auto layout.")
                 this.convertToAutoLayout()
             }
+        }
+        else if(regionalSettings.fullDocReflow === true) {
+            if(this.region instanceof ReflowRegionManager === false) {
+
+                // console.debug("Converting region to auto layout.")
+                this.convertToDocReflow()
+            } 
         }
         else if (regionalSettings.numberOfColumns >= 2) {
 
@@ -89,6 +102,14 @@ export class RegionManagerContainer {
         this.region = new AutoLayoutRegionManager(data);
 
         return this.region as AutoLayoutRegionManager;
+    }
+
+    private convertToDocReflow(): ReflowRegionManager {
+
+        let data = this.region.getRegionData();
+        this.region = new ReflowRegionManager(data);
+
+        return this.region as ReflowRegionManager;
     }
 }
 
