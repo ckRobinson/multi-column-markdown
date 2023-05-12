@@ -1079,7 +1079,7 @@ function parseFrontmatterSettings(frontmatterReflowData: any[]): MultiColumnSett
     for(let obj of frontmatterReflowData) {
 
         let [key, value] = Object.entries(obj)[0];
-        str += `${key}: ${value}\n`;
+        str += `${key}: [${value}]\n`;
     }
 
     let settings = parseColumnSettings(str);
