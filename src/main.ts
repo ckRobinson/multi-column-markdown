@@ -1157,3 +1157,20 @@ function getContentHeightFromLeaf(leaf: WorkspaceLeaf): number {
 
     return clientHeight - 50;
 }
+
+function calcVisibleClietHeight(leaf: WorkspaceLeaf, workspace: Workspace): number {
+
+    let clientHeight = 0;
+    if (leaf) {
+        clientHeight = getContentHeightFromLeaf(leaf);
+    }
+    else if ((workspace !== null && workspace !== undefined) &&
+             (workspace.containerEl !== null && workspace.containerEl !== undefined) &&
+              workspace.containerEl.clientHeight > 0) {
+        clientHeight = workspace.containerEl.clientHeight - 100;
+    }
+    else {
+        clientHeight = 1000;
+    }
+    return clientHeight;
+}
