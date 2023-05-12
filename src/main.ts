@@ -1017,6 +1017,14 @@ function isMultiColumnReflow(ctx: MarkdownPostProcessorContext): boolean {
         return false;
     }
 
+    for(let regex of FRONTMATTER_REGEX) {
+
+        let frontmatterReflowData = parseFrontMatterEntry(ctx.frontmatter, regex);
+        if(frontmatterReflowData !== null) {
+            return true;
+        }
+    }
+
     let [keys, values] = Object.entries(ctx.frontmatter);
     for(let key of keys) {
 
@@ -1033,13 +1041,6 @@ function isMultiColumnReflow(ctx: MarkdownPostProcessorContext): boolean {
         }
     }
 
-    for(let regex of FRONTMATTER_REGEX) {
-
-        let frontmatterReflowData = parseFrontMatterEntry(ctx.frontmatter, regex);
-        if(frontmatterReflowData !== null) {
-            return true;
-        }
-    }
     return false;
 }
 
