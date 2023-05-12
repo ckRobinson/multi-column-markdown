@@ -201,3 +201,28 @@ export class ReflowRegionManager extends RegionManager {
     }
 }
 
+function getFormattedColumnDivs(settings: MultiColumnSettings, verticalColumnParent: HTMLDivElement, getColumnContentDivs: (settings: MultiColumnSettings, multiColumnParent: HTMLDivElement) => HTMLDivElement[]) {
+        
+    let multiColumnParent = verticalColumnParent.createDiv({
+        cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} \
+              ${MultiColumnLayoutCSS.ContentOverflowAutoScroll_X} \
+              ${MultiColumnLayoutCSS.ContentOverflowHidden_Y};
+              `
+    });
+
+    let columnDivs = getColumnContentDivs(settings, multiColumnParent);
+    if (settings.drawShadow === true) {
+        multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
+    }
+    for (let i = 0; i < columnDivs.length; i++) {
+        if (shouldDrawColumnBorder(i, settings) === true) {
+            columnDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
+        }
+
+        if (settings.drawShadow === true) {
+            columnDivs[i].addClass(MultiColumnStyleCSS.ColumnShadow);
+        }
+    }
+
+    return columnDivs
+}
