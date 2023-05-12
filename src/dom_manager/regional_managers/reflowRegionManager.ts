@@ -34,7 +34,7 @@ export class ReflowRegionManager extends RegionManager {
     private renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
         let verticalColumnParent = createDiv({
-            cls: ``
+            cls: `${MultiColumnLayoutCSS.ReflowContainerDiv}`
         });
 
         /**
