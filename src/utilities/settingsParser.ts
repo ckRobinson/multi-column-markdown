@@ -232,13 +232,9 @@ function checkSettingDefinesColumnSize(settingsLine: string, parsedSettings: Mul
     let widths: HTMLSizing[] = []
     for(let setting of settingValues) {
 
-        let unitData = getLengthUnit(setting);
-        if(unitData.isValid === true) {
-
-            let noUnitsStr = setting.replace(unitData.unitStr, "").trim();
-            let noUnitsNum = parseInt(noUnitsStr);
-            let width = HTMLSizing.create().setWidth(noUnitsNum).setUnits(unitData.unitStr);
-            widths.push(width);
+        let parsed = HTMLSizing.parseToSizing(setting.trim());
+        if(parsed !== null) {
+            widths.push(parsed);
         }
     }
 
@@ -256,7 +252,7 @@ function checkSettingDefinesColumnSize(settingsLine: string, parsedSettings: Mul
 
         for(let setting of settingValues) {
 
-            let unitData = getLengthUnit(setting);
+            let unitData = HTMLSizing.getLengthUnit(setting);
             if(unitData.isValid === true) {
                 parsedSettings.columnSize = widths;
                 return;
@@ -355,17 +351,10 @@ function checkSettingIsColumnSpacing(settingsLine: string, parsedSettings: Multi
     let settingValues = parseForMultiSettings(settingsData);
     for(let settingsData of settingValues) {
         
-        let parsed = getLengthUnit(settingsData.trim());
+        let parsed = HTMLSizing.parseToSizing(settingsData.trim());
         let spacingStr = "";
-    
-        if (parsed.isValid) {
-    
-            let noUnitsStr = settingsData.replace(parsed.unitStr, "").trim();
-            let noUnitsNum = parseInt(noUnitsStr);
-            if (isNaN(noUnitsNum) === false) {
-    
-                spacingStr = `${noUnitsStr}${parsed.unitStr}`;
-            }
+        if (parsed !== null) {
+            spacingStr = parsed.toString();
         }
         else {
     
@@ -439,17 +428,10 @@ function checkSettingIsColumnHeight(settingsLine: string, parsedSettings: MultiC
     let settingValues = parseForMultiSettings(settingsData);
     settingsData = settingValues[0];
 
-    let parsed = getLengthUnit(settingsData.trim());
-    let spacingValue = 0;
+    let parsed = HTMLSizing.parseToSizing(settingsData.trim());
+    if (parsed !== null) {
 
-    if (parsed.isValid) {
-
-        let noUnitsStr = settingsData.replace(parsed.unitStr, "").trim();
-        let noUnitsNum = parseInt(noUnitsStr);
-        if (isNaN(noUnitsNum) === false) {
-
-            parsedSettings.columnHeight = HTMLSizing.create().setWidth(noUnitsNum).setUnits(parsed.unitStr);
-        }
+        parsedSettings.columnHeight = parsed;
     }
     else {
 
@@ -475,35 +457,6 @@ function parseForMultiSettings(originalValue: string): string[] {
     })
 
     return settings;
-}
-
-function getLengthUnit(lengthStr: string): { isValid: boolean, unitStr: string } {
-
-    let lastChar = lengthStr.slice(lengthStr.length - 1);
-    let lastTwoChars = lengthStr.slice(lengthStr.length - 2);
-
-    let unitStr = ""
-    let isValid = false;
-    if(lastChar === "%") {
-        unitStr = lastChar;
-        isValid = true;
-    }
-    else if(lastTwoChars === "cm" ||
-            lastTwoChars === "mm" ||
-            lastTwoChars === "in" ||
-            lastTwoChars === "px" ||
-            lastTwoChars === "pt" ||
-            lastTwoChars === "pc" ||
-            lastTwoChars === "em" ||
-            lastTwoChars === "ex" ||
-            lastTwoChars === "ch" ||
-            lastTwoChars === "vw" ||
-            lastTwoChars === "vh" ) {
-        unitStr = lastTwoChars;
-        isValid = true;
-    }
-
-    return { isValid: isValid, unitStr: unitStr }
 }
 
 const CODEBLOCK_REGION_ID_REGEX_STRS = [

@@ -33,6 +33,52 @@ export class HTMLSizing {
     public static create(): HTMLSizing {
         return new HTMLSizing(0, "px");
     }
+
+    public static parseToSizing(sizingText: string): HTMLSizing | null {
+
+        let unitData = HTMLSizing.getLengthUnit(sizingText);
+        if(unitData.isValid === true) {
+
+            let units: string = unitData.unitStr
+            let sizeText: string = sizingText.replace(units, "").trim();
+            let size: number = parseInt(sizeText);
+            if(isNaN(size)) {
+                return null;
+            }
+
+            return HTMLSizing.create().setWidth(size).setUnits(units);
+        }
+        return null;
+    }
+
+    public static  getLengthUnit(lengthStr: string): { isValid: boolean, unitStr: string } {
+
+        let lastChar = lengthStr.slice(lengthStr.length - 1);
+        let lastTwoChars = lengthStr.slice(lengthStr.length - 2);
+    
+        let unitStr = ""
+        let isValid = false;
+        if(lastChar === "%") {
+            unitStr = lastChar;
+            isValid = true;
+        }
+        else if(lastTwoChars === "cm" ||
+                lastTwoChars === "mm" ||
+                lastTwoChars === "in" ||
+                lastTwoChars === "px" ||
+                lastTwoChars === "pt" ||
+                lastTwoChars === "pc" ||
+                lastTwoChars === "em" ||
+                lastTwoChars === "ex" ||
+                lastTwoChars === "ch" ||
+                lastTwoChars === "vw" ||
+                lastTwoChars === "vh" ) {
+            unitStr = lastTwoChars;
+            isValid = true;
+        }
+    
+        return { isValid: isValid, unitStr: unitStr }
+    }
 }
 
 const ALL_MOUSE_STATES = [
