@@ -604,6 +604,9 @@ ${editor.getDoc().getSelection()}`
                 let clientHeight = getContentHeightFromLeaf(leaf);
                 settings.columnHeight = HTMLSizing.create().setWidth(clientHeight).setUnits("px");
             }
+            else {
+                settings.columnHeight = HTMLSizing.create().setWidth(1000).setUnits("px");
+            }
             regionalContainer.setRegionParsedSettings(settings);
             
             // Re-Render after small delay.
@@ -645,6 +648,9 @@ ${editor.getDoc().getSelection()}`
             if(leaf) {
                 let clientHeight = getContentHeightFromLeaf(leaf);
                 settings.columnHeight = HTMLSizing.create().setWidth(clientHeight).setUnits("px");
+            }
+            else {
+                settings.columnHeight = HTMLSizing.create().setWidth(1000).setUnits("px");
             }
             regionalContainer.setRegionParsedSettings(settings);
 
