@@ -34,7 +34,7 @@ export class ReflowRegionManager extends RegionManager {
     private renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
         let verticalColumnParent = createDiv({
-            cls: `${MultiColumnLayoutCSS.ReflowContainerDiv}`
+            cls: ``
         });
 
         /**
@@ -56,8 +56,6 @@ export class ReflowRegionManager extends RegionManager {
 
     private appendElementsToColumns(verticalColumnParent: HTMLDivElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
 
-        console.group("Appending");
-
         this.domList.forEach((el: DOMObject, index: number) => { 
 
             // We only want to attempt to update the elementRenderedHeight if it is 0 and if it is not an unrendered element such as a endregion tag.
@@ -78,12 +76,11 @@ export class ReflowRegionManager extends RegionManager {
 
         let columnIndex = 0;
         let currentColumnHeight = 0;
-
+        let divCount = 1;
         let colDivsCallback = (settings: MultiColumnSettings, multiColumnParent: HTMLDivElement) => {
             return this.getColumnContentDivs(settings, multiColumnParent);
         };
-        let columns = getFormattedColumnDivs(settings, verticalColumnParent, colDivsCallback);
-
+        let columns = getFormattedColumnDivs(settings, verticalColumnParent, colDivsCallback, divCount);
         function checkShouldSwitchColumns(nextElementHeight: number) {
 
             if (currentColumnHeight + nextElementHeight < maxColumnContentHeight) {
@@ -91,7 +88,8 @@ export class ReflowRegionManager extends RegionManager {
             }
 
             if((columnIndex + 1) >= columns.length) {
-                columns = columns.concat(getFormattedColumnDivs(settings, verticalColumnParent, colDivsCallback));
+                divCount++;
+                columns = columns.concat(getFormattedColumnDivs(settings, verticalColumnParent, colDivsCallback, divCount));
             }
             columnIndex++;
             currentColumnHeight = 0;
@@ -199,7 +197,11 @@ export class ReflowRegionManager extends RegionManager {
     }
 }
 
-function getFormattedColumnDivs(settings: MultiColumnSettings, verticalColumnParent: HTMLDivElement, getColumnContentDivs: (settings: MultiColumnSettings, multiColumnParent: HTMLDivElement) => HTMLDivElement[]) {
+function getFormattedColumnDivs(
+    settings: MultiColumnSettings, 
+    verticalColumnParent: HTMLDivElement, 
+    getColumnContentDivs: (settings: MultiColumnSettings, multiColumnParent: HTMLDivElement) => HTMLDivElement[],
+    divCount: number) {
         
     let multiColumnParent = verticalColumnParent.createDiv({
         cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} \
@@ -207,6 +209,9 @@ function getFormattedColumnDivs(settings: MultiColumnSettings, verticalColumnPar
               ${MultiColumnLayoutCSS.ContentOverflowHidden_Y};
               `
     });
+    if(divCount > 1) {
+        multiColumnParent.addClass(`${MultiColumnLayoutCSS.ReflowContainerDiv}`);
+    }
 
     let columnDivs = getColumnContentDivs(settings, multiColumnParent);
     if (settings.drawShadow === true) {
