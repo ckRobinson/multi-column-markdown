@@ -87,20 +87,6 @@ export class ReflowRegionManager extends RegionManager {
             return this.getColumnContentDivs(settings, multiColumnParent);
         };
         let columns = getFormattedColumnDivs(settings, verticalColumnParent, colDivsCallback, divCount);
-        function checkShouldSwitchColumns(nextElementHeight: number) {
-
-            if (currentColumnHeight + nextElementHeight < maxColumnContentHeight) {
-                return;
-            }
-
-            if((columnIndex + 1) >= columns.length) {
-                divCount++;
-                columns = columns.concat(getFormattedColumnDivs(settings, verticalColumnParent, colDivsCallback, divCount));
-            }
-            columnIndex++;
-            currentColumnHeight = 0;
-        }
-
         for (let i = 0; i < regionElements.length; i++) {
 
             if (regionElements[i].tag === DOMObjectTag.none ||
@@ -189,15 +175,31 @@ export class ReflowRegionManager extends RegionManager {
                  * appending the item to the column div. This keeps the main DOM
                  * cleaner by removing other items and placing them all within
                  * a region container.
-                 * 
-                 * Removing the end column tag as an option for now.
                  */
-                // if (regionElements[i].tag === DOMObjectTag.columnBreak &&
-                //    (columnIndex + 1) < settings.numberOfColumns) {
+                if (regionElements[i].tag === DOMObjectTag.columnBreak) {
 
-                //     columnIndex++;
-                //     currentColumnHeight = 0;
-                // }
+                    checkCreateNewColumns();
+                    columnIndex++;
+                    currentColumnHeight = 0;
+                }
+            }
+        }
+
+        function checkShouldSwitchColumns(nextElementHeight: number) {
+
+            if (currentColumnHeight + nextElementHeight < maxColumnContentHeight) {
+                return;
+            }
+
+            checkCreateNewColumns();
+            columnIndex++;
+            currentColumnHeight = 0;
+        }
+
+        function checkCreateNewColumns() {
+            if ((columnIndex + 1) >= columns.length) {
+                divCount++;
+                columns = columns.concat(getFormattedColumnDivs(settings, verticalColumnParent, colDivsCallback, divCount));
             }
         }
     }
