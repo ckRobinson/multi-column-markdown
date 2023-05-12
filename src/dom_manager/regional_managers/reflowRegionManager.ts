@@ -54,33 +54,25 @@ export class ReflowRegionManager extends RegionManager {
         this.appendElementsToColumns(verticalColumnParent, regionElements, settings);
     }
 
-    private getFormattedColumnDivs(settings: MultiColumnSettings, verticalColumnParent: HTMLDivElement) {
-        
-        let multiColumnParent = verticalColumnParent.createDiv({
-            cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} \
-                  ${MultiColumnLayoutCSS.ContentOverflowAutoScroll_X} \
-                  ${MultiColumnLayoutCSS.ContentOverflowHidden_Y};
-                  `
-        });
-
-        let columnDivs = this.getColumnContentDivs(settings, multiColumnParent);
-        if (settings.drawShadow === true) {
-            multiColumnParent.addClass(MultiColumnStyleCSS.RegionShadow);
-        }
-        for (let i = 0; i < columnDivs.length; i++) {
-            if (shouldDrawColumnBorder(i, settings) === true) {
-                columnDivs[i].addClass(MultiColumnStyleCSS.ColumnBorder);
-            }
-
-            if (settings.drawShadow === true) {
-                columnDivs[i].addClass(MultiColumnStyleCSS.ColumnShadow);
-            }
-        }
-
-        return columnDivs
-    }
-
     private appendElementsToColumns(verticalColumnParent: HTMLDivElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
+
+        console.group("Appending");
+
+        this.domList.forEach((el: DOMObject, index: number) => { 
+
+            // We only want to attempt to update the elementRenderedHeight if it is 0 and if it is not an unrendered element such as a endregion tag.
+            if(el.elementRenderedHeight === 0 &&
+                el.tag !== DOMObjectTag.columnBreak &&
+                el.tag !== DOMObjectTag.endRegion &&
+                el.tag !== DOMObjectTag.regionSettings &&
+                el.tag !== DOMObjectTag.startRegion) {
+
+                // Add element to rendered div so we can extract the rendered height.
+                verticalColumnParent.appendChild(el.originalElement)
+                el.elementRenderedHeight = el.originalElement.clientHeight
+                verticalColumnParent.removeChild(el.originalElement)
+            }
+        })
 
         let maxColumnContentHeight = settings.columnHeight.sizeValue
 
