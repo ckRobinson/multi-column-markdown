@@ -600,12 +600,12 @@ ${editor.getDoc().getSelection()}`
             let settings = getMultiColumnSettingsFromFrontmatter(ctx);
             
             let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
-            if(leaf) {
-                let clientHeight = getContentHeightFromLeaf(leaf);
+            let clientHeight = calcVisibleClietHeight(leaf, this.app.workspace);
+            if(settings.columnHeight === null) {
                 settings.columnHeight = HTMLSizing.create().setWidth(clientHeight).setUnits("px");
             }
             else {
-                settings.columnHeight = HTMLSizing.create().setWidth(1000).setUnits("px");
+                settings.columnHeight = settings.columnHeight.convertToPX(this.app.workspace.containerEl);
             }
             regionalContainer.setRegionParsedSettings(settings);
             
@@ -645,12 +645,13 @@ ${editor.getDoc().getSelection()}`
 
             let settings = getMultiColumnSettingsFromFrontmatter(ctx);
             let leaf = getLeafFromFilePath(this.app.workspace, ctx.sourcePath);
-            if(leaf) {
-                let clientHeight = getContentHeightFromLeaf(leaf);
+
+            let clientHeight = calcVisibleClietHeight(leaf, this.app.workspace);
+            if(settings.columnHeight === null) {
                 settings.columnHeight = HTMLSizing.create().setWidth(clientHeight).setUnits("px");
             }
             else {
-                settings.columnHeight = HTMLSizing.create().setWidth(1000).setUnits("px");
+                settings.columnHeight = settings.columnHeight.convertToPX(this.app.workspace.containerEl);
             }
             regionalContainer.setRegionParsedSettings(settings);
 
