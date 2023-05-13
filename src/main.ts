@@ -840,13 +840,16 @@ ${editor.getDoc().getSelection()}`
 }
 
 function setElementCSS(currentObject: DOMObject, el: HTMLElement) {
-    if (currentObject.tag === DOMObjectTag.endRegion) {
+    setElementCSSByTag(currentObject.tag, el);
+}
+function setElementCSSByTag(tag: DOMObjectTag, el: HTMLElement) {
+    if (tag === DOMObjectTag.endRegion) {
         el.addClass(MultiColumnStyleCSS.RegionEndTag);
     }
-    else if (currentObject.tag === DOMObjectTag.columnBreak) {
+    else if (tag === DOMObjectTag.columnBreak) {
         el.addClass(MultiColumnStyleCSS.ColumnEndTag);
     }
-    else if (currentObject.tag === DOMObjectTag.regionSettings) {
+    else if (tag === DOMObjectTag.regionSettings) {
         el.addClass(MultiColumnStyleCSS.RegionSettings);
     }
     else {
