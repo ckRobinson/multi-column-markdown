@@ -271,7 +271,7 @@ ${editor.getDoc().getSelection()}`
             let docString = info.text;
             let docLines = docString.split("\n");
 
-            let reflowFrontmatter = isMultiColumnReflow(ctx);
+            let reflowFrontmatter = isMultiColumnReflow(ctx.frontmatter);
             if(reflowFrontmatter === true) {
  
                 this.renderDocReflow(el, ctx, sourcePath, fileDOMManager, docString, info);
@@ -1032,22 +1032,26 @@ const FRONTMATTER_REGEX: RegExp[] =
 /Multi[- ]*Column *Markdown/i,
 /Multi[- ]*Column *Reflow/i
 ]
-function isMultiColumnReflow(ctx: MarkdownPostProcessorContext): boolean {
+function isMultiColumnReflow(frontmatter: any): boolean {
 
-    if(ctx.frontmatter === null ||
-       ctx.frontmatter === undefined) {
+    if(frontmatter === null ||
+       frontmatter === undefined) {
         return false;
     }
 
     for(let regex of FRONTMATTER_REGEX) {
 
-        let frontmatterReflowData = parseFrontMatterEntry(ctx.frontmatter, regex);
+        let frontmatterReflowData = parseFrontMatterEntry(frontmatter, regex);
         if(frontmatterReflowData !== null) {
             return true;
         }
     }
 
-    let [keys, values] = Object.entries(ctx.frontmatter);
+    let [keys, values] = Object.entries(frontmatter);
+    if(keys === undefined) {
+        return false;
+    }
+
     for(let key of keys) {
 
         if(typeof key !== "string") {
