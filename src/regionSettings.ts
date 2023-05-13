@@ -41,7 +41,10 @@ type ColumnLayoutTuple = typeof ALL_LAYOUTS;
 export type ColumnLayout = ColumnLayoutTuple[number];
 
 export function isColumnLayout(value: string): value is ColumnLayout {
-  return ALL_LAYOUTS.includes(value as ColumnLayout)
+  return ALL_LAYOUTS.includes(value.toLowerCase() as ColumnLayout)
+}
+export function validateColumnLayout(value: string | ColumnLayout): ColumnLayout {
+    return (value.toLowerCase() as ColumnLayout)
 }
 
 const ALL_SINGLE_COLUMN_SIZES = [
@@ -53,7 +56,10 @@ const ALL_SINGLE_COLUMN_SIZES = [
 type SingleColumnSizeTuple = typeof ALL_SINGLE_COLUMN_SIZES;
 export type SingleColumnSize = SingleColumnSizeTuple[number];
 export function isSingleColumnSize(value: string): value is SingleColumnSize {
-    return ALL_SINGLE_COLUMN_SIZES.includes(value as SingleColumnSize)
+    return ALL_SINGLE_COLUMN_SIZES.includes(value.toLowerCase() as SingleColumnSize)
+}
+export function validateSingleColumnSize(value: string | SingleColumnSize): SingleColumnSize {
+    return (value.toLowerCase() as SingleColumnSize)
 }
 
 export enum ContentOverflowType {

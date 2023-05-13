@@ -7,7 +7,7 @@
  */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings, columnSpacingState, getIndexedClampedArrayValue, isColumnLayout } from "../../regionSettings";
+import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings, columnSpacingState, getIndexedClampedArrayValue, isColumnLayout, validateColumnLayout } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { FileDOMManager } from '../domManager';
 import { ElementRenderType, getElementRenderType } from 'src/utilities/elementRenderTypeParser';
@@ -499,6 +499,7 @@ export abstract class RegionManager {
            isColumnLayout(settings.columnSize)     && 
            (settings.numberOfColumns === 2 || settings.numberOfColumns === 3)) {      
 
+            settings.columnSize = validateColumnLayout(settings.columnSize)
             multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_X);
             multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowHidden_X);
 
@@ -512,6 +513,7 @@ export abstract class RegionManager {
            settings.columnSize === "standard" && 
            settings.numberOfColumns > 3 ){
 
+            settings.columnSize = validateColumnLayout(settings.columnSize);
             multiColumnParent.removeClass(MultiColumnLayoutCSS.ContentOverflowAutoScroll_X);
             multiColumnParent.addClass(MultiColumnLayoutCSS.ContentOverflowHidden_X);
 

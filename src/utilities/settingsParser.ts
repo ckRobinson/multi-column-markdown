@@ -7,7 +7,7 @@
  */
 
 import { HTMLSizing } from "src/utilities/interfaces";
-import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType, AlignmentType, isColumnLayout } from "../regionSettings";
+import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType, AlignmentType, isColumnLayout, validateColumnLayout } from "../regionSettings";
 
 /**
  * Here we define all of the valid settings strings that the user can enter for each setting type.
@@ -224,7 +224,7 @@ function checkSettingDefinesColumnSize(settingsLine: string, parsedSettings: Mul
         // If there is only 1 item we attempt to parse out a layout type. If we get a valid item we 
         // return here.
         if (isColumnLayout(settingValues[0])) {
-            parsedSettings.columnSize = settingValues[0];
+            parsedSettings.columnSize = validateColumnLayout(settingValues[0]);
             return;
         }
     }
@@ -259,7 +259,7 @@ function checkSettingDefinesColumnSize(settingsLine: string, parsedSettings: Mul
             }
 
             if (isColumnLayout(settingValues[0])) {
-                parsedSettings.columnSize = settingValues[0];
+                parsedSettings.columnSize = validateColumnLayout(settingValues[0]);
                 return;
             }
         }

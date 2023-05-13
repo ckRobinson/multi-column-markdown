@@ -19,6 +19,9 @@ export type PandocNumberOfColumns = PandocNumberOfColumnsTuple[number];
 export function isPandocNumberOfColumns(value: string): value is PandocNumberOfColumns {
     return PANDOC_ENGLISH_NUMBER_OF_COLUMNS.includes(value as PandocNumberOfColumns);
 }
+export function validatePandocNumberOfColumns(value: string | PandocNumberOfColumns): PandocNumberOfColumns {
+    return (value.toLowerCase() as PandocNumberOfColumns);
+}
 export function pandocNumberOfColumnsToValue(value: PandocNumberOfColumns): number {
     switch (value) {
         case "two":
@@ -256,7 +259,7 @@ export function parsePandocSettings(pandocUserSettings: string, colCount: string
     let colCountDefined = false;
     if (colCount !== "" && isPandocNumberOfColumns(colCount)) {
         colCountDefined = true;
-        defaultSettings.numberOfColumns = pandocNumberOfColumnsToValue(colCount);
+        defaultSettings.numberOfColumns = pandocNumberOfColumnsToValue(validatePandocNumberOfColumns(colCount));
     }
 
     if (pandocUserSettings.replace(" ", "") === "") {
