@@ -666,6 +666,18 @@ ${editor.getDoc().getSelection()}`
         let relativeTexts: ElementRelativeLocationData = extractElementRelativeLocationData(docLines, info);
         relativeTexts.linesBelowArray =  multiColumnParser.getEndBlockBelow(relativeTexts.linesBelowArray);
 
+        if(multiColumnParser.containsStartTag(relativeTexts.textOfElement) ||
+           multiColumnParser.containsColSettingsTag(relativeTexts.textOfElement)) {
+
+            if(multiColumnParser.containsStartTag(relativeTexts.textOfElement)) {
+                setElementCSSByTag(DOMObjectTag.startRegion, el);
+            }
+            else if(multiColumnParser.containsColSettingsTag(relativeTexts.textOfElement)) {
+                setElementCSSByTag(DOMObjectTag.regionSettings, el);
+            }
+            return;
+        }
+
         let startBockAbove: multiColumnParser.StartTagData = {
             linesAboveArray: relativeTexts.linesAboveArray,
             startBlockKey: "Multi-Column Reflow Region",
