@@ -98,7 +98,7 @@ Largest Column: standard
 
 
 
-=== end-multi-column
+--- end-multi-column
 
 ${editor.getDoc().getSelection()}`
                     );
@@ -206,6 +206,26 @@ ${editor.getDoc().getSelection()}`
                         "Encountered an error addign IDs to multi-column regions. Please try again later."
                     );
                 }
+            }
+        });
+        this.addCommand({            
+            id: `mcm-Toggle-Document-Reflow`,
+            name: `Setup Multi-Column Reflow - Multi-Column Markdown`,
+            editorCallback: (editor, view) => {
+
+                app.fileManager.processFrontMatter(view.file, (frontmatter) => {
+
+                    let isReflow = isMultiColumnReflow(frontmatter);
+                    if(isReflow) {
+                        return;
+                    }
+
+                    frontmatter["Multi-Column Markdown"] = [
+                        {"Number of Columns": 2},
+                        {"Column Size": "Standard"}
+                    ]
+                    view.editor.refresh()
+                });
             }
         });
 
