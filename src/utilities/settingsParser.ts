@@ -70,6 +70,9 @@ const AUTO_LAYOUT_SETTING_STRS = [
     "auto layout",
     "fluid div",
     "fluid divs",
+    "fluid columns",
+    "fluid cols",
+    "fluid col"
 ]
 const AUTO_LAYOUT_REGEX_ARR: RegExp[] = AUTO_LAYOUT_SETTING_STRS.map(convertStringToSettingsRegex).map((value) => {
     return new RegExp(value, "i");
