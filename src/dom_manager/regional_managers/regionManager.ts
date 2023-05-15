@@ -265,12 +265,22 @@ export abstract class RegionManager {
              */
             if (elementType !== ElementRenderType.specialRender &&
                 elementType !== ElementRenderType.specialSingleElementRender && 
-                elementType !== ElementRenderType.unRendered) {
+                elementType !== ElementRenderType.unRendered && 
+                elementType !== ElementRenderType.buttonOnClickRender) {
 
                 // If the new result returns as a special renderer we update so
                 // this wont run again for this item.
                 elementType = getElementRenderType(this.domList[i].originalElement);
                 this.domList[i].originalElement.clientHeight;
+            }
+
+            if(elementType === ElementRenderType.buttonOnClickRender &&
+               this.domList[i].clonedElementReadyForUpdate() === true) {
+
+                this.domList[i].elementType = elementType;
+                cloneElement(this.domList[i]);
+                fixOnClick(this.domList[i]);
+                continue;
             }
 
             if (elementType === ElementRenderType.specialRender ||
