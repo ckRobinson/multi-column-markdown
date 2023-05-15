@@ -76,8 +76,8 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
     fixElementRender(el: Element): Element {
 
-        let fixedEl = fixImageRender(el);
-        fixedEl = fixPDFRender(el);
+        let fixedEl = fixImageRender(el, this.sourceFile.path);
+        fixedEl = fixPDFRender(fixedEl, this.sourceFile.path);
         fixedEl = fixTableRender(fixedEl);
         return fixedEl;
     }
@@ -167,7 +167,7 @@ function fixTableRender(el: Element): Element {
     return parentDiv;
 }
 
-function fixPDFRender(el: Element): Element {
+function fixPDFRender(el: Element, source: string): Element {
 
     let embed = getEmbed(el);
     if(embed === null) {
@@ -176,20 +176,20 @@ function fixPDFRender(el: Element): Element {
 
     let alt = embed.getAttr("alt")
     let src = embed.getAttr("src")
-
-    // If the link source is not an image we dont want to make any adjustments.
-    if(filenameIsImage(src) === true) {
-        return el;
-    }
-    if(filenameIsPDF(src) === false) {
+    if(src === null) {
         return el;
     }
 
-    // Try to find the image file in the vault. This is very inefficient but works for now.
-    let resourcePath = attemptToGetResourcePath(src, isPDFExtension);
-    if(resourcePath === "") {
+    let file: TFile = app.metadataCache.getFirstLinkpathDest(src, source);
+    if(file === null) {
         return el;
     }
+    
+    if(isPDFExtension(file.extension) === false) {
+        return el;
+    }
+
+    let resourcePath = app.vault.getResourcePath(file);
 
     // If we found the resource path then we update the element to be a proper PDF render.
     console.log("Fixing embed.");
@@ -207,7 +207,7 @@ function fixPDFRender(el: Element): Element {
     return fixedEl;
 }
 
-function fixImageRender(el: Element): Element {
+function fixImageRender(el: Element, source: string): Element {
 
     let embed = getEmbed(el);
     if(embed === null) {
@@ -217,15 +217,17 @@ function fixImageRender(el: Element): Element {
     let customWidth = embed.attributes.getNamedItem("width")
     let alt = embed.getAttr("alt")
     let src = embed.getAttr("src")
-    
-    // If the link source is not an image we dont want to make any adjustments.
-    if(filenameIsImage(src) === false) {
+    if(src === null) {
         return el;
     }
 
-    // Try to find the image file in the vault. This is very inefficient but works for now.
-    let resourcePath = attemptToGetResourcePath(src, isImageExtension);
-    if(resourcePath === "") {
+    let file: TFile = app.metadataCache.getFirstLinkpathDest(src, source);
+    if(file === null) {
+        return el;
+    }
+    
+    // If the link source is not an image we dont want to make any adjustments.
+    if(isImageExtension(file.extension) === false) {
         return el;
     }
 
@@ -234,34 +236,15 @@ function fixImageRender(el: Element): Element {
     })
     fixedEl.setAttr("alt", alt);
 
+    let resourcePath = app.vault.getResourcePath(file);
     let image = fixedEl.createEl("img");
     image.setAttr("src", resourcePath);
 
     if(customWidth !== null) {
-
         image.setAttr("width", customWidth.value);
     }
 
     return fixedEl;
-}
-
-function attemptToGetResourcePath(src: string, fileExtensionCheck: (filename: string) => boolean = () => { return true; }) {
-    let aTFiles = app.vault.getAllLoadedFiles();
-    let resourcePath = "";
-    for (let i = 0; i < aTFiles.length; i++) {
-
-        let abstractFile = aTFiles[i];
-        if (abstractFile instanceof TFile === false) {
-            continue;
-        }
-        let file = abstractFile as TFile;
-
-        if (file.name === src && fileExtensionCheck(file.extension) === true) {
-            resourcePath = app.vault.getResourcePath(file);
-            break;
-        }
-    }
-    return resourcePath;
 }
 
 function fixExternalLinks(el: Element): Element {
@@ -320,17 +303,6 @@ function getEmbed(el: Element): Element | null {
     return null;
 }
 
-function filenameIsImage(filename: string): boolean {
-
-    let parts = filename.split(".");
-    if(parts.length <= 1) {
-        return false;
-    }
-
-    let extension = parts.last();
-    return isImageExtension(extension);
-}
-
 function isImageExtension(extension: string): boolean {
 
     extension = extension.toLowerCase();
@@ -346,17 +318,8 @@ function isImageExtension(extension: string): boolean {
     return false;
 }
 
-function filenameIsPDF(filename: string): boolean {
-    let parts = filename.split(".");
-    if(parts.length <= 1) {
-        return false;
-    }
-
-    let extension = parts.last();
-    return isPDFExtension(extension);
-}
-
 function isPDFExtension(extension: string): boolean {
     return extension.toLowerCase() === "pdf";
+}
 
 }
