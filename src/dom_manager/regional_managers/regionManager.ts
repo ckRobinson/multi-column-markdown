@@ -802,6 +802,23 @@ function buildStandardLayouts(settings: MultiColumnSettings, multiColumnParent: 
     }
 }
 
+function fixOnClick(domElement: DOMObject) {
+
+    let originalElement = domElement.originalElement;
+    let clonedElement = domElement.clonedElement;
+
+    let originalButton = originalElement.getElementsByTagName("button")[0];
+    let clonedButton = clonedElement.getElementsByTagName("button")[0];
+
+    if(originalButton === undefined || clonedButton === undefined) {
+        return;
+    }
+
+    clonedButton.onClickEvent((ev) => {
+
+        originalButton.click();
+    })
+}
 
 function cloneElement(domElement: DOMObject) {
 
