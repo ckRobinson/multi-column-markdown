@@ -11,12 +11,17 @@ export enum ElementRenderType {
     undefined,
     normalRender,
     specialRender,
+    buttonOnClickRender,
     specialSingleElementRender,
     canvasRenderElement,
     unRendered
 }
 
 export function getElementRenderType(element: HTMLElement): ElementRenderType {
+
+    if(isButtonPlugin_CrossCompatibilty(element) === true) {
+        return ElementRenderType.buttonOnClickRender;
+    }
 
     /**
      * The Dataview plugin needs to be constantly checked if the clone should be
@@ -191,4 +196,18 @@ export function getHeadingCollapseElement(element: HTMLElement): Element | null 
 function isCustomIFrame(element: HTMLElement) {
     let isFrame = element.getElementsByClassName("custom-frames-frame").length !== 0;
     return isFrame;
+}
+
+function isButtonPlugin_CrossCompatibilty(element: HTMLElement) {
+    let internalEmbed = element.getElementsByClassName("internal-embed")[0];
+    if(internalEmbed === undefined) {
+        return false;
+    }
+
+    let src = internalEmbed.getAttr("src");
+    if(src.contains("Buttons#^")) {
+        return true;
+    }
+
+    return false;
 }
