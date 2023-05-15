@@ -388,7 +388,7 @@ export abstract class RegionManager {
             
             // console.log("Updating Cloned Element.", ElementRenderType[domElement.elementType], clonedElementHeight, originalElementHeight)
             // Update clone and reference.
-            cloneElement();
+            cloneElement(domElement);
         }
 
         if(domElement.elementType === ElementRenderType.canvasRenderElement && 
@@ -463,24 +463,6 @@ export abstract class RegionManager {
                 containerElement.children[i].detach();
             }
             containerElement.appendChild(originalElement);
-            containerElement.appendChild(clonedElement);
-        }
-
-        function cloneElement() {
-            domElement.updateClonedElement(originalElement.cloneNode(true) as HTMLDivElement);
-            clonedElement = domElement.clonedElement;
-
-            /**
-             * If we updated the cloned element, we want to also update the
-             * element rendered in the parent container.
-             */
-            for (let i = containerElement.children.length - 1; i >= 0; i--) {
-                containerElement.children[i].detach();
-            }
-
-            // Update CSS, we add cloned class and remove classes from originalElement that do not apply.
-            clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
-            clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
             containerElement.appendChild(clonedElement);
         }
     }
@@ -818,4 +800,28 @@ function buildStandardLayouts(settings: MultiColumnSettings, multiColumnParent: 
                 break;
         }
     }
+}
+
+
+function cloneElement(domElement: DOMObject) {
+
+    let originalElement = domElement.originalElement;
+    let clonedElement = domElement.clonedElement;
+    let containerElement: HTMLDivElement = domElement.elementContainer;
+
+    domElement.updateClonedElement(originalElement.cloneNode(true) as HTMLDivElement);
+    clonedElement = domElement.clonedElement;
+
+    /**
+     * If we updated the cloned element, we want to also update the
+     * element rendered in the parent container.
+     */
+    for (let i = containerElement.children.length - 1; i >= 0; i--) {
+        containerElement.children[i].detach();
+    }
+
+    // Update CSS, we add cloned class and remove classes from originalElement that do not apply.
+    clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
+    clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
+    containerElement.appendChild(clonedElement);
 }
