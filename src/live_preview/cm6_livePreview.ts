@@ -12,7 +12,7 @@ import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
 import { containsRegionStart, findEndTag, findSettingsCodeblock, findStartCodeblock, findStartTag } from "../utilities/textParser";
 import { PandocRegexData, findPandoc, parsePandocSettings } from "src/utilities/pandocParser";
 import { MultiColumnMarkdown_DefinedSettings_LivePreview_Widget, MultiColumnMarkdown_LivePreview_Widget } from "./mcm_livePreview_widget";
-import { editorLivePreviewField } from "obsidian";
+import { editorInfoField, editorLivePreviewField } from "obsidian";
 import { RegionType, StartTagRegexMatch, mouseState } from "src/utilities/interfaces";
 import { MultiColumnSettings } from "src/regionSettings";
 import { parseColumnSettings } from "src/utilities/settingsParser";
@@ -155,13 +155,15 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 							settingsText = foundSettings.settingsText;
 						}
 
+						const editorInfo = transaction.state.field(editorInfoField);
+
 						// At this point if the cursor isnt in the region we pass the data to the
 						// element to be rendered.
 						builder.add(
 							startIndex,
 							endIndex,
 							Decoration.replace({
-								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText, userSettings, settingsText),
+								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText, userSettings, editorInfo.file, settingsText),
 							})
 						);
 					}

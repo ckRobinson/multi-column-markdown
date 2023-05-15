@@ -26,12 +26,13 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     settingsText: string;
     regionSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
     regionManager: RegionManager;
-
-    constructor(contentData: string, userSettings: MultiColumnSettings, settingsText: string = "") {
+    sourceFile: TFile;
+    constructor(contentData: string, userSettings: MultiColumnSettings, sourceFile: TFile, settingsText: string = "") {
         super();
         this.contentData = contentData;
         this.settingsText = settingsText;
-        
+        this.sourceFile = sourceFile;
+
         if(userSettings !== null) {
             this.regionSettings = userSettings;
         }
