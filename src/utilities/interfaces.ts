@@ -44,7 +44,6 @@ export class HTMLSizing {
             case "pt":
             case "pc":
                 let absUnitsResult = pixels(`${this.toString()}`);
-                console.debug(`Converting ${this.sizeValue}${this.sizeUnits} to ${absUnitsResult}px`);
                 return new HTMLSizing(absUnitsResult, "px");
             case "vw":
             case "vh":
@@ -79,7 +78,6 @@ export class HTMLSizing {
                 exToPxResult = this.sizeValue * DEFAULT_SIZE;
             } 
 
-            console.debug(`Converting ${this.sizeValue}${this.sizeUnits} to ${exToPxResult}px`);
             parentElement.removeChild(el);
             return new HTMLSizing(exToPxResult, "px");
         }
@@ -100,7 +98,6 @@ export class HTMLSizing {
             if (sizing !== null) {
                 fontSize = sizing.sizeValue;
                 emToPxResult = fontSize * this.sizeValue;
-                console.debug(`Converting ${this.sizeValue}${this.sizeUnits} to ${emToPxResult}px`);
             }
 
             return new HTMLSizing(emToPxResult, "px");

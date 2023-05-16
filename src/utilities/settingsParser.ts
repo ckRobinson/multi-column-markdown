@@ -243,7 +243,7 @@ function checkSettingDefinesColumnSize(settingsLine: string, parsedSettings: Mul
 
     // If none are parsed properly to a width then we return a default.
     if(widths.length === 0) {
-        console.debug("Error parsing column layout or width, defaulting to standard layout.")
+        console.warn("Error parsing column layout or width, defaulting to standard layout.")
         parsedSettings.columnSize = "standard";
         return;
     }

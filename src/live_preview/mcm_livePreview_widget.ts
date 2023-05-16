@@ -242,7 +242,6 @@ function fixPDFRender(el: Element, source: string): Element {
     let resourcePath = app.vault.getResourcePath(file);
 
     // If we found the resource path then we update the element to be a proper PDF render.
-    console.log("Fixing embed.");
     let fixedEl = createDiv({
         cls: "internal-embed pdf-embed is-loaded",
     })

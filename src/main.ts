@@ -65,8 +65,6 @@ export default class MultiColumnMarkdown extends Plugin {
                 this.settings.renderOnMobile = !this.settings.renderOnMobile; 
                 await this.saveSettings();
 
-                console.log("render on mobile:", this.settings.renderOnMobile);
-
                 let noticeString = `Toggled mobile rendering ${this.settings.renderOnMobile ? "on" : "off"}.`
                 if(Platform.isMobile === true) {
                     noticeString += ` Please reload any open files for change to take effect.`
@@ -260,7 +258,7 @@ ${editor.getDoc().getSelection()}`
 
             let fileDOMManager = this.globalManager.getFileManager(sourcePath);
             if(fileDOMManager === null) {
-                console.log("Found null DOM manager. Could not process multi-column markdown.")
+                console.warn("Found null DOM manager. Could not process multi-column markdown.")
                 return;
             }
 

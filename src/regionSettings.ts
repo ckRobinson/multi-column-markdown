@@ -109,7 +109,6 @@ export function getDefaultMultiColumnSettings(): MultiColumnSettings {
 export function shouldDrawColumnBorder(index: number, settings: MultiColumnSettings): boolean {
 
     if(settings.drawBorder.length === 0) {
-        console.debug("Missing draw border value in settings data, using default state.")
         return true;
     }
 
@@ -119,7 +118,6 @@ export function shouldDrawColumnBorder(index: number, settings: MultiColumnSetti
 export function columnOverflowState(index: number, settings: MultiColumnSettings): ContentOverflowType {
 
     if(settings.contentOverflow.length === 0) {
-        console.debug("Missing content overflow value in settings data, using default state.")
         return ContentOverflowType.scroll
     }
 
@@ -129,7 +127,6 @@ export function columnOverflowState(index: number, settings: MultiColumnSettings
 export function columnAlignmentState(index: number, settings: MultiColumnSettings): AlignmentType {
 
     if(settings.alignment.length === 0) {
-        console.debug("Missing content alignment value in settings data, using default state.")
         return AlignmentType.left
     }
 
@@ -139,7 +136,6 @@ export function columnAlignmentState(index: number, settings: MultiColumnSetting
 export function columnSpacingState(index: number, settings: MultiColumnSettings): string {
 
     if(settings.columnSpacing.length === 0) {
-        console.debug("Missing column spacing value in settings data, using default state.")
         return "";
     }
 

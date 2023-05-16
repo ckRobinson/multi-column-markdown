@@ -267,9 +267,9 @@ export class TaskListDOMObject extends DOMObject {
             if(originalInput.length === 1) {
                 (originalInput[0] as HTMLInputElement).click();
             }
-            else {
-                console.error("Could not find checkbox to click.")
-            }
+            // else {
+            //     console.error("Could not find checkbox to click.")
+            // }
         }
     }
 
@@ -285,9 +285,9 @@ export class TaskListDOMObject extends DOMObject {
 
                     this.checkboxElements.set(index, (originalInput[0] as HTMLInputElement))
                 }
-                else {
-                    console.error("Could not find checkbox element to return.", this.originalCheckboxes, index);
-                }
+                // else {
+                //     console.error("Could not find checkbox element to return.", this.originalCheckboxes, index);
+                // }
             }
         }
         return this.checkboxElements.get(index);
