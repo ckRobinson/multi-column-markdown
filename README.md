@@ -13,13 +13,40 @@ creative ways.
 <br>
 
 ---
+## **Core Features**
+---
+
+- Define customizable column layouts within your Obsidian documents.
+- Setup your columns to look how you want, being able to define number of columns, widths, spacing, text alignment and more.
+- Muliple syntax options including Pandoc compatible [fenced divs](https://github.com/dialoa/columns/blob/master/README.md).
+- Setup entire documents to automatically reflow into multiple columns when viewed in Obsidian's reading mode.
+
+
+# Table of Contents
+- [Usage](#usage)
+- [Syntax Reference](#syntax-reference)
+- [Region Settings](#region-settings)
+- [Multi-Column Reflow](#full-document-multi-column-reflow)
+- [Available Commands](#plugin-commands)
+- [Installation](#installation)
+- [Known Issues](#known-issues)
+- [Change Log](#change-log)
+
+---
+---
+
+<br>
+
+---
 ## **A Word On Live Preview**
 ---
 Live preivew has been supported in Multi-Column Markdown, however cross compatibilty with other plugins, anything that requires interaction (IE: button clicks), and more advanced, non-naitive markdown, Obsidian features may or may not be supported in this mode. 
 
 Due to how custom live preview plugins are implemented within CodeMirror6 and hook into Obsidian, I can not guarentee all plugins will render properly within live preview at this point. Plugins that do not render their content immediatly, such as needing to wait for a dataview query, do not render properly. 
 
-This plugin was originally intended for use only in Reading mode where plugins have more control over how content is rendered. *Most* plugins, interactive elements, advanced markdown, and visual stylings will render better and have far more cross compatibility in Reading mode.
+This plugin was originally intended for use only in Reading mode where plugins have more control over how content is rendered. *Most* plugins, interactive elements, advanced markdown, and visual stylings will render better and have more cross compatibility in Reading mode.
+
+<br>
 
 # Usage:
 
@@ -70,6 +97,11 @@ or
 ID: A_unique_region_ID_1\
 \```
 
+or
+
+::::: {.columns id=A_unique_region_ID_2}\
+_(See more about Pandoc's fenced divs syntax below.)_
+
 After defining the start tag you must declare an ID for the region. The ID is used to differentiate between different regions if there are multiple in the same document.
 
 Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
@@ -97,17 +129,68 @@ ID: A_unique_region_ID_2\
 *Any Additional Setting flags (see below)*\
 \```
 
+::::: {.columns id=A_unique_region_ID_2 *Any Additional Setting flags (see below)*}
+
+<br>
+
 #### **End a Column:**
 \--- column-end \---\
 \--- end-column \---\
 \--- column-break \---\
-\--- break-column \---
+\--- break-column \---\
+
+```
+::: columnbreak
+:::
+```
+_(New line after columnbreak required.)_
 
 <br>
 
 #### **End Multi-Column Region:**
 \--- end-multi-column\
-\--- multi-column-end
+\--- multi-column-end\
+::: _(This end region syntax is only valid when using the Pandoc fenced divs syntax to start a region.)_
+
+<br>
+
+### **Pandoc Fenced Divs Support**
+You can also use Pandoc's fenced divs syntax to define column regions. (For more detail on this syntax see [here](https://pandoc.org/MANUAL.html#divs-and-spans) and [here](https://github.com/dialoa/columns/blob/master/README.md).)
+
+To create a multicolumn region use: 
+```
+::: columns
+
+<Column Content>
+
+:::
+```
+
+To define multiple Pandoc regions on the same document, and to define region settings you must use the attributes syntax:
+
+```
+::::: {.columns property=value id=ID_ExampleID}
+
+<Column Content>
+
+:::::
+```
+Not providing an ID will cause regions to not render.
+
+All other settings can be defined within the attributes using the same setting flag names defined below.
+
+##### **What is supported with this syntax:**
+- Basic fenced divs column definition: '::: columns' or '::: {.columns}'
+- Specifying the number of columns with english words up to ten: '::: twocolumns', '::: {.three-columns}', etc.
+- Specifying the number of columns through attributes: '::: {.columns col-count=3}'
+- Specifying column gap through attributes: '::: {.columns columngap=3em}'
+- Specifying column breaks through column break div: :::: columnbreak\n::::
+##### **What is not supported:**
+- Recusive Column Regions. Recusive regions are not supported in Core MCM so will not render the same as an exported Pandoc PDF.
+- Spanning element. Elements that break up a column region to span across the view are not supported. You must manually end the region and start a new one.
+- Specifying 'column rule', as there is currently no way to define this with other syntax.
+- Justified or ragged column mode.
+- "Fluid Columns" by default. The fluid columns default of Pandoc's syntax is equivalent to MCM's Auto Layout. However auto layout has significant perforamce overhead in Live preview and due to this Pandoc syntax will not automatically flag regions to auto layout. You can however manually flag them by adding the setting to the attributes: ::: {.three-columns fluid-columns=true} or ::: {.three-columns auto-layout=true}
 
 <br>
 
@@ -251,6 +334,8 @@ _Can define on a per column basis with array syntax: EG: [Left, Center]_
 ####  **Auto Layout**
 - **Setting Flags**:
     - Auto Layout:
+    - Fluid Columns:
+    - Fluid Cols:
 - **Valid Selections**:
     - true
     - on
@@ -264,6 +349,44 @@ To use this feature set "Auto Layout: true" within the region settings.
 <br>
 
 ---
+## Full Document Multi-Column Reflow
+---
+Documents can be set to fully reflow into multiple columns while in Reading mode.
+
+
+#### **Syntax**
+To enable document reflow use Obsdian's frontmatter to provide the metadata for the file with the following syntax:
+
+EG:
+```
+---
+Multi-Column Markdown:
+  - Number of columns: 3
+  - Alignment: [Left, Center, Left]
+  - Border: off
+---
+
+First line of document.
+```
+
+All settings must be a list underneath the Multi-Column Markdown tag. If obsidian does not parse a valid syntax it will not render. You can use the "Setup Multi-Column Reflow" command to ensure proper syntax.
+
+**Features:**
+- Reflow automatically detects your document view size and sets the column heights to match, reducing the number of times you need to scroll through the document.
+    - Auto column height is overridable by defining the col-height in frontmatter settings using standard MCM syntax.
+    - Changes to the view size currently require a document reload to update layout.
+- User definable column breaks using default Multi-Column Markdown column break syntax.
+
+**Additional Notes:**
+- Just as with core MCM, the default Obsidian theme, all basic markdown syntax and rendered elements should be fully supported. However cross compatibility with other plugins, embeds, and themes are not guarenteed.
+- All manually set multi-column regions are overridden by the document reflow.
+
+**Known Issues:**
+- Changes to the document may require a file reload to properly update.
+- Export to PDF is currently not supported.
+- Long paragraphs of text will not be split across columns, as they are rendered as a single chunks of content by Obsidian.
+
+---
 ## Plugin Cross Compatibility.
 ---
 Not all plugins will be cross compatable within a multi-column region. Depending on the implementation or use case, some plugins will either entierly not render, render incorrectly, or render but be uninteractable. For the most part, due to how Obsidian plugins work, there is little that can be done at this stage to guarentee cross compatibility. And this is even more the case when using Live Preview. You can check the [Cross Compatibility](documentation/CrossCompatibility.md) sheet for plugins known to work within columns. Anything not on that list has not been tested. 
@@ -271,7 +394,7 @@ Not all plugins will be cross compatable within a multi-column region. Depending
 ---
 ## Obsidian Theming
 ---
-Just as with cross compatibilty above, multi-column regions may be affected by the Obsidian Theme you are running. There is very little non-layout dependent CSS within MCM but some themes may add or remove elements neccessary to properly render the columns. If regions do not render properly in a specific theme, feel free to open an issue and make sure to include what Obsidian theme you are running when describing the problem.
+Just as with cross compatibilty above, multi-column regions may be effected by the Obsidian Theme you are running. There is very little non-layout dependent CSS within MCM but some themes may add or remove elements neccessary to properly render the columns. If regions do not render properly in a specific theme, feel free to open an issue and make sure to include what Obsidian theme you are running when describing the problem.
 
 <br>
 
@@ -300,6 +423,11 @@ Will search the current document for any region start tags that are missing IDs 
 
 #### **Toggle Mobile Rendering - Multi-Column Markdown**
 Enables or disables column rendering on mobile devices only.
+
+<br>
+
+#### **Setup Multi-Column Reflow**
+Adds the default multi-column reflow tags and settings to the document frontmatter. Will not overwrite if already defined.
 
 <br><br>
 
@@ -355,9 +483,9 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
         - Swapping to a different file and back, or closing and reopeing the file will force a reload of the data and fix the render issue.
 
 ### Other
-- Keeping an extra eye on performance after the 0.7.0 release.
-- Opening large files can cause Obsidian to slow down and lag while the document is being parsed.
-    - As of 0.4.0 this should be less of an issue but still keeping an eye on it.
+- Exporting a document with pandoc columns that contains other embedded fenced divs will not export properly.
+- Changes to a document may require a file reload to properly update Multi-Column Reflow.
+- Long paragraphs of text will not be split across columns in Multi-Column Reflow, as they are rendered as a single chunks of content by Obsidian.
 <br><br>
 - The Obsidian API and this plugin are both still works in progress and both are subject to change. 
 
@@ -404,7 +532,7 @@ These syntax options are currently still supported but are being depreciated for
 - **Live preview scroll "fix"**
     - Added new CM6 module that attempts to alleviate the viewport scroll issue in live preview.
     - The module attempts to keep the viewport centered on the cursor by moving the view after Obsidian re-renders the document.
-    - Known issues:
+    - **Known issues:**
         - The viewport will appear to flash as it jumps to the new cursor location. This appears to be more or less noticable depending on the machine.
         - Swapping out and back into Obsidian causes the document to jump to the bottom of the document.
         - Clicking back into an editor view without moving the cursor can cause the viewport to jump to the bottom of the document.
@@ -412,25 +540,57 @@ These syntax options are currently still supported but are being depreciated for
     - Added support for the fenced dives syntax used with Pandoc per FR #71.
     - Not all of the fenced divs syntax is currently supported.
     - If you use multiple regions on the same document you must also include an ID within the attributes: ::: {columns id=A_unique_region_ID_4}
-    - What is supported:
-        - Basic Fenced Div column definition: ::: columns or ::: {.columns}
+    - **What is supported:**
+        - Basic fenced divs column definition: ::: columns or ::: {.columns}
         - Specifying the number of columns through english up to ten: ::: twocolumns, ::: {.three-columns}, etc.
         - Specifying the number of columns through attributes: ::: {.columns col-count=3}
         - Specifying column gap through attributes: ::: {.columns columngap=3em}
         - Specifying column breaks through column break div: :::: columnbreak\n::::
-    - What is not supported:
+    - **What is not supported:**
         - Recusive Column Regions. Recusive regions are currently not supported in Core MCM so will not render the same as an exported Pandoc PDF.
         - Spanning element. Elements that break up a column region to span across the view are not supported. You must manually end the region and start a new one.
         - Specifying column rule, as there is currently no way to define this with other syntax. Will hopefully be added in the future.
         - Justified or ragged column mode.
-        - "Fluid Divs" by default. The fluid divs default of Pandoc's syntax is equivalent to MCM's Auto Layout. However auto layout has significant perforamce overhead in Live preview and due to this Pandoc syntax will not automatically flag regions to auto layout. You can however manually flag them by adding the setting to the attributes: ::: {.three-columns fluid-div=true} or ::: {.three-columns auto-layout=true}
-    - Known Issues:
+        - "Fluid Columns" by default. The fluid columns default of Pandoc's syntax is equivalent to MCM's Auto Layout. However auto layout has significant perforamce overhead in Live preview and due to this Pandoc syntax will not automatically flag regions to auto layout. You can however manually flag them by adding the setting to the attributes: ::: {.three-columns fluid-columns=true} or ::: {.three-columns auto-layout=true}
+    - **Known Issues:**
         - Exporting a document with pandoc columns that contains other embedded fenced divs will not export properly.
+- **Full Document Multi-Column Reflow**
+    - Documents can now be set to fully reflow into multiple columns. Per FR #70
+    - The multi-column reflow is only visible while in Reading mode.
+    - **Features:**
+        - Use core Obsidian yaml frontmatter to define what documents should reflow.
+        - Reflow automatically detects your document view size and sets the column heights to match, reducing the number of times you need to scroll through the document.
+            - Auto column height is overridable by defining the col-height in frontmatter settings using standard MCM syntax.
+            - Changes to the view size currently require a document reload to update layout.
+        - User definable render settings from within the frontmatter. (See example below.)
+            - You must use valid Obsidian frontmatter syntax to define the settings or they will not be applied.
+        - User definable column breaks using default Multi-Column Markdown column break syntax.
+        - 'Setup Multi-Column Reflow' command will assist in setting proper yaml syntax to Obsidian frontmatter.
+    - **Additional Notes:**
+        - Just as with core MCM, the default Obsidian theme, all basic markdown syntax and rendered elements should be fully supported. However cross compatibility with other plugins, embeds, and themes are not guarenteed.
+        - All manually set multi-column regions are overridden by the full document reflow.
+    - **Known Issues:**
+        - Changes to the document may require a file reload to properly update.
+        - Export to PDF is currently not supported.
+        - Long paragraphs of text will not be split across columns, as they are rendered as a single chunks of content by Obsidian.
+
+**Syntax Example:**
+```
+---
+Multi-Column Markdown:
+  - Number of columns: 3
+  - Alignment: [Left, Center, Left]
+  - Border: off
+---
+```
+[Full Example Here](documentation/FullExamples.md#multi-column-reflow)
 - **Minor Changes**
     - Updated column break flag to trigger properly when attached to the end of lists.
     - Added new check for custom frame plugins that fixes rendering in view mode.
     - Fixed a bug that caused theme CSS to not apply to tables when rendered in live preview.
     - Updated live preview to properly render PDFs.
+    - Attempted to fix cross compatibilty with "Buttons" plugin in Reading mode. #72
+    - Added error message when user embeds a file within a live preview region.
 
 ### **0.7.7**
 - Fixed bug where error message was not displayed when attempting to export to PDF from live preview.

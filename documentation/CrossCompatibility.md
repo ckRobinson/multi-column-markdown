@@ -1,5 +1,5 @@
 # Plugin Cross Compatibility
-This document will have the most up to date list of plugins known to work within a multi-column region. 
+This document will have the most up to date list of plugins broadly tested to work within a multi-column region. _(Niche use cases may not have been tested and may not work.)_
 
 ### Admonition
 ---
@@ -7,6 +7,13 @@ This document will have the most up to date list of plugins known to work within
     - Works as expected.
 - **Live Preview**
     - Renders but buttons are un-interactable.
+
+### Buttons
+---
+- **Reading Mode**
+    - Works as expected.
+- **Live Preview**
+    - Does not render.
 
 ### Custom Frames
 ---
