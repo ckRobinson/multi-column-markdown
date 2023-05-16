@@ -14,10 +14,15 @@ export enum ElementRenderType {
     buttonOnClickRender,
     specialSingleElementRender,
     canvasRenderElement,
+    fixedElementRender,
     unRendered
 }
 
 export function getElementRenderType(element: HTMLElement): ElementRenderType {
+
+    if(isEmbededImage(element) === true) {
+        return ElementRenderType.fixedElementRender
+    }
 
     if(isButtonPlugin_CrossCompatibilty(element) === true) {
         return ElementRenderType.buttonOnClickRender;
@@ -210,4 +215,15 @@ function isButtonPlugin_CrossCompatibilty(element: HTMLElement) {
     }
 
     return false;
+}
+
+function isEmbededImage(element: HTMLElement): boolean {
+    
+    let img = element.getElementsByTagName("img")[0];
+    if(img === null || 
+       img === undefined) {
+
+        return false;
+    }
+    return true;
 }
