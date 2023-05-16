@@ -17,6 +17,7 @@ import { DOMObject } from "../dom_manager/domObject";
 import { RegionManager } from "../dom_manager/regional_managers/regionManager";
 import { SingleColumnRegionManager } from "../dom_manager/regional_managers/singleColumnRegionManager";
 import { AutoLayoutRegionManager } from "../dom_manager/regional_managers/autoLayoutRegionManager";
+import { MultiColumnStyleCSS } from "src/utilities/cssDefinitions";
 
 export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
@@ -78,6 +79,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
         let fixedEl = fixImageRender(el, this.sourceFile.path);
         fixedEl = fixPDFRender(fixedEl, this.sourceFile.path);
+        fixedEl = fixFileEmbed(fixedEl, this.sourceFile.path);
         fixedEl = fixTableRender(fixedEl);
         return fixedEl;
     }
@@ -165,6 +167,54 @@ function fixTableRender(el: Element): Element {
     })
     parentDiv.appendChild(el);
     return parentDiv;
+}
+
+function fixFileEmbed(el: Element, source: string): Element {
+
+    let embed = getEmbed(el);
+    if(embed === null) {
+        return el;
+    }
+
+    let alt = embed.getAttr("alt")
+    let src = embed.getAttr("src")
+    if(src === null) {
+        return el;
+    }
+
+    let file: TFile = app.metadataCache.getFirstLinkpathDest(src, source);
+    if(file === null) {
+        return el;
+    }
+    
+    if(isMDExtension(file.extension) === false) {
+        return el;
+    }
+
+    // If we found the resource path then we update the element to be a proper PDF render.
+    let fixedEl = createDiv({
+        cls: "internal-embed markdown-embed inline-embed is-loaded",
+        attr: {
+            "tabindex": "-1",
+            "contenteditable": "false"
+        }
+    })
+    fixedEl.setAttr("alt", alt);
+    fixedEl.setAttr("src", `app://obsidian.md/${src}`)
+    fixedEl.appendChild(createDiv(
+        {
+            "cls": "embed-title markdown-embed-title",
+        }
+    ));
+    let contentEl = fixedEl.createDiv({
+        "cls": `markdown-embed-content`,
+    });
+    let paragraph = contentEl.createEl("p", {
+        "cls": `${MultiColumnStyleCSS.RegionErrorMessage}`
+    });
+    paragraph.innerText = "File embeds are not supported in Live Preview.\nPlease use reading mode to view."
+
+    return fixedEl;
 }
 
 function fixPDFRender(el: Element, source: string): Element {
@@ -322,4 +372,6 @@ function isPDFExtension(extension: string): boolean {
     return extension.toLowerCase() === "pdf";
 }
 
+function isMDExtension(extension: string): boolean {
+    return extension.toLowerCase() === "md";
 }
