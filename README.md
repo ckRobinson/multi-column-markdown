@@ -304,7 +304,8 @@ _Can define on a per column basis with array syntax: EG: [5px, 10px]_
 <br>
 
 #### **Content Overflow:**
-Should the columns cut off anything that goes outside the column bounds or should it be scrollable.
+Should the columns cut off anything that goes outside the column bounds or should it be scrollable.<br>
+_Can define on a per column basis with array syntax: EG: [Scroll, Hidden]_
 
 - **Setting Flags**:
     - Overflow:
