@@ -516,6 +516,10 @@ These syntax options are currently still supported but are being depreciated for
 
 # Change Log
 
+### **0.8.1**
+- **Minor Changes**
+    - Made an update to viewport re-focusing to fix scrolling to end of document when selecting text. 
+
 ### **0.8.0**
 - **Unlimited Columns**
     - You can now define an unlimited number of columns within your settings blocks. All columns that extend beyond the viewport will be visible when scrolling the column region.

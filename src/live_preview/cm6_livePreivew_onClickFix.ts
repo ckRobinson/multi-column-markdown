@@ -25,6 +25,7 @@ import { EditorSelection, Extension, RangeSetBuilder, SelectionRange, StateField
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { containsRegionStart } from "../utilities/textParser";
 import { editorEditorField, editorLivePreviewField } from "obsidian";
+import { MouseState, mouseState } from "src/utilities/interfaces";
 
 const EDITOR_VIEW_GC_TIMEOUT_MS = 150000 // 2.5m in ms
 
@@ -151,6 +152,7 @@ class EditorDelayCallback extends EditorCallbackManager {
 const clickDelayCallbacks: Map<string, EditorDelayCallback> = new Map();
 const openEditorViews: Map<EditorView, EditorViewScrollStateManager> = new Map();
 let lastGCPass = Date.now();
+let editorMouseState: MouseState = "up";
 
 export const MultiColumnMarkdown_OnClickFix = StateField.define<DecorationSet>({
 	create(state): DecorationSet {
@@ -187,6 +189,10 @@ export const MultiColumnMarkdown_OnClickFix = StateField.define<DecorationSet>({
             return builder.finish();
         }
 
+		if(mouseState === "down") {
+			editorMouseState = mouseState;
+		}
+
 		const editorView = transaction.state.field(editorEditorField);
 		
 		let scrollStateManager: EditorViewScrollStateManager = getScrollStateManager(editorView, transaction);
@@ -218,6 +224,14 @@ export const MultiColumnMarkdown_OnClickFix = StateField.define<DecorationSet>({
 		//  // will cause editor to jump to top of doc. Do not have way to prevent this as of now.
 		// 	console.log("Editor has been refocused with null cursor location.")
 		// }
+		else if( editorMouseState === "down" && mouseState === "up" &&
+				 transaction.state.selection.ranges && 
+				 transaction.state.selection.ranges.length > 0 ) {
+
+			editorMouseState = mouseState;
+			let refocusLocation = shouldRefocusOnCursorOrViewport(editorView, cursorLocation, docLength);
+			refocusOnCursorArea(refocusLocation, editorView);
+		}
 		else {
 
 			clearUnUsedEntries(transaction);
@@ -286,6 +300,8 @@ function transactionIsMouseUpEvent(transaction: Transaction): boolean {
 
 	if( transaction.docChanged === false && 
 	    clickDelayCallbacks.has(transaction.state.sliceDoc()) ) {
+
+			editorMouseState = mouseState;
 			return true;
 	}
 	return false;
