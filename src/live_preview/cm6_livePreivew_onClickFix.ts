@@ -23,7 +23,7 @@
 
 import { EditorSelection, Extension, RangeSetBuilder, SelectionRange, StateField, Transaction, TransactionSpec, Text } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
-import { containsRegionStart } from "../utilities/textParser";
+import { containsEndTag, containsRegionStart } from "../utilities/textParser";
 import { editorEditorField, editorLivePreviewField } from "obsidian";
 import { MouseState, mouseState } from "src/utilities/interfaces";
 
@@ -204,7 +204,15 @@ export const MultiColumnMarkdown_OnClickFix = StateField.define<DecorationSet>({
 		}
 
 		let cursorLocation: SelectionRange = getMainCursorLocation(transaction);
-		
+		if(cursorLocation !== null) {
+			let textAboveCursor = docText.slice(0, cursorLocation.from);
+
+			let endTagAboveCursor = containsEndTag(textAboveCursor);
+			if(endTagAboveCursor === false) {
+				return builder.finish();
+			}
+		}
+
 		if( transactionIsValidMouseDownEvent(transaction, cursorLocation) ) {
 			
 			handleMouseDownEvent(transaction, editorView, cursorLocation);
