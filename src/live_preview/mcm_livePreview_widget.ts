@@ -362,6 +362,7 @@ function isImageExtension(extension: string): boolean {
         case "gif":
         case "bmp":
         case "svg":
+        case "webp":
             return true;
     }
     return false;
