@@ -576,7 +576,11 @@ These syntax options are currently still supported but are being depreciated for
 
 ### **0.8.1**
 - **Minor Changes**
-    - Made an update to viewport re-focusing to fix scrolling to end of document when selecting text. 
+    - Updated viewport re-focusing to fix scrolling to end of document when selecting text.
+    - Updated viewport re-focus to reduce unnecessary updates.
+    - Updated image rendering to hopefully solve images not rendering in Reading Mode.
+    - Updated to include webp images in live preview rendering.
+    - Overhauled portion of element rendering in preparation for larger rework.
 
 ### **0.8.0**
 - **Unlimited Columns**
