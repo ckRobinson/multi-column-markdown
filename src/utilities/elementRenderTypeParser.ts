@@ -7,25 +7,35 @@
 
 import { searchChildrenForNodeType } from "./utils";
 
-export enum ElementRenderType {
-    undefined,
-    normalRender,
-    specialRender,
-    buttonOnClickRender,
-    specialSingleElementRender,
-    canvasRenderElement,
-    fixedElementRender,
-    unRendered
-}
+const ALL_ELEMENT_RENDER_TYPES = [
+    "undefined",
+    "basicElement",
+    "specialRender",
+    "buttonPlugin",
+    "dataviewPlugin",
+    "imageEmbed",
+    "admonitionFold",
+    "calloutCopyButton",
+    "internalEmbed",
+    "dataviewJSCanvasEmbed",
+    "dataviewJSEmbed",
+    "dataviewInlineQuery",
+    "diceRoller",
+    "admonition",
+    "customFramePlugin",
+    "iFrameEmbed",
+    "unRendered"
+] as const;
+export type ElementRenderType = typeof ALL_ELEMENT_RENDER_TYPES[number];
 
 export function getElementRenderType(element: HTMLElement): ElementRenderType {
 
     if(isEmbededImage(element) === true) {
-        return ElementRenderType.fixedElementRender
+        return "imageEmbed"
     }
 
     if(isButtonPlugin_CrossCompatibilty(element) === true) {
-        return ElementRenderType.buttonOnClickRender;
+        return "buttonPlugin"
     }
 
     /**
@@ -33,9 +43,11 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      * updated but should not always update the "dual render" aspect, so we add
      * a special case for that plugin and maybe others in the future.
      */
-    if(hasDataview(element) === true ||
-       isInternalEmbed(element)) {
-        return ElementRenderType.specialSingleElementRender;
+    if(hasDataview(element) === true) {
+        return "dataviewPlugin"
+    } 
+    else if(isInternalEmbed(element)) {
+        return "internalEmbed"
     }
 
     /**
@@ -44,8 +56,14 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      * element so we can clone the canvas to a copy element within the region.
      * 
      */
+    if( hasDataviewJSCanvas(element) === true) {
+        return "dataviewJSCanvasEmbed"
+    }
     if( hasDataviewJS(element) === true) {
-        return ElementRenderType.canvasRenderElement;
+        return "dataviewJSEmbed"
+    }
+    if(hasDataviewInline(element) === true) {
+        return "dataviewInlineQuery"
     }
 
     /**
@@ -57,11 +75,14 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      * These may be classes on one of the simple elements (such as a paragraph)
      * that we search for below so need to look for these first.
      */
-    if(hasDiceRoller(element) === true ||
-       hasCopyButton(element) === true ||
-       hasAdmonitionFold(element) === true) {
-
-        return ElementRenderType.specialRender
+    if(hasDiceRoller(element) === true) {
+        return "diceRoller"
+    }
+    else if(hasCopyButton(element) === true) {
+        return "calloutCopyButton"
+    }
+    else if(hasAdmonitionFold(element) === true) {
+        return "admonitionFold"
     }
 
     /**
@@ -69,11 +90,16 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      * slightly redundant with next check but differentiates between types of ements 
      * being checked.
      */
-    if(hasAdmonition(element) === true ||
-       isIFrame(element) === true      ||
-       isCustomIFrame(element) === true  ) {
+    if(hasAdmonition(element) === true) {
+        return "admonition"
+    }
+    else if (isIFrame(element) === true) {
+
+        return "iFrameEmbed"
+    }
+    else if(isCustomIFrame(element) === true) {
         
-        return ElementRenderType.normalRender
+        return "customFramePlugin"
     }
 
     /**
@@ -88,11 +114,11 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
        isHorizontalRule(element) ||
        isTable(element)) {
 
-        return ElementRenderType.normalRender;
+        return "basicElement"
     }
 
     // If still nothing found we return other as the default response if nothing else found.
-    return ElementRenderType.specialRender;
+    return "specialRender"
 }
 
 function hasParagraph(element: HTMLElement): boolean {
@@ -165,7 +191,12 @@ function hasDataview(element: HTMLElement) {
     return isDataview;
 }
 
-function hasDataviewJS(element: HTMLElement) {
+function hasDataviewInline(element: HTMLElement) {
+    let isDataview = element.getElementsByClassName("dataview-inline-query").length !== 0;
+    return isDataview;
+}
+
+function hasDataviewJSCanvas(element: HTMLElement) {
 
     let isDataviewJS = element.getElementsByClassName("block-language-dataviewjs").length !== 0;
     let canvas = searchChildrenForNodeType(element, "canvas");
@@ -175,6 +206,12 @@ function hasDataviewJS(element: HTMLElement) {
      * need thier own case put in or the restriction removed after testing.
      */
     return canvas !== null && isDataviewJS 
+}
+
+function hasDataviewJS(element: HTMLElement) {
+
+    let isDataviewJS = element.getElementsByClassName("block-language-dataviewjs").length !== 0;
+    return isDataviewJS 
 }
 
 function isInternalEmbed(element: HTMLElement) {

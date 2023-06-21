@@ -36,7 +36,7 @@ export class DOMObject {
     tag: DOMObjectTag;
     elementIsColumnBreak: ElementColumnBreakType = ElementColumnBreakType.none;
     usingOriginalElement: boolean
-    elementType: ElementRenderType = ElementRenderType.undefined;
+    elementType: ElementRenderType = "undefined";
     elementContainer: HTMLDivElement = null;
     elementRenderedHeight = 0;
     linesOfElement: string[]
@@ -114,7 +114,7 @@ export class DOMObject {
 
         if(containsEndTag(this.originalElement.textContent) === true) {
 
-            this.elementType = ElementRenderType.unRendered;
+            this.elementType = "unRendered";
             this.tag = DOMObjectTag.endRegion;
             // el.addClass(MultiColumnStyleCSS.RegionEndTag)
             // regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
@@ -122,21 +122,21 @@ export class DOMObject {
         else if(containsColEndTag(this.originalElement.textContent) === true || 
         (this.originalElement.innerHTML.startsWith("<mark>")) && elInnerTextContainsColEndTag(this.originalElement.textContent)) {
 
-            this.elementType = ElementRenderType.unRendered
+            this.elementType = "unRendered"
             this.tag = DOMObjectTag.columnBreak;
             // el.addClass(MultiColumnStyleCSS.ColumnEndTag)
             // regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
         }
         else if(containsStartTag(this.originalElement.textContent) === true) {
 
-            this.elementType = ElementRenderType.unRendered
+            this.elementType = "unRendered"
             this.tag = DOMObjectTag.startRegion;
             // el.addClass(MultiColumnStyleCSS.ColumnEndTag)
             // regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
         }
         else if(containsColSettingsTag(elementTextSpaced) === true) {
 
-            this.elementType = ElementRenderType.unRendered
+            this.elementType = "unRendered"
             // el.addClass(MultiColumnStyleCSS.RegionSettings)
             // regionalManager = regionalContainer.setRegionSettings(elementTextSpaced)
             // regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.regionSettings);

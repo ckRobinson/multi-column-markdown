@@ -252,22 +252,19 @@ export abstract class RegionManager {
 
                 this.fixClonedCheckListButtons(this.domList[i] as TaskListDOMObject);
             }
-
-
             let elementType = this.domList[i].elementType;
+
+            if(elementType === "unRendered") {
+                continue;
+            }
 
             /**
              * If the element is not currently a special render element we check again
              * as the original element may have been updated.
-             *
-             * TODO: find a way to "Officially" mark normal elements rather than
-             * continuously search for special render types.
              */
-            if (elementType !== ElementRenderType.specialRender &&
-                elementType !== ElementRenderType.specialSingleElementRender && 
-                elementType !== ElementRenderType.unRendered && 
-                elementType !== ElementRenderType.buttonOnClickRender && 
-                elementType !== ElementRenderType.fixedElementRender) {
+            if(elementType === "undefined" ||
+               elementType === "basicElement" ||
+               elementType === "specialRender") {
 
                 // If the new result returns as a special renderer we update so
                 // this wont run again for this item.
@@ -275,12 +272,16 @@ export abstract class RegionManager {
                 this.domList[i].originalElement.clientHeight;
             }
 
-            if(elementType === ElementRenderType.fixedElementRender) {
+            if(elementType === "basicElement") {
+                continue;
+            }
+
+            if(elementType === "imageEmbed") {//ElementRenderType.fixedElementRender) {
                 this.domList[i].elementType = elementType;
                 continue;
             }
 
-            if(elementType === ElementRenderType.buttonOnClickRender &&
+            if(elementType === "buttonPlugin" && //ElementRenderType.buttonOnClickRender &&
                this.domList[i].clonedElementReadyForUpdate() === true) {
 
                 this.domList[i].elementType = elementType;
@@ -289,12 +290,18 @@ export abstract class RegionManager {
                 continue;
             }
 
-            if (elementType === ElementRenderType.specialRender ||
-                elementType === ElementRenderType.specialSingleElementRender || 
-                elementType === ElementRenderType.canvasRenderElement) {
-
+            if(elementType === "diceRoller" ||
+               elementType === "admonitionFold" ||
+               elementType === "calloutCopyButton" ||
+               elementType === "dataviewPlugin" ||
+               elementType === "internalEmbed" ||
+               elementType === "dataviewJSCanvasEmbed" ||
+               elementType === "dataviewJSEmbed" || 
+               elementType === "dataviewInlineQuery"
+               ) {
                 this.domList[i].elementType = elementType;
                 this.setUpDualRender(this.domList[i]);
+                continue;
             }
         }
     }
@@ -400,14 +407,14 @@ export abstract class RegionManager {
         if((clonedElement === null  || 
            Math.abs(clonedElementHeight - originalElementHeight) > 10 ||
            domElement.clonedElementReadyForUpdate() === true) &&
-           domElement.elementType !== ElementRenderType.canvasRenderElement) {
+           domElement.elementType !== "dataviewJSCanvasEmbed") {
             
             // console.log("Updating Cloned Element.", ElementRenderType[domElement.elementType], clonedElementHeight, originalElementHeight)
             // Update clone and reference.
             cloneElement(domElement);
         }
 
-        if(domElement.elementType === ElementRenderType.canvasRenderElement && 
+        if(domElement.elementType === "dataviewJSCanvasEmbed" && 
            domElement.canvasReadyForUpdate()) {
 
             // console.log("Updating canvas re-render")
@@ -465,8 +472,10 @@ export abstract class RegionManager {
          * as specialSingleElementRender so we ignore those elements here.
          */
         if(domElement.elementContainer.children.length < 2 && 
-           domElement.elementType !== ElementRenderType.specialSingleElementRender &&
-           domElement.elementType !== ElementRenderType.canvasRenderElement) {
+           domElement.elementType !== "dataviewPlugin" &&
+           domElement.elementType !== "internalEmbed" &&
+           domElement.elementType !== "dataviewJSCanvasEmbed" &&
+           domElement.elementType !== "dataviewJSEmbed") {
 
             // console.log("Updating dual rendering.", domElement, domElement.originalElement.parentElement, domElement.originalElement.parentElement?.childElementCount);
 

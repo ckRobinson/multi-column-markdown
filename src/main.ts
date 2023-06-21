@@ -426,23 +426,23 @@ ${editor.getDoc().getSelection()}`
         if (multiColumnParser.containsEndTag(el.textContent) === true &&
             parentStartBlock.startBlockType !== "PADOC") {
 
-            currentObject.elementType = ElementRenderType.unRendered;
+            currentObject.elementType = "unRendered";
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
         }
         if (containsPandoc.isValidPandocEndTag(linesAboveArray, el.textContent) === true &&
             parentStartBlock.startBlockType === "PADOC") {
 
-            currentObject.elementType = ElementRenderType.unRendered;
+            currentObject.elementType = "unRendered";
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.endRegion);
         }
         else if (multiColumnParser.containsColEndTag(textOfElement) === true) {
 
-            currentObject.elementType = ElementRenderType.unRendered;
+            currentObject.elementType = "unRendered";
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.columnBreak);
         }
         else if (multiColumnParser.containsColSettingsTag(textOfElement) === true) {
 
-            currentObject.elementType = ElementRenderType.unRendered;
+            currentObject.elementType = "unRendered";
             regionalManager = regionalContainer.setRegionSettings(textOfElement);
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.regionSettings);
         }
