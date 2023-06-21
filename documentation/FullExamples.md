@@ -6,16 +6,40 @@ ID: ExampleRegion3\
 
 \# Column 1
 
-\=== end-column ===
+\--- end-column ---
 
 \# Column 2
 
-=== end-multi-column
+--- end-multi-column
 
 **Rendered as:**
 ![Eample_2Column](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_2Column.png?raw=true)
 
 <br>
+
+---
+
+<br>
+
+\```start-multi-column\
+ID: ExampleRegion7\
+number of columns: 2\
+Column Size: [25%, 75%]\
+column spacing: 0px\
+\```
+
+\#### Array Syntax
+
+\--- end-column ---
+
+\#### For Column size
+
+--- end-multi-column
+
+**Rendered as:**
+![Example_5_2Columns](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_5_2Columns.png?raw=true)
+
+<br> 
 
 ---
 
@@ -38,7 +62,7 @@ border: off\
 
 \# Column 3
 
-=== end-multi-column
+--- end-multi-column
 
 **Rendered as:**
 ![Eample_3Column_1](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_3Column_1.png?raw=true)
@@ -65,7 +89,7 @@ largest column: center\
 
 \#### Column 3
 
-=== end-multi-column
+--- end-multi-column
 
 **Rendered as:**
 ![Eample_3Column_2](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_3Column_2.png?raw=true)
@@ -85,7 +109,7 @@ column position: left\
 
 \#### Single Left Aligned Column 
 
-=== end-multi-column
+--- end-multi-column
 
 **Rendered as:**
 ![Example_4Column_1](https://github.com/ckRobinson/multi-column-markdown/blob/master/images/Example_4Column_1.png?raw=true)
