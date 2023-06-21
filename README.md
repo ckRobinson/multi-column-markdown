@@ -217,6 +217,11 @@ All other settings can be defined within the attributes using the same setting f
 - **Valid Selections**:
     - Any digit.
 
+_Example:_
+> \```start-multi-column\
+> Number of Columns: 2\
+> \```
+
 <br>
 
 #### **Column Size:**
@@ -247,6 +252,13 @@ _Can define on a per column basis with array syntax: EG: [25%, 75%]_
         - Middle
     - Allows *most* CSS unit lengths (px, pt, %, etc).
 
+_Example:_
+> \```start-multi-column\
+> Column Size: standard \
+> ( **OR** )\
+> Column Size: [25%, 75%]\
+> \```
+
 <br>
 
 
@@ -261,6 +273,14 @@ _Can define on a per column basis with array syntax: EG: [off, on, off]_
     - off
     - false
 
+_Example:_
+> \```start-multi-column\
+> Border: disabled \
+> ( **OR** )\
+> Border: [off, on]\
+> \```
+
+
 <br>
 
 #### **Shadow:**
@@ -272,6 +292,11 @@ On by default, can be removed with:
     - disabled
     - off
     - false
+
+_Example:_
+> \```start-multi-column\
+> Shadow: off \
+> \```
 
 <br>
 
@@ -289,6 +314,12 @@ Only used with the single column option.
     - Center
     - Middle
 
+_Example:_
+> \```start-multi-column\
+> Number of Columns: 1\
+> Column Position: Left \
+> \```
+
 <br>
 
 #### **Column Spacing:**
@@ -300,6 +331,13 @@ _Can define on a per column basis with array syntax: EG: [5px, 10px]_
 - **Valid Selections**:
     - Allows *most* CSS unit lengths (px, pt, %, etc).
     - A number alone without a defined unit type defaults to pt unit.
+
+_Example:_
+> \```start-multi-column\
+> Column Spacing: 5px \
+> ( **OR** )\
+> Column Spacing: [5px, 10px]\
+> \```
 
 <br>
 
@@ -313,6 +351,13 @@ _Can define on a per column basis with array syntax: EG: [Scroll, Hidden]_
 - **Valid Selections**:
     - Scroll (Default)
     - Hidden
+
+_Example:_
+> \```start-multi-column\
+> Overflow: Hidden \
+> ( **OR** )\
+> Overflow: [Scroll, Hidden]\
+> \```
 
 <br>
 
@@ -330,6 +375,13 @@ _Can define on a per column basis with array syntax: EG: [Left, Center]_
     - Center
     - Right
 
+_Example:_
+> \```start-multi-column\
+> Alignment: Center \
+> ( **OR** )\
+> Alignment: [Left, Center]\
+> \```
+
 <br>
 
 ####  **Auto Layout**
@@ -340,6 +392,12 @@ _Can define on a per column basis with array syntax: EG: [Left, Center]_
 - **Valid Selections**:
     - true
     - on
+
+_Example:_
+> \```start-multi-column\
+> Auto Layout: on \
+> \```
+
 <br>
 ---
 
