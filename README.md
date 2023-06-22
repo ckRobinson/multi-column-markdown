@@ -87,20 +87,20 @@ Text displayed below.
 ### **Region Start Tag:**
 Each multi-column region must start with either:
 
-\```start-multi-column\
-ID: A_unique_region_ID\
-\```
+> \```start-multi-column \
+> ID: A_unique_region_ID\
+> \```
 
 or
 
-\```multi-column-start\
-ID: A_unique_region_ID_1\
-\```
+> \```multi-column-start \
+> ID: A_unique_region_ID_1\
+> \```
 
 or
 
-::::: {.columns id=A_unique_region_ID_2}\
-_(See more about Pandoc's fenced divs syntax below.)_
+> ::::: {.columns id=A_unique_region_ID_2}\
+> _(See more about Pandoc's fenced divs syntax below.)_
 
 After defining the start tag you must declare an ID for the region. The ID is used to differentiate between different regions if there are multiple in the same document.
 
@@ -119,17 +119,17 @@ You can also use the "Fix Missing IDs" command which will search the currently o
 Each tag type can be defined with the following options:
 
 #### **Start Multi-Column Region:**
-\```start-multi-column\
-ID: A_unique_region_ID\
-*Any Additional Setting flags (see below)*\
-\```
+> \```start-multi-column\
+> ID: A_unique_region_ID\
+> *Any Additional Setting flags (see below)*\
+> \```
 
-\```multi-column-start\
-ID: A_unique_region_ID_2\
-*Any Additional Setting flags (see below)*\
-\```
+> \```multi-column-start\
+> ID: A_unique_region_ID_2\
+> *Any Additional Setting flags (see below)*\
+> \```
 
-::::: {.columns id=A_unique_region_ID_2 *Any Additional Setting flags (see below)*}
+> ::::: {.columns id=A_unique_region_ID_2 *Any Additional Setting flags (see below)*}
 
 <br>
 
@@ -139,18 +139,19 @@ ID: A_unique_region_ID_2\
 \--- column-break \---\
 \--- break-column \---\
 
-```
-::: columnbreak
-:::
-```
-_(New line after columnbreak required.)_
+
+> ::: columnbreak\
+> :::\
+> _(New line after columnbreak required.)_
 
 <br>
 
 #### **End Multi-Column Region:**
 \--- end-multi-column\
 \--- multi-column-end\
-::: _(This end region syntax is only valid when using the Pandoc fenced divs syntax to start a region.)_
+
+> :::\
+> _(This end region syntax is only valid when using the Pandoc fenced divs syntax to start a region.)_
 
 <br>
 
@@ -158,23 +159,23 @@ _(New line after columnbreak required.)_
 You can also use Pandoc's fenced divs syntax to define column regions. (For more detail on this syntax see [here](https://pandoc.org/MANUAL.html#divs-and-spans) and [here](https://github.com/dialoa/columns/blob/master/README.md).)
 
 To create a multicolumn region use: 
-```
-::: columns
 
-<Column Content>
+> ::: columns
+> 
+> \<Column Content>
+> 
+> :::
 
-:::
-```
 
 To define multiple Pandoc regions on the same document, and to define region settings you must use the attributes syntax:
 
-```
-::::: {.columns property=value id=ID_ExampleID}
 
-<Column Content>
+> ::::: {.columns property=value id=ID_ExampleID}
+>
+> \<Column Content>
+>
+> :::::
 
-:::::
-```
 Not providing an ID will cause regions to not render.
 
 All other settings can be defined within the attributes using the same setting flag names defined below.
@@ -206,6 +207,10 @@ All other settings can be defined within the attributes using the same setting f
 - The ID is used to differentiate between different regions if there are multiple in the same document.
 - Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
 - Can be ommitted if there will only ever be a single column region in the document.
+
+> \```start-multi-column\
+> ID: Random_ID_String\
+> \```
 
 <br>
 
