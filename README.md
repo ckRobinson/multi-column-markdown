@@ -202,15 +202,17 @@ All other settings can be defined within the attributes using the same setting f
     - ID:
 - **Valid Selections**:
     - Any string of characters.
+
+_Example:_
+> \```start-multi-column\
+> ID: Random_ID_String\
+> \```
+
 <br>
 ---
 - The ID is used to differentiate between different regions if there are multiple in the same document.
 - Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
 - Can be ommitted if there will only ever be a single column region in the document.
-
-> \```start-multi-column\
-> ID: Random_ID_String\
-> \```
 
 <br>
 
