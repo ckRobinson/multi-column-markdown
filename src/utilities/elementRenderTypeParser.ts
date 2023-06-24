@@ -246,8 +246,8 @@ function isButtonPlugin_CrossCompatibilty(element: HTMLElement) {
         return false;
     }
 
-    let src = internalEmbed.getAttr("src");
-    if(src.contains("Buttons#^")) {
+    let buttonPluginBlock = element.getElementsByClassName("block-language-button")[0];
+    if(buttonPluginBlock) {
         return true;
     }
 
