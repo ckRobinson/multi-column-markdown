@@ -269,10 +269,10 @@ export abstract class RegionManager {
                 // If the new result returns as a special renderer we update so
                 // this wont run again for this item.
                 elementType = getElementRenderType(this.domList[i].originalElement);
-                this.domList[i].originalElement.clientHeight;
             }
 
             if(elementType === "basicElement") {
+                this.domList[i].elementType = "basicElement"
                 continue;
             }
 
@@ -281,12 +281,8 @@ export abstract class RegionManager {
                 continue;
             }
 
-            if(elementType === "buttonPlugin" && //ElementRenderType.buttonOnClickRender &&
-               this.domList[i].clonedElementReadyForUpdate() === true) {
-
-                this.domList[i].elementType = elementType;
-                cloneElement(this.domList[i]);
-                fixOnClick(this.domList[i]);
+            if(elementType === "buttonPlugin") {
+                processButtonPluginUpdate(this.domList[i])
                 continue;
             }
 
@@ -866,4 +862,13 @@ function cloneElement(domElement: DOMObject) {
     clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
     clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
     containerElement.appendChild(clonedElement);
+}
+
+function processButtonPluginUpdate(domObject: DOMObject) {
+
+    domObject.elementType = "buttonPlugin"
+    if(domObject.clonedElementReadyForUpdate() === true) {
+        cloneElement(domObject);
+        fixOnClick(domObject);
+    }
 }
