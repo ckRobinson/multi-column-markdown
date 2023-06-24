@@ -581,6 +581,9 @@ These syntax options are currently still supported but are being depreciated for
 
 # Change Log
 
+### **0.8.2**
+- Fixed issue with button plugin cross compatibility, causing buttons to sometimes not render and be uninteractable.
+
 ### **0.8.1**
 - **Minor Changes**
     - Updated viewport re-focusing to fix scrolling to end of document when selecting text.
