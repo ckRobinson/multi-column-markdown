@@ -82,9 +82,9 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
     fixElementRender(el: Element): Element {
 
-        let fixedEl = fixImageRender(el, this.sourceFile.path);
-        fixedEl = fixPDFRender(fixedEl, this.sourceFile.path);
-        fixedEl = fixFileEmbed(fixedEl, this.sourceFile.path);
+        let fixedEl = fixImageRender(el, this.sourcePath);
+        fixedEl = fixPDFRender(fixedEl, this.sourcePath);
+        fixedEl = fixFileEmbed(fixedEl, this.sourcePath);
         fixedEl = fixTableRender(fixedEl);
         return fixedEl;
     }
