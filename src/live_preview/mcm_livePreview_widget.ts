@@ -28,11 +28,16 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     regionSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
     regionManager: RegionManager;
     sourceFile: TFile;
+    sourcePath: string = "";
+
     constructor(contentData: string, userSettings: MultiColumnSettings, sourceFile: TFile, settingsText: string = "") {
         super();
         this.contentData = contentData;
         this.settingsText = settingsText;
         this.sourceFile = sourceFile;
+        if(this.sourceFile) {
+            this.sourcePath = sourceFile.path;
+        }
 
         if(userSettings !== null) {
             this.regionSettings = userSettings;
@@ -41,7 +46,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         // Render the markdown content to our temp parent element.
         this.tempParent = createDiv();
         let elementMarkdownRenderer = new MarkdownRenderChild(this.tempParent);
-        MarkdownRenderer.renderMarkdown(this.contentData, this.tempParent, "", elementMarkdownRenderer);
+        MarkdownRenderer.renderMarkdown(this.contentData, this.tempParent, this.sourcePath, elementMarkdownRenderer);
 
         // take all elements, in order, and create our DOM list.
         let arr = Array.from(this.tempParent.children);
