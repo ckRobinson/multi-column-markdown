@@ -240,10 +240,10 @@ function isCustomIFrame(element: HTMLElement) {
     return isFrame;
 }
 
-function isButtonPlugin_CrossCompatibilty(element: HTMLElement) {
-    let internalEmbed = element.getElementsByClassName("internal-embed")[0];
-    if(internalEmbed === undefined) {
-        return false;
+export function isButtonPlugin_CrossCompatibilty(element: HTMLElement) {
+
+    if(element.hasClass("block-language-button")) {
+        return true;
     }
 
     let buttonPluginBlock = element.getElementsByClassName("block-language-button")[0];
