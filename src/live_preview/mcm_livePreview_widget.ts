@@ -18,6 +18,7 @@ import { RegionManager } from "../dom_manager/regional_managers/regionManager";
 import { SingleColumnRegionManager } from "../dom_manager/regional_managers/singleColumnRegionManager";
 import { AutoLayoutRegionManager } from "../dom_manager/regional_managers/autoLayoutRegionManager";
 import { MultiColumnStyleCSS } from "src/utilities/cssDefinitions";
+import { isButtonPlugin_CrossCompatibilty } from "src/utilities/elementRenderTypeParser";
 
 export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
@@ -86,6 +87,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         fixedEl = fixPDFRender(fixedEl, this.sourcePath);
         fixedEl = fixFileEmbed(fixedEl, this.sourcePath);
         fixedEl = fixTableRender(fixedEl);
+        fixedEl = fixUnSupportedRender(fixedEl);
         return fixedEl;
     }
 
@@ -215,7 +217,7 @@ function fixFileEmbed(el: Element, source: string): Element {
         "cls": `markdown-embed-content`,
     });
     let paragraph = contentEl.createEl("p", {
-        "cls": `${MultiColumnStyleCSS.RegionErrorMessage}`
+        "cls": `${MultiColumnStyleCSS.RegionErrorMessage}, ${MultiColumnStyleCSS.SmallFont}`
     });
     paragraph.innerText = "File embeds are not supported in Live Preview.\nPlease use reading mode to view."
 
@@ -379,4 +381,20 @@ function isPDFExtension(extension: string): boolean {
 
 function isMDExtension(extension: string): boolean {
     return extension.toLowerCase() === "md";
+}
+
+function fixUnSupportedRender(el: Element): Element {
+
+    if(isButtonPlugin_CrossCompatibilty(el as HTMLElement)) {
+
+        console.log("Got button.")
+        let fixedEl = createDiv()
+        let paragraph = fixedEl.createEl("p", {
+            "cls": `${MultiColumnStyleCSS.RegionErrorMessage} ${MultiColumnStyleCSS.SmallFont}`
+        });
+        paragraph.innerText = "Buttons are not supported in Live Preview.\nPlease use reading mode."
+        return fixedEl;
+    }
+
+    return el;
 }
