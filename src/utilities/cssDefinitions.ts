@@ -65,5 +65,6 @@ export enum MultiColumnStyleCSS {
     RegionShadow = "mcm-region-shadow",
     ColumnShadow = "mcm-column-shadow",
     ColumnBorder = "mcm-column-border",
-    ColumnContent = "mcm-column-div"
+    ColumnContent = "mcm-column-div",
+    SmallFont = "mcm-small-font-message"
 }

@@ -187,3 +187,7 @@
     display: block;
     text-align: center;
 }
+
+.mcm-small-font-message {
+    font-size: small
+}
