@@ -208,8 +208,6 @@ _Example:_
 > ID: Random_ID_String\
 > \```
 
-<br>
----
 - The ID is used to differentiate between different regions if there are multiple in the same document.
 - Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
 - Can be ommitted if there will only ever be a single column region in the document.
@@ -581,6 +579,9 @@ These syntax options are currently still supported but are being depreciated for
 
 # Change Log
 
+### **0.8.3**
+- Fixed issue when button plugin directly embeded into column region, causing button to not render.
+
 ### **0.8.2**
 - Fixed issue with button plugin cross compatibility, causing buttons to sometimes not render and be uninteractable.
 
@@ -668,20 +669,6 @@ Multi-Column Markdown:
     - Updated live preview to properly render PDFs.
     - Attempted to fix cross compatibilty with "Buttons" plugin in Reading mode. #72
     - Added error message when user embeds a file within a live preview region.
-
-### **0.7.7**
-- Fixed bug where error message was not displayed when attempting to export to PDF from live preview.
-- Fixed bug with DataviewJS rendering within columns.
-- Fixed bug where dataview inline elements were not being rendered properly.
-- Fixed bug where checkboxes were double rendering the button and not properly triggering on click.
-- Fixed bug in live preview in which certain kinds of content would cause Obsidian to hang on any file interaction.
-- Fixed bug where additional image embed syntax was not rendering properly.
-- Updated element reload timings to attempt to reduce initial delay when loading elements on initial file load.
-- Updated single column and auto layout to properly use content alignment and content overflow.
-- Updated column break flag to properly trigger when appended to a paragraph block.
-
-### **0.7.6**
-- Fixed bug in live preview that caused Obsidian 1.1.0 to hang on start up.
 
 ## Older Changes:
 
