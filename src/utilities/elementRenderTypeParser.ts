@@ -24,6 +24,7 @@ const ALL_ELEMENT_RENDER_TYPES = [
     "admonition",
     "customFramePlugin",
     "iFrameEmbed",
+    "tasksPlugin",
     "unRendered"
 ] as const;
 export type ElementRenderType = typeof ALL_ELEMENT_RENDER_TYPES[number];
@@ -36,6 +37,10 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
 
     if(isButtonPlugin_CrossCompatibilty(element) === true) {
         return "buttonPlugin"
+    }
+
+    if(isTasksPlugin(element) === true) {
+        return "tasksPlugin"
     }
 
     /**
@@ -171,6 +176,10 @@ function isIFrame(element: HTMLElement): boolean {
     }
 
     return false
+}
+
+function isTasksPlugin(element: HTMLElement): boolean {
+    return element.getElementsByClassName("block-language-tasks").length !== 0
 }
 
 function isHorizontalRule(element: HTMLElement): boolean {
