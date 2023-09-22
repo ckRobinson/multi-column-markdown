@@ -29,7 +29,7 @@ export class StandardMultiColumnRegionManager extends RegionManager {
     }
     public renderRegionElementsToLivePreview(parentElement: HTMLElement): void {
 
-        this.renderColumnMarkdown(parentElement, this.domList, this.regionalSettings);
+        this.renderColumnMarkdown(parentElement, this.domList, this.regionalSettings, true);
     }
     /**
      * This function takes in the data for the multi-column region and sets up the 
@@ -39,7 +39,8 @@ export class StandardMultiColumnRegionManager extends RegionManager {
      * @param regionElements The list of DOM objects that will be coppied under the parent object
      * @param settings The settings the user has defined for the region.
      */
-    private renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[], settings: MultiColumnSettings) {
+    private renderColumnMarkdown(parentElement: HTMLElement, regionElements: DOMObject[],
+                                 settings: MultiColumnSettings, isLivePreview: boolean = false) {
 
         let multiColumnParent = createDiv({
             cls: `${MultiColumnLayoutCSS.RegionColumnContainerDiv} \
@@ -84,10 +85,11 @@ export class StandardMultiColumnRegionManager extends RegionManager {
         }
         parentElement.appendChild(markdownRenderChild.containerEl);
 
-        this.appendElementsToColumns(regionElements, columnContentDivs, settings);
+        this.appendElementsToColumns(regionElements, columnContentDivs, settings, isLivePreview);
     }
 
-    private appendElementsToColumns(regionElements: DOMObject[], columnContentDivs: HTMLDivElement[], settings: MultiColumnSettings) {
+    private appendElementsToColumns(regionElements: DOMObject[], columnContentDivs: HTMLDivElement[],
+                                    settings: MultiColumnSettings, isLivePreview: boolean = false) {
 
         let columnIndex = 0;
         for (let i = 0; i < regionElements.length; i++) {
@@ -127,16 +129,19 @@ export class StandardMultiColumnRegionManager extends RegionManager {
 
                 regionElements[i].elementContainer = element;
 
-                // Otherwise we just make a copy of the original element to display.
-                let clonedElement = regionElements[i].originalElement.cloneNode(true) as HTMLDivElement;
-                let headingCollapseElement = getHeadingCollapseElement(clonedElement);
-                if(headingCollapseElement !== null) {
-                    // This removes the collapse arrow from the view if it exists.
-                    headingCollapseElement.detach();
+                let elementToAppend: HTMLElement = regionElements[i].originalElement;
+                if(isLivePreview === false) {
+                    let clonedElement = regionElements[i].originalElement.cloneNode(true) as HTMLDivElement;
+                    let headingCollapseElement = getHeadingCollapseElement(clonedElement);
+                    if(headingCollapseElement !== null) {
+                        // This removes the collapse arrow from the view if it exists.
+                        headingCollapseElement.detach();
+                    }
+                    regionElements[i].clonedElement = clonedElement;
+                    elementToAppend = clonedElement;
                 }
 
-                regionElements[i].clonedElement = clonedElement;
-                element.appendChild(clonedElement);
+                element.appendChild(elementToAppend);
 
                 if (regionElements[i] instanceof TaskListDOMObject) {
 
