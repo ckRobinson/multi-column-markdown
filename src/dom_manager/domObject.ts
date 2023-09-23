@@ -101,7 +101,10 @@ export class DOMObject {
     updateClonedElement(newClonedElement: HTMLElement) {
 
         this.clonedElement = newClonedElement;
+        this.updateClonedElementTimer()
+    }
 
+    updateClonedElementTimer() {
         this.lastClonedElementUpdateTime = Date.now();
         this.updateTimerIndex = Math.clamp(this.updateTimerIndex + 1, 0, UPDATE_TIMES.length - 1);
     }
@@ -250,13 +253,16 @@ export class TaskListDOMObject extends DOMObject {
 
     originalCheckboxes: HTMLElement[] = [];
     checkboxElements: Map<number, HTMLInputElement> = new Map();
+    elementRequiresReDraw: boolean = false;
+
     constructor(baseDOMObject: DOMObject) {
 
         super(baseDOMObject.originalElement, baseDOMObject.linesOfElement, baseDOMObject.UID, DOMObjectTag.none);
     }
 
     checkboxClicked(index: number) {
-
+        
+        this.elementRequiresReDraw = true
         if(this.checkboxElements.has(index)) {
             this.checkboxElements.get(index).click();
         }

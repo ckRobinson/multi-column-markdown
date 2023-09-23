@@ -245,15 +245,7 @@ export abstract class RegionManager {
          */
         for (let i = 0; i < this.domList.length; i++) {
 
-            /**
-             * Here we check for special cases
-             */
-            if (this.domList[i] instanceof TaskListDOMObject) {
-
-                this.fixClonedCheckListButtons(this.domList[i] as TaskListDOMObject);
-            }
             let elementType = this.domList[i].elementType;
-
             if(elementType === "unRendered") {
                 continue;
             }
@@ -269,6 +261,34 @@ export abstract class RegionManager {
                 // If the new result returns as a special renderer we update so
                 // this wont run again for this item.
                 elementType = getElementRenderType(this.domList[i].originalElement);
+            }
+
+            /**
+             * Here we check for special cases
+             */
+            let taskListObj = (this.domList[i] as TaskListDOMObject)
+            if (taskListObj && 
+                elementType === "dataviewJSEmbed") {
+
+                    if(taskListObj.elementRequiresReDraw === true) {
+                        taskListObj.elementRequiresReDraw = false
+                        this.setUpDualRender(this.domList[i]);
+                    }
+
+                    if(this.domList[i].clonedElementReadyForUpdate() === true) {
+                        this.fixClonedCheckListButtons(this.domList[i] as TaskListDOMObject, true);
+                        this.domList[i].updateClonedElementTimer()
+                        continue
+                    }
+            }
+
+            if (taskListObj && 
+                elementType !== "dataviewJSEmbed" && 
+                elementType !== "tasksPlugin" &&
+                elementType !== "undefined") {
+
+                this.fixClonedCheckListButtons(this.domList[i] as TaskListDOMObject);
+                continue
             }
 
             if(elementType === "basicElement") {
@@ -293,7 +313,8 @@ export abstract class RegionManager {
                elementType === "internalEmbed" ||
                elementType === "dataviewJSCanvasEmbed" ||
                elementType === "dataviewJSEmbed" || 
-               elementType === "dataviewInlineQuery"
+               elementType === "dataviewInlineQuery" ||
+               elementType === "tasksPlugin"
                ) {
                 this.domList[i].elementType = elementType;
                 this.setUpDualRender(this.domList[i]);
@@ -336,7 +357,9 @@ export abstract class RegionManager {
 
                 let originalInput = domElement.getCheckboxElement(i);
                 checkbox.checked = originalInput?.checked;
-                clonedListCheckboxes[i].replaceChild(checkbox, TaskListDOMObject.getChildCheckbox(clonedListCheckboxes[i]));
+
+                let oldCheckbox = TaskListDOMObject.getChildCheckbox(clonedListCheckboxes[i])
+                clonedListCheckboxes[i].replaceChild(checkbox, oldCheckbox);
 
                 checkbox.addClass('task-list-item-checkbox');
                 checkbox.type = 'checkbox';
