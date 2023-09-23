@@ -178,8 +178,9 @@ function isIFrame(element: HTMLElement): boolean {
     return false
 }
 
-function isTasksPlugin(element: HTMLElement): boolean {
-    return element.getElementsByClassName("block-language-tasks").length !== 0
+export function isTasksPlugin(element: HTMLElement): boolean {    
+    return element.hasClass("block-language-tasks") || 
+    element.getElementsByClassName("block-language-tasks").length !== 0
 }
 
 function isHorizontalRule(element: HTMLElement): boolean {

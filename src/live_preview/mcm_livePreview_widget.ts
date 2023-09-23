@@ -18,7 +18,7 @@ import { RegionManager } from "../dom_manager/regional_managers/regionManager";
 import { SingleColumnRegionManager } from "../dom_manager/regional_managers/singleColumnRegionManager";
 import { AutoLayoutRegionManager } from "../dom_manager/regional_managers/autoLayoutRegionManager";
 import { MultiColumnStyleCSS } from "src/utilities/cssDefinitions";
-import { isButtonPlugin_CrossCompatibilty } from "src/utilities/elementRenderTypeParser";
+import { isTasksPlugin } from "src/utilities/elementRenderTypeParser";
 
 export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
@@ -385,14 +385,12 @@ function isMDExtension(extension: string): boolean {
 
 function fixUnSupportedRender(el: Element): Element {
 
-    if(isButtonPlugin_CrossCompatibilty(el as HTMLElement)) {
-
-        console.log("Got button.")
+    if(isTasksPlugin(el as HTMLElement)) {
         let fixedEl = createDiv()
         let paragraph = fixedEl.createEl("p", {
             "cls": `${MultiColumnStyleCSS.RegionErrorMessage} ${MultiColumnStyleCSS.SmallFont}`
         });
-        paragraph.innerText = "Buttons are not supported in Live Preview.\nPlease use reading mode."
+        paragraph.innerText = "Tasks are not supported in Live Preview.\nPlease use reading mode."
         return fixedEl;
     }
 
