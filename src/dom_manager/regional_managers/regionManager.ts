@@ -383,7 +383,11 @@ export abstract class RegionManager {
 
             for (let i = originalListCheckboxes.length; i < clonedListCheckboxes.length; i++) {
 
-                domElement.clonedElement.removeChild(clonedListCheckboxes[i]);
+                try {
+                    clonedListCheckboxes[i].detach()
+                } catch (error) {
+                    console.debug("No child found when removing from list.")
+                }
             }
         }
     }
