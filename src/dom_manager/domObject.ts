@@ -253,7 +253,6 @@ export class TaskListDOMObject extends DOMObject {
 
     originalCheckboxes: HTMLElement[] = [];
     checkboxElements: Map<number, HTMLInputElement> = new Map();
-    elementRequiresReDraw: boolean = false;
 
     constructor(baseDOMObject: DOMObject) {
 
@@ -262,7 +261,6 @@ export class TaskListDOMObject extends DOMObject {
 
     checkboxClicked(index: number) {
         
-        this.elementRequiresReDraw = true
         if(this.checkboxElements.has(index)) {
             this.checkboxElements.get(index).click();
         }
@@ -287,7 +285,7 @@ export class TaskListDOMObject extends DOMObject {
             if(index < this.originalCheckboxes.length) {
 
                 let originalInput = this.originalCheckboxes[index]?.getElementsByClassName('task-list-item-checkbox')
-                if(originalInput?.length === 1) {
+                if(originalInput?.length >= 1) {
 
                     this.checkboxElements.set(index, (originalInput[0] as HTMLInputElement))
                 }
