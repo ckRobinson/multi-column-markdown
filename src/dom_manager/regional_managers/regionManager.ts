@@ -263,29 +263,26 @@ export abstract class RegionManager {
                 elementType = getElementRenderType(this.domList[i].originalElement);
             }
 
+            let taskListObj = (this.domList[i] as TaskListDOMObject)
             /**
              * Here we check for special cases
              */
-            let taskListObj = (this.domList[i] as TaskListDOMObject)
             if (taskListObj && 
                 elementType === "dataviewJSEmbed") {
 
-                    if(taskListObj.elementRequiresReDraw === true) {
-                        taskListObj.elementRequiresReDraw = false
-                        this.setUpDualRender(this.domList[i]);
-                    }
+                if(this.domList[i].clonedElementReadyForUpdate()) {
 
-                    if(this.domList[i].clonedElementReadyForUpdate() === true) {
-                        this.fixClonedCheckListButtons(this.domList[i] as TaskListDOMObject, true);
-                        this.domList[i].updateClonedElementTimer()
-                        continue
-                    }
+                    cloneElement(this.domList[i]);
+                    this.fixClonedCheckListButtons(this.domList[i] as TaskListDOMObject, true);
+                }
+                else {
+                    this.fixClonedCheckListButtons(this.domList[i] as TaskListDOMObject)
+                }
+                continue
             }
 
             if (taskListObj && 
-                elementType !== "dataviewJSEmbed" && 
-                elementType !== "tasksPlugin" &&
-                elementType !== "undefined") {
+                elementType === "basicElement") {
 
                 this.fixClonedCheckListButtons(this.domList[i] as TaskListDOMObject);
                 continue
@@ -355,16 +352,32 @@ export abstract class RegionManager {
 
                 const checkbox = createEl('input');
 
-                let originalInput = domElement.getCheckboxElement(i);
-                checkbox.checked = originalInput?.checked;
+                let originalInput = originalListCheckboxes[i].getElementsByTagName("input")[0]
+
+                let isChecked = false
+                if(originalInput) {
+                    isChecked = originalInput.checked
+                }
+                else {
+                    console.debug("Could not find original checkbox. Is it null?")
+                }
 
                 let oldCheckbox = TaskListDOMObject.getChildCheckbox(clonedListCheckboxes[i])
                 clonedListCheckboxes[i].replaceChild(checkbox, oldCheckbox);
 
+                checkbox.checked = isChecked
                 checkbox.addClass('task-list-item-checkbox');
                 checkbox.type = 'checkbox';
                 checkbox.onClickEvent(() => {
                     domElement.checkboxClicked(i);
+                    if(checkbox.checked) {
+                        clonedListCheckboxes[i].addClass("is-checked")
+                        clonedListCheckboxes[i].setAttr("data-task", "x")
+                    }
+                    else {
+                        clonedListCheckboxes[i].removeClass("is-checked")
+                        clonedListCheckboxes[i].setAttr("data-task", " ")
+                    }
                 });
             }
         }
