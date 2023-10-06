@@ -113,13 +113,15 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
         if (this.regionManager) {
 
-            if (leaf) {
+            let requireUnload = false
+            if (leaf && this.regionManager instanceof AutoLayoutRegionManager) {
                 leaf.view.containerEl.appendChild(el);
+                requireUnload = true
             }
 
             this.regionManager.renderRegionElementsToLivePreview(el);
 
-            if (leaf) {
+            if (requireUnload) {
                 leaf.view.containerEl.removeChild(el);
             }
         }
