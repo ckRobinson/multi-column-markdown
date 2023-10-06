@@ -109,7 +109,8 @@ export class SingleColumnRegionManager extends RegionManager {
                 }
                 
                 let alignment = columnAlignmentState(0, settings);
-                if(alignment === AlignmentType.center) {                    element.addClass(MultiColumnLayoutCSS.AlignmentCenter)
+                if(alignment === AlignmentType.center) {
+                    element.addClass(MultiColumnLayoutCSS.AlignmentCenter)
                 }
                 else if (alignment === AlignmentType.right) {
                     element.addClass(MultiColumnLayoutCSS.AlignmentRight)
