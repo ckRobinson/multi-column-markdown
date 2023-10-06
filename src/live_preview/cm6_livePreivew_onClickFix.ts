@@ -160,6 +160,7 @@ export const MultiColumnMarkdown_OnClickFix = StateField.define<DecorationSet>({
 	},
 	update(oldState: DecorationSet, transaction: Transaction): DecorationSet {
 		const builder = new RangeSetBuilder<Decoration>();
+		return builder.finish();
 
 		if( shouldRunGCOnEditorMap() ) {
 
