@@ -121,7 +121,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 								// settings view so it can be displayed in the region.
 								builder.add(
 									codeblockStartIndex,
-									codeblockEndIndex + 1,
+									codeblockEndIndex,
 									Decoration.replace({
 										widget: new MultiColumnMarkdown_DefinedSettings_LivePreview_Widget(settingsText),
 									})
