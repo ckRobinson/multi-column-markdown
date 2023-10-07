@@ -579,6 +579,9 @@ These syntax options are currently still supported but are being depreciated for
 
 # Change Log
 
+### **0.9.0**
+- Added Rendering cache to live preview regions.
+
 ### **0.8.3**
 - Fixed issue when button plugin directly embeded into column region, causing button to not render.
 
