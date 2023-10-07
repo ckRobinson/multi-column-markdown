@@ -41,19 +41,6 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
             return builder.finish();
         }
 
-		if(selecting && mouseState === "down") {
-            return builder.finish();
-		}
-		else if(mouseState === "up") {
-			selecting = false;
-		}
-
-		let isSelecting = checkUserSelecting(transaction);
-		if(isSelecting) {
-			selecting = true;
-			return builder.finish();
-		}
-
 		syntaxTree(transaction.state).iterate({
 			enter(node) {
 
