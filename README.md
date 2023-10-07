@@ -584,7 +584,7 @@ These syntax options are currently still supported but are being depreciated for
 - Updated Live Preview rendering to be more cross compatiable with other plugins.
 - Added Rendering cache to live preview regions.
 ##### **Bug Fixes**
-- Made changes in attempt to fix checkbox functionality of Dataview and Tasks plugin cross compatibility.
+- Fixed cross compatibility of clicking checkboxes when using the Dataview and Tasks plugins in reading mode.
 
 ---
 
