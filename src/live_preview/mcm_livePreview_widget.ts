@@ -446,7 +446,7 @@ function fixUnSupportedRender(el: Element): Element {
         let paragraph = fixedEl.createEl("p", {
             "cls": `${MultiColumnStyleCSS.RegionErrorMessage} ${MultiColumnStyleCSS.SmallFont}`
         });
-        paragraph.innerText = "Tasks are not supported in Live Preview.\nPlease use reading mode."
+        paragraph.innerText = "The Tasks plugin is not supported in Live Preview.\nPlease use reading mode."
         return fixedEl;
     }
 
