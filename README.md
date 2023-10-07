@@ -580,21 +580,35 @@ These syntax options are currently still supported but are being depreciated for
 # Change Log
 
 ### **0.9.0**
+##### **Improvements**
+- Updated Live Preview rendering to be more cross compatiable with other plugins.
 - Added Rendering cache to live preview regions.
+##### **Bug Fixes**
+- Made changes in attempt to fix checkbox functionality of Dataview and Tasks plugin cross compatibility.
+
+---
 
 ### **0.8.3**
+##### **Bug Fixes**
 - Fixed issue when button plugin directly embeded into column region, causing button to not render.
 
+---
+
 ### **0.8.2**
+##### **Bug Fixes**
 - Fixed issue with button plugin cross compatibility, causing buttons to sometimes not render and be uninteractable.
 
+---
+
 ### **0.8.1**
-- **Minor Changes**
-    - Updated viewport re-focusing to fix scrolling to end of document when selecting text.
-    - Updated viewport re-focus to reduce unnecessary updates.
-    - Updated image rendering to hopefully solve images not rendering in Reading Mode.
-    - Updated to include webp images in live preview rendering.
-    - Overhauled portion of element rendering in preparation for larger rework.
+##### **Minor Changes**
+- Updated viewport re-focusing to fix scrolling to end of document when selecting text.
+- Updated viewport re-focus to reduce unnecessary updates.
+- Updated image rendering to hopefully solve images not rendering in Reading Mode.
+- Updated to include webp images in live preview rendering.
+- Overhauled portion of element rendering in preparation for larger rework.
+
+--- 
 
 ### **0.8.0**
 - **Unlimited Columns**
