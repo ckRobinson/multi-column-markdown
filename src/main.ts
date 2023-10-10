@@ -22,6 +22,7 @@ import { parseColumnSettings, parseStartRegionCodeBlockID } from './utilities/se
 import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
 import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSettings';
 import { HTMLSizing } from './utilities/interfaces';
+import MultiColumnSettingsView from './settings/MultiColumnSettingsView';
 
 interface MCM_Settings {
     renderOnMobile: boolean;
@@ -56,6 +57,8 @@ export default class MultiColumnMarkdown extends Plugin {
             this.setupMarkdownCodeblockPostProcessor(startStr);
         }
         this.setupMarkdownPostProcessor();
+
+        this.addSettingTab(new MultiColumnSettingsView(this.app, this))
 
         this.addCommand({            
             id: `toggle-mobile-rendering-mcm`,
