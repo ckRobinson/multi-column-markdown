@@ -25,8 +25,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
                 ));
         }
 
-        this.containerEl.createEl("hr")
-        this.containerEl.createEl("h4", { attr: {"style": "color: var(--text-error); margin-bottom: 5px;"}, text: "DANGER ZONE" });
+        this.containerEl.createEl("h5", { attr: {"style": "color: var(--text-error); margin-bottom: 5px;"}, text: "DANGER ZONE" });
         this.containerEl.createEl("hr", { attr: {"style": "margin-top: 5px;"} })
         const dangerZoneContainerEl = this.containerEl.createDiv();
 
