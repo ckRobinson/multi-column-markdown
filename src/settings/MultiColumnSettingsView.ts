@@ -37,7 +37,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             })
             div.createSpan({}, span => {
                 span.setAttr("style", "color: var(--text-error);")
-                span.innerText = "This action modifies all relavent note files and may lead to corrupt file text."
+                span.innerText = "This action modifies all relavent notes and may lead to corrupted text."
             })
             div.createEl("br")
             div.createSpan({}, span => {
