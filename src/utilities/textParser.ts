@@ -10,15 +10,15 @@ import { parseStartRegionCodeBlockID } from "./settingsParser";
 import { containsPandoc, findPandocStart, reducePandocRegionToEndDiv, getPandocStartData } from "./pandocParser";
 import { RegionType, StartTagRegexMatch, defaultStartRegionData } from "./interfaces";
 
-const START_REGEX_STRS = ["=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
-                          "=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?"]
+const START_REGEX_STRS = ["(===|---) *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?",
+                          "(===|---) *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?"]
 const START_REGEX_ARR: RegExp[] = [];
 for(let i = 0; i < START_REGEX_STRS.length; i++) {
     START_REGEX_ARR.push(new RegExp(START_REGEX_STRS[i]));
 }
 
-const START_REGEX_STRS_WHOLE_LINE = ["^=== *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?$",
-                                     "^=== *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?$"]
+const START_REGEX_STRS_WHOLE_LINE = ["^(===|---) *start-multi-column(:?[a-zA-Z0-9-_\\s]*)?$",
+                                     "^(===|---) *multi-column-start(:?[a-zA-Z0-9-_\\s]*)?$"]
 const START_REGEX_ARR_WHOLE_LINE: RegExp[] = [];
 for(let i = 0; i < START_REGEX_STRS_WHOLE_LINE.length; i++) {
     START_REGEX_ARR_WHOLE_LINE.push(new RegExp(START_REGEX_STRS_WHOLE_LINE[i]));
