@@ -171,7 +171,6 @@ async function findAndReplaceMissingIDs() {
     
 }
 
-const OLD_COL_START_SYNTAX_REGEX = /```(start-multi-column|multi-column-start).*?```/sg;
 async function updateFileSyntax() {
     
     let fileCount = 0
@@ -193,6 +192,36 @@ async function updateFileSyntax() {
     new Notice(`Finished updating ${regionCount} column regions across ${fileCount} files.`)
 }
 
+const OLD_COL_BREAK_SYNTAX_REGEX = /===\s*?(column-end|end-column|column-break|break-column)\s*?===\s*?/g
+function updateColumnBreakSyntax(originalFileContent: string): { updatedFileContent: string,
+                                                                 numRegionsUpdated: number } {
+    let matches = Array.from(originalFileContent.matchAll(OLD_COL_BREAK_SYNTAX_REGEX))
+
+    let updatedFileContent = originalFileContent;
+    let offset = 0;
+    
+    for(let match of matches) {    
+        let startIndex = match.index + offset
+        let matchLength = match[0].length
+        let endIndex = startIndex + matchLength;
+
+        let columnBreakSyntax = match[1]        
+        let replacementText = `--- ${columnBreakSyntax} ---`
+        offset += replacementText.length - matchLength
+
+        updatedFileContent = updatedFileContent.slice(0, startIndex) + replacementText + updatedFileContent.slice(endIndex)
+        console.groupCollapsed()
+        console.log("Original File:\n\n", originalFileContent)
+        console.log("Updated File:\n\n", updatedFileContent)
+        console.groupEnd()      
+    }
+    return {
+        updatedFileContent: updatedFileContent,
+        numRegionsUpdated: matches.length
+    }                                           
+}
+
+const OLD_COL_START_SYNTAX_REGEX = /```(start-multi-column|multi-column-start).*?```/sg;
 function updateColumnStartSyntax(originalFileContent: string): { updatedFileContent: string,
                                                                  numRegionsUpdated: number } {
     let matches = Array.from(originalFileContent.matchAll(OLD_COL_START_SYNTAX_REGEX))
@@ -227,7 +256,7 @@ function updateColumnStartSyntax(originalFileContent: string): { updatedFileCont
         
         let replacementText = `${columnStartLine}\n${settingsText}`
 
-        offset += replacementText.length - originalSettingsText.length
+        offset += replacementText.length - matchLength
 
         updatedFileContent = updatedFileContent.slice(0, startIndex) + replacementText + updatedFileContent.slice(endIndex)
         console.groupCollapsed()
