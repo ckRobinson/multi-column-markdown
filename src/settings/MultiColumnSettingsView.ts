@@ -37,6 +37,9 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
 
         let docFrag = new DocumentFragment();
         docFrag.createDiv({}, div => {
+            div.createSpan({}, span => {
+                span.innerText = "This may take a while for large vaults.";
+            });
             div.createEl("h6", {}, span => {
                 span.setAttr("style", "color: var(--text-error); margin-bottom: 0px; margin-top: 3px;");
                 span.innerText = "WARNING:";
@@ -49,10 +52,6 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             div.createSpan({}, span => {
                 span.setAttr("style", "color: var(--text-error);");
                 span.innerText = "No guarentee is given. Please make sure to back your vault up first.";
-            });
-            div.createEl("br");
-            div.createSpan({}, span => {
-                span.innerText = "This may take a while for large vaults.";
             });
         });
         let modalDescriptionEl = createDiv({}, div => {
@@ -82,7 +81,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         let docFrag = new DocumentFragment();
         docFrag.createDiv({}, div => {
             div.createSpan({}, span => {
-                span.innerText = "This will only modify regions without an already defined ID.";
+                span.innerText = "This will only modify regions without an already defined ID. This may take a while for large vaults.";
             });
             div.createEl("h6", {}, span => {
                 span.setAttr("style", "color: var(--text-error); margin-bottom: 0px; margin-top: 3px;");
@@ -96,10 +95,6 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             div.createSpan({}, span => {
                 span.setAttr("style", "color: var(--text-error);");
                 span.innerText = "No guarentee is given. Please make sure to back your vault up first.";
-            });
-            div.createEl("br");
-            div.createSpan({}, span => {
-                span.innerText = "This may take a while for large vaults.";
             });
         });
         let modalDescriptionEl = createDiv({}, div => {
