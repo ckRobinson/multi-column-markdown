@@ -26,22 +26,23 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         }
 
         this.containerEl.createEl("hr")
-        this.containerEl.createEl("h4", { text: "DANGER ZONE" });
+        this.containerEl.createEl("h4", { attr: {"style": "color: var(--text-error); margin-bottom: 5px;"}, text: "DANGER ZONE" });
+        this.containerEl.createEl("hr", { attr: {"style": "margin-top: 5px;"} })
         const dangerZoneContainerEl = this.containerEl.createDiv();
 
         let docFrag = new DocumentFragment()
         docFrag.createDiv({}, div  => {
             div.createEl("h5", {}, span => {
-                span.setAttr("style", "color: var(--text-accent); margin-bottom: 0px; margin-top: 3px;")
+                span.setAttr("style", "color: var(--text-error); margin-bottom: 0px; margin-top: 3px;")
                 span.innerText = "WARNING:"
             })
             div.createSpan({}, span => {
-                span.setAttr("style", "color: var(--text-accent);")
+                span.setAttr("style", "color: var(--text-error);")
                 span.innerText = "This action modifies all relavent note files and may lead to corrupt file text."
             })
             div.createEl("br")
             div.createSpan({}, span => {
-                span.setAttr("style", "color: var(--text-accent);")
+                span.setAttr("style", "color: var(--text-error);")
                 span.innerText = "No guarentee is given. Please make sure to back your vault up first."
             })
             div.createEl("br")
