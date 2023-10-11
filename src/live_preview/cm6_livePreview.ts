@@ -255,7 +255,7 @@ function getNextRegion(workingFileText: string, startIndexOffset: number, wholeD
 		return null;
 	}
 
-	if(region.dataType === "CODEBLOCK" || region.dataType === "DEPRECIATED") {
+	if(region.dataType === "CODEBLOCK" || region.dataType === "ORIGINAL") {
 
 		// Search for the first end tag after a start block. (No recursive columns.)
 		let endTagData = findEndTag(workingFileText.slice(region.data.startPosition));
@@ -312,7 +312,7 @@ function findNextRegion(workingFileText: string): { dataType: RegionType, data: 
 	// If there are multiple kinds of start blocks, the old way of parsing would cause issues.
 	// Now search for both kinds and determine what to do after search.
 	let startTagData_codeblockStart: { dataType: RegionType, data: StartTagRegexMatch } = {dataType: "CODEBLOCK", data: findStartCodeblock(workingFileText) };
-	let startTagData_depreciatedStart: { dataType: RegionType, data: StartTagRegexMatch } = {dataType: "DEPRECIATED", data: findStartTag(workingFileText) };
+	let startTagData_depreciatedStart: { dataType: RegionType, data: StartTagRegexMatch } = {dataType: "ORIGINAL", data: findStartTag(workingFileText) };
 	let pandocData: { dataType: RegionType, data: PandocRegexData } = {dataType: "PADOC", data: findPandoc(workingFileText) }
 
 	if(startTagData_codeblockStart.data.found === false && 
@@ -371,7 +371,7 @@ function getSettingsData(regionData: RegionData): {settings: MultiColumnSettings
 		return parseCodeBlockSettings(settingsStartData)
 	}
 
-	if(regionData.regionType === "DEPRECIATED") {
+	if(regionData.regionType === "ORIGINAL") {
 		let settingsStartData = findSettingsCodeblock(contentData);
 		if (settingsStartData.found === false) {
 			return null;

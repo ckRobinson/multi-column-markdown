@@ -216,7 +216,7 @@ export function defaultStartRegionData(): StartTagRegexMatch {
 
 const ALL_REGION_TYPES= [
     "CODEBLOCK",
-    "DEPRECIATED", 
+    "ORIGINAL", 
     "PADOC"
 ] as const;
 type RegionTypeTuple = typeof ALL_REGION_TYPES;

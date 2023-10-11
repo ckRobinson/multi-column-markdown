@@ -702,7 +702,7 @@ ${editor.getDoc().getSelection()}`
         let startBockAbove: multiColumnParser.StartTagData = {
             linesAboveArray: relativeTexts.linesAboveArray,
             startBlockKey: "Multi-Column Reflow Region",
-            startBlockType: "DEPRECIATED"
+            startBlockType: "ORIGINAL"
         }
 
         this.appendToRegionalManager(el, regionalContainer, ctx, relativeTexts, sourcePath, startBockAbove, (domObj: DOMObject) => {

@@ -28,7 +28,7 @@ for(let i = 0; i < START_REGEX_STRS_WHOLE_LINE.length; i++) {
 export function findStartTag(text: string): StartTagRegexMatch {
 
     let startRegion = defaultStartRegionData();
-    startRegion.regionType = "DEPRECIATED";
+    startRegion.regionType = "ORIGINAL";
 
     for(let i = 0; i< START_REGEX_ARR.length; i++) {
 
@@ -379,7 +379,7 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
         return { startBlockKey, linesAboveArray, startBlockType: "CODEBLOCK" };
     }
 
-    if(tagMatchData.regionType === "DEPRECIATED") {
+    if(tagMatchData.regionType === "ORIGINAL") {
     
         let endTagSerachData = findEndTag(textAbove);
         if(endTagSerachData.found === true) {
@@ -402,7 +402,7 @@ export function getStartBlockOrCodeblockAboveLine(linesAboveArray: string[],
             startBlockKey = "";
         }
 
-        return { startBlockKey, linesAboveArray, startBlockType: "DEPRECIATED" };
+        return { startBlockKey, linesAboveArray, startBlockType: "ORIGINAL" };
     }
 
     if(tagMatchData.regionType === "PADOC") {
