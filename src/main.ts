@@ -87,8 +87,8 @@ export default class MultiColumnMarkdown extends Plugin {
 
                     editor.getDoc().replaceSelection(
 `
-\`\`\`start-multi-column
-ID: ID_${getUID(4)}
+--- start-multi-column: ID_${getUID(4)}
+\`\`\`column-settings
 Number of Columns: 2
 Largest Column: standard
 \`\`\`
