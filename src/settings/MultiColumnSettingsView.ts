@@ -30,6 +30,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         const dangerZoneContainerEl = this.containerEl.createDiv();
 
         this.buildUpdateDepreciated(dangerZoneContainerEl);
+        this.buildFixMissingIDs(dangerZoneContainerEl);
     }
 
     private buildUpdateDepreciated(dangerZoneContainerEl: HTMLDivElement) {
@@ -70,6 +71,50 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
                     }
 
                     updateFileSyntax();
+                };
+                modal.open();
+            })
+            );
+    }
+
+    private buildFixMissingIDs(dangerZoneContainerEl: HTMLDivElement) {
+        
+        let docFrag = new DocumentFragment();
+        docFrag.createDiv({}, div => {
+            div.createEl("h6", {}, span => {
+                span.setAttr("style", "color: var(--text-error); margin-bottom: 0px; margin-top: 3px;");
+                span.innerText = "WARNING:";
+            });
+            div.createSpan({}, span => {
+                span.setAttr("style", "color: var(--text-error);");
+                span.innerText = "This action modifies all relavent notes and may lead to corrupted text.";
+            });
+            div.createEl("br");
+            div.createSpan({}, span => {
+                span.setAttr("style", "color: var(--text-error);");
+                span.innerText = "No guarentee is given. Please make sure to back your vault up first.";
+            });
+            div.createEl("br");
+            div.createSpan({}, span => {
+                span.innerText = "This may take a while for large vaults.";
+            });
+        });
+        let modalDescriptionEl = createDiv({}, div => {
+            div.createSpan({ text: "This action may corrupt vault data." });
+            div.createEl("br");
+            div.createSpan({ text: "Please confirm you have backed up your vault." });
+        });
+        new Setting(dangerZoneContainerEl)
+            .setName("Add random IDs to all Multi-Column regions.")
+            .setDesc(docFrag)
+            .addButton((b) => b.setButtonText("Add IDs").onClick(() => {
+                const modal = ConfirmModal.confirmModalWithElement(this.app, modalDescriptionEl, { primary: "Confirm", secondary: "Cancel" });
+                modal.onClose = () => {
+                    if (modal.confirmed === false) {
+                        return;
+                    }
+
+                    findAndReplaceMissingIDs();
                 };
                 modal.open();
             })
@@ -123,6 +168,10 @@ export class ConfirmModal extends Modal {
     onOpen() {
         this.display();
     }
+}
+
+async function findAndReplaceMissingIDs() {
+    
 }
 
 const OLD_COL_START_SYNTAX_REGEX = /```(start-multi-column|multi-column-start).*?```/sg;
