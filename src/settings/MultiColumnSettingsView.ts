@@ -25,8 +25,8 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
                 ));
         }
 
-        this.containerEl.createEl("h5", { attr: {"style": "color: var(--text-error); margin-bottom: 5px;"}, text: "DANGER ZONE" });
-        this.containerEl.createEl("hr", { attr: {"style": "margin-top: 5px;"} })
+        this.containerEl.createEl("h5", { attr: {"style": "color: var(--text-error); margin-bottom: 0px;"}, text: "DANGER ZONE" });
+        this.containerEl.createEl("hr", { attr: {"style": "margin-top: 1px; margin-bottom: 0.75em;"} })
         const dangerZoneContainerEl = this.containerEl.createDiv();
 
         this.buildUpdateDepreciated(dangerZoneContainerEl);
@@ -81,6 +81,9 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         
         let docFrag = new DocumentFragment();
         docFrag.createDiv({}, div => {
+            div.createSpan({}, span => {
+                span.innerText = "This will only modify regions without an already defined ID.";
+            });
             div.createEl("h6", {}, span => {
                 span.setAttr("style", "color: var(--text-error); margin-bottom: 0px; margin-top: 3px;");
                 span.innerText = "WARNING:";
