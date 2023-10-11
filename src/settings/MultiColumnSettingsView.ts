@@ -1,4 +1,4 @@
-import { App, ButtonComponent, Platform, PluginSettingTab, Setting } from "obsidian";
+import { App, ButtonComponent, Modal, Platform, PluginSettingTab, Setting } from "obsidian";
 import MultiColumnMarkdown from "src/main";
 
 export default class MultiColumnSettingsView extends PluginSettingTab {
@@ -59,9 +59,64 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             .setDesc(docFrag)
             .addButton((b) =>
                 b.setButtonText("Update Syntax").onClick(() => {
+                    const modal = ConfirmModal.confirmModalWithElement(this.app, modalDescriptionEl, {primary: "Confirm", secondary: "Cancel"});
+                    modal.onClose = () => {
+                        if(modal.confirmed === false) {
+                            return
+                        }
+
+                        //ToDo: Call fn.
+                    };
+                    modal.open();
                 })
             );
     }
 }
+
+export class ConfirmModal extends Modal {
+
+    static confirmModalWithText(app: App,
+                                text: string,
+                                buttons: { primary: string; secondary: string }): ConfirmModal {
+
+        return new ConfirmModal(app, createSpan({text: text}), buttons)
+    }
+
+    static confirmModalWithElement(app: App,
+                                   descriptionEl: HTMLElement,
+                                   buttons: { primary: string; secondary: string }): ConfirmModal {
+        return new ConfirmModal(app, descriptionEl, buttons)
+    }
+
+    public descriptionEl: HTMLElement
+    public buttons: { primary: string; secondary: string }
+    private constructor(app: App, 
+                        descriptionEl: HTMLElement,
+                        buttons: { primary: string; secondary: string }) {
+        super(app);
+        this.descriptionEl = descriptionEl;
+        this.buttons = buttons;
+    }
+    confirmed: boolean = false;
+    async display() {
+        this.contentEl.empty();
+        this.contentEl.appendChild(this.descriptionEl)
+
+        const buttonEl = this.contentEl.createDiv();
+        new ButtonComponent(buttonEl)
+            .setButtonText(this.buttons.primary)
+            .setCta()
+            .onClick(() => {
+                this.confirmed = true;
+                this.close();
+            });
+        new ButtonComponent(buttonEl)
+            .setButtonText(this.buttons.secondary)
+            .onClick(() => {
+                this.close();
+            });
+    }
+    onOpen() {
+        this.display();
     }
 }
