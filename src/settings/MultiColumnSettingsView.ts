@@ -15,8 +15,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
 
         if(Platform.isMobile === true) {
             new Setting(settingsContainerEl)
-                .setName("Render Column Regions")
-                .setDesc("Toggle to show/hide column regions on mobile devices.")
+                .setName("Render Column Regions on Mobile Devices")
                 .addToggle((t) =>
                     t.setValue(this.plugin.settings.renderOnMobile).onChange((v) => {
                         this.plugin.settings.renderOnMobile = v
