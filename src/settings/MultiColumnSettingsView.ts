@@ -1,4 +1,4 @@
-import { App, ButtonComponent, Modal, Platform, PluginSettingTab, Setting } from "obsidian";
+import { App, ButtonComponent, Modal, Notice, Platform, PluginSettingTab, Setting } from "obsidian";
 import MultiColumnMarkdown from "src/main";
 
 export default class MultiColumnSettingsView extends PluginSettingTab {
@@ -65,7 +65,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
                             return
                         }
 
-                        //ToDo: Call fn.
+                        updateFileSyntax()
                     };
                     modal.open();
                 })
@@ -118,5 +118,76 @@ export class ConfirmModal extends Modal {
     }
     onOpen() {
         this.display();
+    }
+}
+
+const OLD_COL_START_SYNTAX_REGEX = /```(start-multi-column|multi-column-start).*?```/sg;
+async function updateFileSyntax() {
+    
+    let fileCount = 0
+    let regionCount = 0
+    for(let mdFile of app.vault.getMarkdownFiles()) {
+        let originalFileContent = await app.vault.read(mdFile);
+
+        let { updatedFileContent, numRegionsUpdated } = updateColumnStartSyntax(originalFileContent);
+        if(numRegionsUpdated > 0) {
+            fileCount++;
+            regionCount += numRegionsUpdated
+        }
+
+        // TODO: Add in final file modification when done testing.
+        // app.vault.modify(mdFile, updatedFileContent)
+    }
+
+    console.log(`Total files needing update: ${fileCount}`)
+    new Notice(`Finished updating ${regionCount} column regions across ${fileCount} files.`)
+}
+
+function updateColumnStartSyntax(originalFileContent: string): { updatedFileContent: string,
+                                                                 numRegionsUpdated: number } {
+    let matches = Array.from(originalFileContent.matchAll(OLD_COL_START_SYNTAX_REGEX))
+
+    let updatedFileContent = originalFileContent;
+    let offset = 0;
+    
+    for(let match of matches) {
+
+        let startIndex = match.index + offset
+        let matchLength = match[0].length
+        let endIndex = startIndex + matchLength;
+
+        let originalSettingsText = match[0]
+        let settingsText = originalSettingsText
+        let columnStartSyntax = match[1]
+        let columnStartLine = `--- ${columnStartSyntax}`
+
+        
+        let idResult = /ID:(.*)/i.exec(originalSettingsText)
+        if(idResult !== null) {
+            let id = idResult[1].trim()
+            columnStartLine = `${columnStartLine}: ${id}`
+
+            let startIndex = idResult.index
+            let endIndex = startIndex + idResult[0].length
+
+            settingsText = originalSettingsText.slice(0, startIndex)
+            settingsText += originalSettingsText.slice(endIndex + 1)
+        }
+        settingsText = settingsText.replace(columnStartSyntax, "column-settings")
+        
+        let replacementText = `${columnStartLine}\n${settingsText}`
+
+        offset += replacementText.length - originalSettingsText.length
+
+        updatedFileContent = updatedFileContent.slice(0, startIndex) + replacementText + updatedFileContent.slice(endIndex)
+        console.groupCollapsed()
+        console.log("Original File:\n\n", originalFileContent)
+        console.log("Updated File:\n\n", updatedFileContent)
+        console.groupEnd()
+    }
+
+    return {
+        updatedFileContent: updatedFileContent,
+        numRegionsUpdated: matches.length
     }
 }
