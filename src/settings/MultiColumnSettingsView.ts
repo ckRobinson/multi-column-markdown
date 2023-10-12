@@ -218,7 +218,7 @@ async function updateFileSyntax() {
     }
 
     console.log(`Total files needing update: ${fileCount}`)
-    new Notice(`Finished updating ${regionStartCount} column regions across ${fileCount} files.`)
+    new Notice(`Finished updating:\n${regionStartCount} start syntaxes,\n${columnBreakCount} column breaks, and\n${columnEndCount} column end tags,\nacross ${fileCount} files.`)
 }
 
 const OLD_COL_END_SYNTAX_REGEX = /=== *(end-multi-column|multi-column-end)/g
