@@ -181,7 +181,8 @@ async function updateFileSyntax() {
         let { updatedFileContent, numRegionsUpdated } = updateColumnStartSyntax(originalFileContent);
         if(numRegionsUpdated > 0) {
             fileCount++;
-            regionCount += numRegionsUpdated
+        let colBreak = updateColumnBreakSyntax(updatedFileContent)
+        let colEnd = updateColumnEndSyntax(updatedFileContent)
         }
 
         // TODO: Add in final file modification when done testing.
@@ -189,7 +190,35 @@ async function updateFileSyntax() {
     }
 
     console.log(`Total files needing update: ${fileCount}`)
-    new Notice(`Finished updating ${regionCount} column regions across ${fileCount} files.`)
+}
+
+const OLD_COL_END_SYNTAX_REGEX = /=== *(end-multi-column|multi-column-end)/g
+function updateColumnEndSyntax(originalFileContent: string): { updatedFileContent: string,
+                                                                 numRegionsUpdated: number } {
+    let matches = Array.from(originalFileContent.matchAll(OLD_COL_END_SYNTAX_REGEX))
+
+    let updatedFileContent = originalFileContent;
+    let offset = 0;
+    
+    for(let match of matches) {    
+        let startIndex = match.index + offset
+        let matchLength = match[0].length
+        let endIndex = startIndex + matchLength;
+
+        let columnEndSyntax = match[1]        
+        let replacementText = `--- ${columnEndSyntax}`
+        offset += replacementText.length - matchLength
+
+        updatedFileContent = updatedFileContent.slice(0, startIndex) + replacementText + updatedFileContent.slice(endIndex)
+        console.groupCollapsed()
+        console.log("Original File:\n\n", originalFileContent)
+        console.log("Updated File:\n\n", updatedFileContent)
+        console.groupEnd()      
+    }
+    return {
+        updatedFileContent: updatedFileContent,
+        numRegionsUpdated: matches.length
+    }                                           
 }
 
 const OLD_COL_BREAK_SYNTAX_REGEX = /===\s*?(column-end|end-column|column-break|break-column)\s*?===\s*?/g
