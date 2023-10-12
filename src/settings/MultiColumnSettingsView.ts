@@ -209,10 +209,16 @@ async function updateFileSyntax() {
         }
 
         // TODO: Add in final file modification when done testing.
-        // app.vault.modify(mdFile, updatedFileContent)
+        if(updatedFileContent !== originalFileContent) {
+            // app.vault.modify(mdFile, updatedFileContent)
+        }
+        else {
+            console.log("No changes, not updating file.")
+        }
     }
 
     console.log(`Total files needing update: ${fileCount}`)
+    new Notice(`Finished updating ${regionStartCount} column regions across ${fileCount} files.`)
 }
 
 const OLD_COL_END_SYNTAX_REGEX = /=== *(end-multi-column|multi-column-end)/g
