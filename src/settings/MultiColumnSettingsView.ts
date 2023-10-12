@@ -181,11 +181,21 @@ async function updateFileSyntax() {
         let originalFileContent = await app.vault.read(mdFile);
 
         let fileUpdated = false;
-        let { updatedFileContent, numRegionsUpdated } = updateColumnStartSyntax(originalFileContent);
+        let { updatedFileContent, numRegionsUpdated } = updateColumnCodeblockStartSyntax(originalFileContent);
         if(numRegionsUpdated > 0) {
             fileCount++;
             fileUpdated = true;
             regionStartCount += numRegionsUpdated
+        }
+
+        let colStart = updateColumnStartSyntax(updatedFileContent)
+        if(colStart.numRegionsUpdated) {
+            if(fileUpdated === false) {
+                fileUpdated = true;
+                fileCount++;
+            }
+            updatedFileContent = colStart.updatedFileContent
+            regionStartCount += colStart.numRegionsUpdated
         }
 
         let colBreak = updateColumnBreakSyntax(updatedFileContent)
@@ -279,8 +289,37 @@ function updateColumnBreakSyntax(originalFileContent: string): { updatedFileCont
     }                                           
 }
 
-const OLD_CODEBLOCK_COL_START_SYNTAX_REGEX = /```(start-multi-column|multi-column-start).*?```/sg;
+const OLD_COL_START_SYNTAX_REGEX = /=== *(start-multi-column|multi-column-start)/g
 function updateColumnStartSyntax(originalFileContent: string): { updatedFileContent: string,
+                                                                 numRegionsUpdated: number } {
+    let matches = Array.from(originalFileContent.matchAll(OLD_COL_START_SYNTAX_REGEX))
+
+    let updatedFileContent = originalFileContent;
+    let offset = 0;
+    
+    for(let match of matches) {    
+        let startIndex = match.index + offset
+        let matchLength = match[0].length
+        let endIndex = startIndex + matchLength;
+
+        let columnStartSyntax = match[1]        
+        let replacementText = `--- ${columnStartSyntax}`
+        offset += replacementText.length - matchLength
+
+        updatedFileContent = updatedFileContent.slice(0, startIndex) + replacementText + updatedFileContent.slice(endIndex)
+        console.groupCollapsed()
+        console.log("Original File:\n\n", originalFileContent)
+        console.log("Updated File:\n\n", updatedFileContent)
+        console.groupEnd()      
+    }
+    return {
+        updatedFileContent: updatedFileContent,
+        numRegionsUpdated: matches.length
+    }                                           
+}
+
+const OLD_CODEBLOCK_COL_START_SYNTAX_REGEX = /```(start-multi-column|multi-column-start).*?```/sg;
+function updateColumnCodeblockStartSyntax(originalFileContent: string): { updatedFileContent: string,
                                                                  numRegionsUpdated: number } {
     let matches = Array.from(originalFileContent.matchAll(OLD_CODEBLOCK_COL_START_SYNTAX_REGEX))
 
