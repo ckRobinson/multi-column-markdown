@@ -195,7 +195,7 @@ async function updateFileSyntax() {
                 fileCount++;
             }
             updatedFileContent = colBreak.updatedFileContent
-            columnBreakCount = colBreak.numRegionsUpdated
+            columnBreakCount += colBreak.numRegionsUpdated
         }
 
         let colEnd = updateColumnEndSyntax(updatedFileContent)
@@ -205,7 +205,7 @@ async function updateFileSyntax() {
                 fileCount++;
             }
             updatedFileContent = colEnd.updatedFileContent
-            columnEndCount = colEnd.numRegionsUpdated;   
+            columnEndCount += colEnd.numRegionsUpdated;   
         }
 
         // TODO: Add in final file modification when done testing.
