@@ -210,7 +210,7 @@ async function updateFileSyntax() {
 
         // TODO: Add in final file modification when done testing.
         if(updatedFileContent !== originalFileContent) {
-            // app.vault.modify(mdFile, updatedFileContent)
+            app.vault.modify(mdFile, updatedFileContent)
         }
         else {
             console.log("No changes, not updating file.")
@@ -279,10 +279,10 @@ function updateColumnBreakSyntax(originalFileContent: string): { updatedFileCont
     }                                           
 }
 
-const OLD_COL_START_SYNTAX_REGEX = /```(start-multi-column|multi-column-start).*?```/sg;
+const OLD_CODEBLOCK_COL_START_SYNTAX_REGEX = /```(start-multi-column|multi-column-start).*?```/sg;
 function updateColumnStartSyntax(originalFileContent: string): { updatedFileContent: string,
                                                                  numRegionsUpdated: number } {
-    let matches = Array.from(originalFileContent.matchAll(OLD_COL_START_SYNTAX_REGEX))
+    let matches = Array.from(originalFileContent.matchAll(OLD_CODEBLOCK_COL_START_SYNTAX_REGEX))
 
     let updatedFileContent = originalFileContent;
     let offset = 0;
