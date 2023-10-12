@@ -174,15 +174,38 @@ async function findAndReplaceMissingIDs() {
 async function updateFileSyntax() {
     
     let fileCount = 0
-    let regionCount = 0
+    let regionStartCount = 0;
+    let columnBreakCount = 0;
+    let columnEndCount = 0;
     for(let mdFile of app.vault.getMarkdownFiles()) {
         let originalFileContent = await app.vault.read(mdFile);
 
+        let fileUpdated = false;
         let { updatedFileContent, numRegionsUpdated } = updateColumnStartSyntax(originalFileContent);
         if(numRegionsUpdated > 0) {
             fileCount++;
+            fileUpdated = true;
+            regionStartCount += numRegionsUpdated
+        }
+
         let colBreak = updateColumnBreakSyntax(updatedFileContent)
+        if(colBreak.numRegionsUpdated) {
+            if(fileUpdated === false) {
+                fileUpdated = true;
+                fileCount++;
+            }
+            updatedFileContent = colBreak.updatedFileContent
+            columnBreakCount = colBreak.numRegionsUpdated
+        }
+
         let colEnd = updateColumnEndSyntax(updatedFileContent)
+        if(colEnd.numRegionsUpdated) {
+            if(fileUpdated === false) {
+                fileUpdated = true;
+                fileCount++;
+            }
+            updatedFileContent = colEnd.updatedFileContent
+            columnEndCount = colEnd.numRegionsUpdated;   
         }
 
         // TODO: Add in final file modification when done testing.
