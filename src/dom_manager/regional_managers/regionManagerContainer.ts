@@ -23,6 +23,8 @@ import { ReflowRegionManager } from "./reflowRegionManager";
 export class RegionManagerContainer {
 
     protected region: RegionManager;
+    protected pluginSettings: MCM_Settings = DEFAULT_SETTINGS;
+
     constructor(parentFileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement, regionParent: HTMLElement) {
         this.region = new StandardMultiColumnRegionManager(createDefaultRegionManagerData(regionParent, parentFileManager, regionKey, rootElement));
     }
@@ -58,7 +60,7 @@ export class RegionManagerContainer {
             if(this.region instanceof AutoLayoutRegionManager === false) {
 
                 // console.debug("Converting region to auto layout.")
-                this.convertToAutoLayout()
+                this.convertToAutoLayout(this.pluginSettings.autoLayoutBalanceIterations)
             }
         }
         else if(regionalSettings.fullDocReflow === true) {
@@ -96,10 +98,10 @@ export class RegionManagerContainer {
         return this.region as StandardMultiColumnRegionManager;
     }
 
-    private convertToAutoLayout(): AutoLayoutRegionManager {
+    private convertToAutoLayout(balanceIterations: number): AutoLayoutRegionManager {
 
         let data = this.region.getRegionData();
-        this.region = new AutoLayoutRegionManager(data);
+        this.region = new AutoLayoutRegionManager(data, balanceIterations);
 
         return this.region as AutoLayoutRegionManager;
     }
