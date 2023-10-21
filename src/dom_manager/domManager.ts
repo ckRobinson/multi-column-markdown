@@ -35,7 +35,7 @@ export class GlobalDOMManager {
             fileManager = this.managers.get(key);
         }
         else {
-            fileManager = createFileDOMManager(this, key);
+            fileManager = new FileDOMManager(this, key);
             this.managers.set(key, fileManager);
         }
 
@@ -47,26 +47,22 @@ export class GlobalDOMManager {
     }
 }
 
-export type FileDOMManager = {
-    regionMap: Map<string, RegionManagerContainer>,
-    hasStartTag: boolean,
-    createRegionalManager: (regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement) => RegionManager
-    getRegionalContainer: (regionKey: string) => RegionManagerContainer | null,
-    getAllRegionalManagers: () => RegionManager[],
-    removeRegion: (regionKey: string) => void,
-    setHasStartTag: () => void,
-    getHasStartTag: () => boolean,
-    getNumberOfRegions: () => number,
-    checkKeyExists: (checkKey: string) => boolean
-}
-function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string): FileDOMManager {
-    
-    let regionMap: Map<string, RegionManagerContainer> = new Map();
-    let hasStartTag: boolean = false;
+export class FileDOMManager {
+    regionMap: Map<string, RegionManagerContainer>;
+    hasStartTag: boolean;
+    fileKey: string;
+    parentManager: GlobalDOMManager;
 
-    function removeRegion(regionKey: string): void {
+    constructor(parentManager: GlobalDOMManager, fileKey: string) {
+        this.regionMap = new Map();
+        this.hasStartTag = false;
+        this.parentManager = parentManager;
+        this.fileKey = fileKey;
+    }
 
-        let regionContainer = regionMap.get(regionKey);
+    removeRegion(regionKey: string): void {
+
+        let regionContainer = this.regionMap.get(regionKey);
         if(regionContainer === undefined) {
             return;
         }
@@ -74,64 +70,52 @@ function createFileDOMManager(parentManager: GlobalDOMManager, fileKey: string):
         let regionalManager = regionContainer.getRegion();
         regionalManager.displayOriginalElements();
 
-        regionMap.delete(regionKey);
+        this.regionMap.delete(regionKey);
         
-        if(regionMap.size === 0) {
-            parentManager.removeFileManagerCallback(fileKey);
+        if(this.regionMap.size === 0) {
+            this.parentManager.removeFileManagerCallback(this.fileKey);
         }
     }
 
-    function createRegionalManager(regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement): RegionManager {
+    createRegionalManager(regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement): RegionManager {
 
         //TODO: Use the error element whenever there is an error.
 
         let regonalContainer = new RegionManagerContainer(this, regionKey, rootElement, renderRegionElement);
-        regionMap.set(regionKey, regonalContainer);
+        this.regionMap.set(regionKey, regonalContainer);
         return regonalContainer.getRegion();
     }
 
-    function getRegionalContainer(regionKey: string): RegionManagerContainer | null {
+    getRegionalContainer(regionKey: string): RegionManagerContainer | null {
 
         let regonalManager = null;
-        if(regionMap.has(regionKey) === true) {
-            regonalManager = regionMap.get(regionKey);
+        if(this.regionMap.has(regionKey) === true) {
+            regonalManager = this.regionMap.get(regionKey);
         }
 
         return regonalManager;
     }
 
-    function getAllRegionalManagers(): RegionManager[] {
+    getAllRegionalManagers(): RegionManager[] {
 
-        let containers = Array.from(regionMap.values())
+        let containers = Array.from(this.regionMap.values())
         let regions: RegionManager[] = containers.map((curr) => { return curr.getRegion() });
         return regions;
     }
 
-    function setHasStartTag() {
-        hasStartTag = true;
+    setHasStartTag() {
+        this.hasStartTag = true;
     }
 
-    function getHasStartTag() {
-        return hasStartTag;
+    getHasStartTag() {
+        return this.hasStartTag;
     }
 
-    function getNumberOfRegions() {
-        return regionMap.size
+    getNumberOfRegions() {
+        return this.regionMap.size
     }
 
-    function checkKeyExists(checkKey: string) {
-        return regionMap.has(checkKey);
-    }
-
-    return { regionMap: regionMap, 
-        hasStartTag: hasStartTag,  
-        createRegionalManager: createRegionalManager, 
-        getRegionalContainer: getRegionalContainer,
-        getAllRegionalManagers: getAllRegionalManagers,
-        removeRegion: removeRegion, 
-        setHasStartTag: setHasStartTag, 
-        getHasStartTag: getHasStartTag,
-        getNumberOfRegions: getNumberOfRegions,
-        checkKeyExists: checkKeyExists
+    checkKeyExists(checkKey: string) {
+        return this.regionMap.has(checkKey);
     }
 }
