@@ -15,9 +15,11 @@ import { RegionManagerContainer } from "./regional_managers/regionManagerContain
  */
 export class GlobalDOMManager {
     managers: Map<string, FileDOMManager>;
+    pluginSettings: MCM_Settings = DEFAULT_SETTINGS;
 
-    constructor() {
+    constructor(pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
         this.managers = new Map();
+        this.pluginSettings = pluginSettings;
     }
 
     public removeFileManagerCallback(key: string) {
