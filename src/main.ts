@@ -24,12 +24,6 @@ import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSett
 import { HTMLSizing } from './utilities/interfaces';
 import MultiColumnSettingsView from './settings/MultiColumnSettingsView';
 
-interface MCM_Settings {
-    renderOnMobile: boolean;
-}
-const DEFAULT_SETTINGS: MCM_Settings = {
-    renderOnMobile: true
-};
 
 const CODEBLOCK_START_STRS = [
     "start-multi-column",
