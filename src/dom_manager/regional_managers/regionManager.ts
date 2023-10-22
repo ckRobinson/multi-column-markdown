@@ -23,6 +23,8 @@ export type MultiColumnRenderData = {
 
 export abstract class RegionManager {
 
+    protected pluginSettings: MCM_Settings;
+
     protected domList: DOMObject[] = [];
     public get numberOfChildren(): number {
         return this.domList.length;
@@ -41,8 +43,8 @@ export abstract class RegionManager {
 
     protected regionKey: string;
 
-    constructor(data: RegionManagerData) {
-
+    constructor(data: RegionManagerData, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
+        this.pluginSettings = pluginSettings;
         this.domList = data.domList;
         this.domObjectMap = data.domObjectMap;
         this.regionParent = data.regionParent;
@@ -51,6 +53,10 @@ export abstract class RegionManager {
         this.regionalSettings = data.regionalSettings;
 
         this.regionKey = data.regionKey;
+    }
+
+    public updateSettings(newSettings: MCM_Settings) {
+        this.pluginSettings = newSettings;
     }
 
     public getRegionData(): RegionManagerData {

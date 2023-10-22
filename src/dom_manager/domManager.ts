@@ -15,11 +15,18 @@ import { RegionManagerContainer } from "./regional_managers/regionManagerContain
  */
 export class GlobalDOMManager {
     managers: Map<string, FileDOMManager>;
-    pluginSettings: MCM_Settings = DEFAULT_SETTINGS;
+    pluginSettings: MCM_Settings;
 
     constructor(pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
         this.managers = new Map();
         this.pluginSettings = pluginSettings;
+    }
+
+    public updatedPluginSettings(newSettings: MCM_Settings) {
+        this.pluginSettings = newSettings;
+        for(let file of this.managers.values()) {
+            file.updateSettings(newSettings);
+        }
     }
 
     public removeFileManagerCallback(key: string) {
@@ -35,7 +42,7 @@ export class GlobalDOMManager {
             fileManager = this.managers.get(key);
         }
         else {
-            fileManager = new FileDOMManager(this, key);
+            fileManager = new FileDOMManager(this, key, this.pluginSettings);
             this.managers.set(key, fileManager);
         }
 
@@ -52,12 +59,21 @@ export class FileDOMManager {
     hasStartTag: boolean;
     fileKey: string;
     parentManager: GlobalDOMManager;
+    pluginSettings: MCM_Settings;
 
-    constructor(parentManager: GlobalDOMManager, fileKey: string) {
+    constructor(parentManager: GlobalDOMManager, fileKey: string, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
         this.regionMap = new Map();
         this.hasStartTag = false;
         this.parentManager = parentManager;
         this.fileKey = fileKey;
+        this.pluginSettings = pluginSettings;
+    }
+
+    public updateSettings(newSettings: MCM_Settings) {
+        this.pluginSettings = newSettings;
+        for(let region of this.regionMap.values()) {
+            region.updateSettings(newSettings);
+        }
     }
 
     removeRegion(regionKey: string): void {
@@ -81,7 +97,7 @@ export class FileDOMManager {
 
         //TODO: Use the error element whenever there is an error.
 
-        let regonalContainer = new RegionManagerContainer(this, regionKey, rootElement, renderRegionElement);
+        let regonalContainer = new RegionManagerContainer(this, regionKey, rootElement, renderRegionElement, this.pluginSettings);
         this.regionMap.set(regionKey, regonalContainer);
         return regonalContainer.getRegion();
     }

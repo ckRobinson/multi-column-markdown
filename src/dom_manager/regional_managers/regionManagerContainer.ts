@@ -23,12 +23,17 @@ import { ReflowRegionManager } from "./reflowRegionManager";
 export class RegionManagerContainer {
 
     protected region: RegionManager;
-    protected pluginSettings: MCM_Settings = DEFAULT_SETTINGS;
+    protected pluginSettings: MCM_Settings;
 
-    constructor(parentFileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement, regionParent: HTMLElement) {
+    constructor(parentFileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement, regionParent: HTMLElement, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
+        this.pluginSettings = pluginSettings;
         this.region = new StandardMultiColumnRegionManager(createDefaultRegionManagerData(regionParent, parentFileManager, regionKey, rootElement));
     }
 
+    public updateSettings(newSettings: MCM_Settings) {
+        this.pluginSettings = newSettings;
+    }
+    
     public getRegion(): RegionManager {
         return this.region;
     }
