@@ -23,7 +23,7 @@ import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_o
 import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSettings';
 import { HTMLSizing } from './utilities/interfaces';
 import MultiColumnSettingsView from './settings/MultiColumnSettingsView';
-
+import { MCM_Settings, DEFAULT_SETTINGS } from './pluginSettings';
 
 const CODEBLOCK_START_STRS = [
     "start-multi-column",

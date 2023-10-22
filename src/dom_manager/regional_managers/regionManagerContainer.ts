@@ -15,6 +15,7 @@ import { SingleColumnRegionManager } from "./singleColumnRegionManager";
 import { RegionManager } from "./regionManager";
 import { AutoLayoutRegionManager } from './autoLayoutRegionManager';
 import { ReflowRegionManager } from "./reflowRegionManager";
+import { MCM_Settings, DEFAULT_SETTINGS } from '../../pluginSettings';
 
 /**
  * This class acts as an abstraction for the actual regional manager. It is used to update the

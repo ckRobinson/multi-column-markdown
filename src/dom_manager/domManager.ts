@@ -8,6 +8,7 @@
 
 import { RegionManager } from "./regional_managers/regionManager";
 import { RegionManagerContainer } from "./regional_managers/regionManagerContainer";
+import { MCM_Settings, DEFAULT_SETTINGS } from '../pluginSettings';
 
 /**
  * This class handles the global managers keeping track of all open files that

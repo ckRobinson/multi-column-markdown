@@ -14,6 +14,7 @@ import { ElementRenderType, getElementRenderType } from 'src/utilities/elementRe
 import { RegionManagerData } from './regionManagerContainer';
 import { searchChildrenForNodeType } from 'src/utilities/utils';
 import { HTMLSizing } from 'src/utilities/interfaces';
+import { MCM_Settings, DEFAULT_SETTINGS } from '../../pluginSettings';
 
 export type MultiColumnRenderData = { 
     parentRenderElement: HTMLElement, 
