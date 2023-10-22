@@ -66,7 +66,7 @@ export class RegionManagerContainer {
             if(this.region instanceof AutoLayoutRegionManager === false) {
 
                 // console.debug("Converting region to auto layout.")
-                this.convertToAutoLayout(this.pluginSettings.autoLayoutBalanceIterations)
+                this.convertToAutoLayout()
             }
         }
         else if(regionalSettings.fullDocReflow === true) {
@@ -104,10 +104,10 @@ export class RegionManagerContainer {
         return this.region as StandardMultiColumnRegionManager;
     }
 
-    private convertToAutoLayout(balanceIterations: number): AutoLayoutRegionManager {
+    private convertToAutoLayout(): AutoLayoutRegionManager {
 
         let data = this.region.getRegionData();
-        this.region = new AutoLayoutRegionManager(data, balanceIterations);
+        this.region = new AutoLayoutRegionManager(data);
 
         return this.region as AutoLayoutRegionManager;
     }

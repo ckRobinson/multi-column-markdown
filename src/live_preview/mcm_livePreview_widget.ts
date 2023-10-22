@@ -116,7 +116,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             this.regionManager = new SingleColumnRegionManager(regionData);
         }
         else if (this.regionSettings.autoLayout === true) {
-            this.regionManager = new AutoLayoutRegionManager(regionData, 1);
+            this.regionManager = new AutoLayoutRegionManager(regionData, true);
         }
         else {
             this.regionManager = new StandardMultiColumnRegionManager(regionData);
