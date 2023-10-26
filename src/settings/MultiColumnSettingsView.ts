@@ -17,9 +17,9 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
 
         new Setting(settingsContainerEl)
             .setName("Number of Auto-Layout balance iterations.")
-            .setDesc("The maximum number of times Auto-Layout will try to balance elements between all of the columns. This may cause Obsidian to slow during file load if this is set too high.")
+            .setDesc("The maximum number of times Auto-Layout will try to balance elements between all of the columns. Setting this too high may cause Obsidian to slow down during loading and refreshing of Auto-Layout columns.")
             .addSlider((slider) => {
-                slider.setLimits(1, 9, 2)
+                slider.setLimits(1, 15, 2)
                 slider.setValue(this.plugin.settings.autoLayoutBalanceIterations)
                 slider.setDynamicTooltip()
                 slider.onChange((val) => {
@@ -71,15 +71,17 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         let docFrag = new DocumentFragment();
         docFrag.createDiv({}, div => {
             div.createSpan({}, span => {
-                span.innerText = "This may take a while for large vaults.";
+                span.innerText = "This may take a while for large vaults, you can continue to use Obsidian but application may slow down during process.";
             });
-            div.createEl("h6", {}, span => {
+            div.createEl("br");
+            div.createEl("br");
+            div.createEl("h5", {}, span => {
                 span.setAttr("style", "color: var(--text-error); margin-bottom: 0px; margin-top: 3px;");
                 span.innerText = "WARNING:";
             });
             div.createSpan({}, span => {
                 span.setAttr("style", "color: var(--text-error);");
-                span.innerText = "This action modifies all relavent notes and may lead to corrupted text.";
+                span.innerText = "This action modifies any note file with depreciated syntax and could lead to corrupted file text.";
             });
             div.createEl("br");
             div.createSpan({}, span => {
@@ -114,15 +116,22 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         let docFrag = new DocumentFragment();
         docFrag.createDiv({}, div => {
             div.createSpan({}, span => {
-                span.innerText = "This will only modify regions without an already defined ID. This may take a while for large vaults.";
+                span.innerText = "This will only modify column regions without a pre-defined ID, and which use the up to date core syntax. Will not modify depreciated syntax or fenced-divs.";
             });
-            div.createEl("h6", {}, span => {
+            div.createEl("br");
+            div.createEl("br");
+            div.createSpan({}, span => {
+                span.innerText = "This may take a while for large vaults, you can continue to use Obsidian but application may slow down during process.";
+            });
+            div.createEl("br");
+            div.createEl("br");
+            div.createEl("h5", {}, span => {
                 span.setAttr("style", "color: var(--text-error); margin-bottom: 0px; margin-top: 3px;");
                 span.innerText = "WARNING:";
             });
             div.createSpan({}, span => {
                 span.setAttr("style", "color: var(--text-error);");
-                span.innerText = "This action modifies all relavent notes and may lead to corrupted text.";
+                span.innerText = "This action modifies any note file missing column IDs and could lead to corrupted file text.";
             });
             div.createEl("br");
             div.createSpan({}, span => {
@@ -136,7 +145,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             div.createSpan({ text: "Please confirm you have backed up your vault." });
         });
         new Setting(dangerZoneContainerEl)
-            .setName("Add random IDs to all Multi-Column regions.")
+            .setName("Append IDs to all Multi-Column regions in vault.")
             .setDesc(docFrag)
             .addButton((b) => b.setButtonText("Add IDs").onClick(() => {
                 const modal = ConfirmModal.confirmModalWithElement(this.app, modalDescriptionEl, { primary: "Confirm", secondary: "Cancel" });
@@ -149,7 +158,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
                 };
                 modal.open();
             })
-            );
+        );
     }
 }
 
