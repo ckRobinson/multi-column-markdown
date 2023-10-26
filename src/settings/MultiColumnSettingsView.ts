@@ -1,5 +1,7 @@
 import { App, ButtonComponent, Modal, Notice, Platform, PluginSettingTab, Setting } from "obsidian";
 import MultiColumnMarkdown from "src/main";
+import * as multiColumnParser from '../utilities/textParser';
+import { getUID } from "src/utilities/utils";
 
 export default class MultiColumnSettingsView extends PluginSettingTab {
 
@@ -181,7 +183,68 @@ export class ConfirmModal extends Modal {
 }
 
 async function findAndReplaceMissingIDs() {
-    
+
+    function searchFileForMissingID(docText: string): { updatedFileContent: string,
+                                                        numRegionsUpdated: number } {
+        let lines = docText.split("\n");
+
+        /**
+         * Loop through all of the lines checking if the line is a 
+         * start tag and if so is it missing an ID.
+         */
+        let linesWithoutIDs = 0
+        for(let i = 0; i < lines.length; i++) {
+
+            let data = multiColumnParser.isStartTagWithID(lines[i]);
+            if(data.isStartTag === true && data.hasKey === false) {
+
+                let originalText = lines[i]
+                let text = originalText;
+                text = text.trimEnd();
+                if(text.charAt(text.length - 1) === ":") {
+                    text = text.slice(0, text.length-1);
+                }
+                text = `${text}: ID_${getUID(4)}`;
+
+                lines[i] = text;
+                linesWithoutIDs++;
+            }
+        }                    
+
+        if(linesWithoutIDs === 0) {
+            return {
+                updatedFileContent: docText,
+                numRegionsUpdated: 0
+            };
+        }
+
+        let newFileContent = lines.join("\n");
+        return {
+            updatedFileContent: newFileContent,
+            numRegionsUpdated: linesWithoutIDs
+        };
+    }
+
+    let count = 0;
+    let fileCount = 0;
+    for(let mdFile of app.vault.getMarkdownFiles()) {
+        let originalFileContent = await app.vault.read(mdFile);
+
+        let result = searchFileForMissingID(originalFileContent);
+        if(result.numRegionsUpdated > 0) {
+            count += result.numRegionsUpdated;
+            fileCount++;
+
+            let updatedFileContent = result.updatedFileContent;
+            if(updatedFileContent !== originalFileContent) {
+                app.vault.modify(mdFile, updatedFileContent);
+            }
+            else {
+                console.log("No changes, not updating file.");
+            }
+        }
+    }
+    new Notice(`Finished updating:\n${count} region IDs, across ${fileCount} files.`)
 }
 
 async function updateFileSyntax() {
@@ -236,11 +299,10 @@ async function updateFileSyntax() {
             app.vault.modify(mdFile, updatedFileContent)
         }
         else {
-            console.log("No changes, not updating file.")
+            console.debug("No changes, not updating file.")
         }
     }
 
-    console.log(`Total files needing update: ${fileCount}`)
     new Notice(`Finished updating:\n${regionStartCount} start syntaxes,\n${columnBreakCount} column breaks, and\n${columnEndCount} column end tags,\nacross ${fileCount} files.`)
 }
 
