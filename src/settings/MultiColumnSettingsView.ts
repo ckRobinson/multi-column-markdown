@@ -13,6 +13,19 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
 
         const settingsContainerEl = this.containerEl.createDiv();
 
+        new Setting(settingsContainerEl)
+            .setName("Number of Auto-Layout balance iterations.")
+            .setDesc("The maximum number of times Auto-Layout will try to balance elements between all of the columns. This may cause Obsidian to slow during file load if this is set too high.")
+            .addSlider((slider) => {
+                slider.setLimits(1, 9, 2)
+                slider.setValue(this.plugin.settings.autoLayoutBalanceIterations)
+                slider.setDynamicTooltip()
+                slider.onChange((val) => {
+                    this.plugin.settings.autoLayoutBalanceIterations = val;
+                    this.plugin.settingsUpdated()
+                })
+            })
+
         if(Platform.isMobile === true) {
             new Setting(settingsContainerEl)
                 .setName("Render Column Regions on Mobile Devices")
