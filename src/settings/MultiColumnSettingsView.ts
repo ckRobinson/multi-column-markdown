@@ -45,6 +45,25 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
 
         this.buildUpdateDepreciated(dangerZoneContainerEl);
         this.buildFixMissingIDs(dangerZoneContainerEl);
+
+        this.containerEl.createEl("br")
+
+        let { bgColor, fontColor, coffeeColor } = getDonateButtonColors(this.containerEl);
+        new Setting(this.containerEl)
+        .setName("Donate")
+        .setDesc(`If you like this Plugin, please consider providing a one time donation to support it's development.`)
+        .addButton((b) => {
+            b.buttonEl.setAttr("style", "background-color: transparent; height: 30pt; padding: 0px;")
+            const div = b.buttonEl.createDiv({attr: {"style": "width: 100%; height: 100%"}});
+            div.createEl("a", {
+                href: "https://www.buymeacoffee.com/ckrobinson"
+            }).createEl("img", {
+                attr: {
+                    style: "width: 100%; height: 100%",
+                    src: `https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=ckrobinson&button_colour=${bgColor}&font_colour=${fontColor}&font_family=Cookie&outline_colour=000000&coffee_colour=${coffeeColor}`
+                }
+            })
+        })
     }
 
     private buildUpdateDepreciated(dangerZoneContainerEl: HTMLDivElement) {
@@ -441,4 +460,37 @@ function updateColumnCodeblockStartSyntax(originalFileContent: string): { update
         updatedFileContent: updatedFileContent,
         numRegionsUpdated: matches.length
     }
+}
+
+function getDonateButtonColors(containerEl: HTMLElement) {
+    let computedStyle = getComputedStyle(containerEl);
+    let fontColor = computedStyle.getPropertyValue('--text-normal');
+    let bgColor = computedStyle.getPropertyValue('--accent');
+    let coffeeColor = "ffffff";
+    if (isValidHexColor(fontColor) &&
+        isValidHexColor(bgColor)) {
+        fontColor = fontColor.slice(1);
+        bgColor = bgColor.slice(1);
+        coffeeColor = fontColor;
+    }
+    else {
+        fontColor = "000000";
+        bgColor = "FFDD00";
+        coffeeColor = "ffffff";
+    }
+    return { bgColor, fontColor, coffeeColor };
+}
+
+function isValidHexColor(possibleColor: string): boolean {
+    
+    let firstChar = possibleColor[0]
+    if(firstChar !== "#") {
+        return false
+    }
+
+    if(possibleColor.length !== 7) {
+        return false
+    }
+
+    return /^#[0-9A-F]{6}$/i.test(possibleColor)
 }
