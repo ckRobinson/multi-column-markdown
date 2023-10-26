@@ -89,7 +89,7 @@ Largest Column: standard
 
 
 
---- column-end ---
+--- column-break ---
 
 
 
@@ -548,10 +548,10 @@ ${editor.getDoc().getSelection()}`
                 // and there are two of the same key in the map.
                 if(numMatches >= 2) {
                     if(regionKey === "") {
-                        renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                        renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '--- multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
                     }
                     else {
-                        renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
+                        renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '--- multi-column-start: randomID'"
                     }
                     return;
                 }
@@ -1026,10 +1026,10 @@ function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileD
         // and there are two of the same key in the map.
         if(numMatches >= 2) {
             if(regionID === "") {
-                renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '=== multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '--- multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
             }
             else {
-                renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '=== multi-column-start: randomID'"
+                renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '--- multi-column-start: randomID'"
             }
             return;
         }
