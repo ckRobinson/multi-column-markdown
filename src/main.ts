@@ -230,6 +230,13 @@ ${editor.getDoc().getSelection()}`
         }, 500));
     }
 
+    public settingsUpdated() {
+        for(let manager of this.globalManager.managers.values()) {
+            manager.updateSettings(this.settings)
+        }
+        this.saveSettings();
+    }
+
     UpdateOpenFilePreviews() {
 
         let fileManagers = this.globalManager.getAllFileManagers();
