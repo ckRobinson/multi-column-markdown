@@ -15,8 +15,7 @@ import { RegionManagerData } from './regionManagerContainer';
 
 export class AutoLayoutRegionManager extends RegionManager {
 
-    private autoLayoutBalanceIterations: number;
-
+    private isLivePreview: boolean = false;
     private previousColumnHeights: number[] = []
 
     private columnParent: HTMLDivElement;
@@ -26,12 +25,7 @@ export class AutoLayoutRegionManager extends RegionManager {
     constructor(data: RegionManagerData, isLivePreview: boolean = false) {
         super(data);
 
-        if(isLivePreview === false) {
-            this.autoLayoutBalanceIterations = this.pluginSettings.autoLayoutBalanceIterations;
-        }
-        else {
-            this.autoLayoutBalanceIterations = 1;
-        }
+        this.isLivePreview = isLivePreview;
         this.docReflow = data.regionalSettings.fullDocReflow;
     }
 
@@ -254,7 +248,12 @@ export class AutoLayoutRegionManager extends RegionManager {
          * 
          * There is probably a better way of accomplishing this task but this works for the time being.
          */
-        for(let i = 0; i < this.autoLayoutBalanceIterations; i++) {
+
+        let autoLayoutBalanceIterations = 1;
+        if(this.isLivePreview === false) {
+            autoLayoutBalanceIterations = this.pluginSettings.autoLayoutBalanceIterations
+        }
+        for(let i = 0; i < autoLayoutBalanceIterations; i++) {
             
             balanceElements()
 
