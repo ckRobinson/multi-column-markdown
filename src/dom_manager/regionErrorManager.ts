@@ -4,19 +4,22 @@ export class RegionErrorManager {
 
     errorParentElement: HTMLElement;
     errorMessages: string[];
-    constructor(errorRegionParent: HTMLElement, initialErrorMessages: string[] = []) {
-
-        this.errorParentElement = errorRegionParent.createDiv({
-            cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
-        });
+    constructor(rootElement: HTMLElement, initialErrorMessages: string[] = []) {
+        
         this.errorMessages = initialErrorMessages;
-
-        this.updateErrorView()
+        this.setRegionRootElement(rootElement);
     }
 
     public addErrorMessage(errorString: string) {
 
         this.errorMessages.push(errorString);
+        this.updateErrorView()
+    }
+
+    public setRegionRootElement(rootElement: HTMLElement) {
+        this.errorParentElement = rootElement.createDiv({
+            cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
+        });
         this.updateErrorView()
     }
 
