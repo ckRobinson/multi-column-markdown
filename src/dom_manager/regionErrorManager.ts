@@ -1,11 +1,14 @@
+import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from "src/utilities/cssDefinitions";
 
 export class RegionErrorManager {
 
     errorParentElement: HTMLElement;
     errorMessages: string[];
-    constructor(errorParentElement: HTMLElement, initialErrorMessages: string[] = []) {
+    constructor(errorRegionParent: HTMLElement, initialErrorMessages: string[] = []) {
 
-        this.errorParentElement = errorParentElement;
+        this.errorParentElement = errorRegionParent.createDiv({
+            cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
+        });
         this.errorMessages = initialErrorMessages;
 
         this.updateErrorView()
@@ -18,10 +21,18 @@ export class RegionErrorManager {
     }
 
     private updateErrorView() {
+
+        if(this.errorParentElement === null) {
+            return;
+        }
+
+        this.errorParentElement.removeClass(MultiColumnLayoutCSS.ErrorRegionPadding);
+        this.errorParentElement.removeClass(MultiColumnStyleCSS.ColumnBorder);
+
         if(this.errorMessages.length === 0) {
             return;
         }
-        console.log("Rendering errors.", this.errorParentElement, this.errorParentElement.parentElement)
+        
         let children = this.errorParentElement.childNodes;
         children.forEach(child => {
             if(child !== null && child.parentElement === this.errorParentElement) {
@@ -29,14 +40,26 @@ export class RegionErrorManager {
             }
         });
 
+        this.errorParentElement.addClass(MultiColumnStyleCSS.ColumnBorder);
+
+        if(this.errorMessages.length === 1) {
+            this.errorParentElement.addClass(MultiColumnLayoutCSS.ErrorRegionPadding);
+            this.renderSingleErrorMessage()
+            return
+        }
+
+        let listEl = this.errorParentElement.createEl("ul")
         for(let i = 0; i < this.errorMessages.length; i++) {
-            this.errorParentElement.createSpan({
+
+            listEl.createEl("li", {
                 text: this.errorMessages[i]
             })
-
-            if(i < this.errorMessages.length - 1) {
-                this.errorParentElement.createEl("br")
-            }
         }
+    }
+
+    private renderSingleErrorMessage() {
+        this.errorParentElement.createSpan({
+            text: this.errorMessages[0]
+        })
     }
 }
