@@ -24,6 +24,7 @@ import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSett
 import { HTMLSizing } from './utilities/interfaces';
 import MultiColumnSettingsView from './settings/MultiColumnSettingsView';
 import { MCM_Settings, DEFAULT_SETTINGS } from './pluginSettings';
+import { RegionErrorManager } from './dom_manager/regionErrorManager';
 
 const CODEBLOCK_START_STRS = [
     "start-multi-column",
@@ -519,9 +520,8 @@ ${editor.getDoc().getSelection()}`
              * multi-column region.
              */
             el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
-            let renderErrorRegion = el.createDiv({
-                cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
-            });
+
+            let errorManager = new RegionErrorManager(el, ["The codeblock region start syntax has been depreciated. Please update to the current syntax in the ReadMe or use the Update Depreciated Syntax command in the plugin settings. You must reload the file for changes to take effect."]);
             let renderColumnRegion = el.createDiv({
                 cls: MultiColumnLayoutCSS.RegionContentContainerDiv
             })
@@ -548,10 +548,10 @@ ${editor.getDoc().getSelection()}`
                 // and there are two of the same key in the map.
                 if(numMatches >= 2) {
                     if(regionKey === "") {
-                        renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '--- multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                        errorManager.addErrorMessage("Found multiple regions with empty IDs. Please set a unique ID in the codeblock.\nEG: 'ID: randomID'");
                     }
                     else {
-                        renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '--- multi-column-start: randomID'"
+                        errorManager.addErrorMessage("Region ID already exists in document, please set a unique ID.");
                     }
                     return;
                 }
@@ -564,7 +564,7 @@ ${editor.getDoc().getSelection()}`
         
                 // Create a new regional manager.
                 let elementMarkdownRenderer = new MarkdownRenderChild(el);
-                fileDOMManager.createRegionalManager(regionKey, el, renderErrorRegion, renderColumnRegion);
+                fileDOMManager.createRegionalManager(regionKey, el, errorManager, renderColumnRegion);
         
                 // Set up the on unload callback. This can be called if the user changes
                 // the start/settings codeblock in any way. We only want to unload
@@ -815,9 +815,8 @@ ${editor.getDoc().getSelection()}`
                         child.innerText = "";
 
                         child.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv);
-                        let renderErrorRegion = child.createDiv({
-                            cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv}, ${MultiColumnStyleCSS.RegionErrorMessage}`,
-                        });
+
+                        let errorManager = new RegionErrorManager(el);
                         let renderColumnRegion = child.createDiv({
                             cls: MultiColumnLayoutCSS.RegionContentContainerDiv
                         });
@@ -826,7 +825,7 @@ ${editor.getDoc().getSelection()}`
                         let regionalContainer: RegionManagerContainer = fileDOMManager.getRegionalContainer(regionKey);
                         if (regionalContainer === null || regionalContainer.getRegion().numberOfChildren === 0) {
                             // If the number of children is 0, we are probably in LivePreview, where the codeblock start regions have been processed by native obsidian live preview but do not have any children linked to them.
-                            renderErrorRegion.innerText = "Error rendering multi-column region.\nPlease close and reopen the file, then make sure you are in reading mode before exporting.";
+                            errorManager.addErrorMessage("Error rendering multi-column region.\nPlease close and reopen the file, then make sure you are in reading mode before exporting.");
                         }
                         else {
                             let regionalManager: RegionManager = regionalContainer.getRegion();
@@ -1001,9 +1000,8 @@ function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileD
      * multi-column region.
      */
     el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
-    let renderErrorRegion = el.createDiv({
-        cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
-    });
+
+    let errorManager = new RegionErrorManager(el);
     let renderColumnRegion = el.createDiv({
         cls: MultiColumnLayoutCSS.RegionContentContainerDiv
     })
@@ -1026,10 +1024,10 @@ function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileD
         // and there are two of the same key in the map.
         if(numMatches >= 2) {
             if(regionID === "") {
-                renderErrorRegion.innerText = "Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '--- multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document."
+                errorManager.addErrorMessage("Found multiple regions with empty IDs. Please set a unique ID after each start tag.\nEG: '--- multi-column-start: randomID'\nOr use 'Fix Missing IDs' in the command palette and reload the document.");
             }
             else {
-                renderErrorRegion.innerText = "Region ID already exists in document, please set a unique ID.\nEG: '--- multi-column-start: randomID'"
+                errorManager.addErrorMessage("Region ID already exists in document, please set a unique ID.\nEG: '--- multi-column-start: randomID'");
             }
             return;
         }
@@ -1037,7 +1035,7 @@ function setupStartTag(el: HTMLElement, ctx: MarkdownPostProcessorContext, fileD
     el.id = `MultiColumnID:${regionID}`
 
     let elementMarkdownRenderer = new MarkdownRenderChild(el);
-    let regionManager = fileDOMManager.createRegionalManager(regionID, el, renderErrorRegion, renderColumnRegion);
+    let regionManager = fileDOMManager.createRegionalManager(regionID, el, errorManager, renderColumnRegion);
     elementMarkdownRenderer.onunload = () => {
         if(fileDOMManager) {
 
