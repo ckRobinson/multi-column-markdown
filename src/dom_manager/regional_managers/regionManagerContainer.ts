@@ -16,6 +16,7 @@ import { RegionManager } from "./regionManager";
 import { AutoLayoutRegionManager } from './autoLayoutRegionManager';
 import { ReflowRegionManager } from "./reflowRegionManager";
 import { MCM_Settings, DEFAULT_SETTINGS } from '../../pluginSettings';
+import { RegionErrorManager } from "../regionErrorManager";
 
 /**
  * This class acts as an abstraction for the actual regional manager. It is used to update the
@@ -26,9 +27,9 @@ export class RegionManagerContainer {
     protected region: RegionManager;
     protected pluginSettings: MCM_Settings;
 
-    constructor(parentFileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement, regionParent: HTMLElement, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
+    constructor(parentFileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement, regionParent: HTMLElement, errorManager: RegionErrorManager, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
         this.pluginSettings = pluginSettings;
-        this.region = new StandardMultiColumnRegionManager(createDefaultRegionManagerData(regionParent, parentFileManager, regionKey, rootElement), pluginSettings);
+        this.region = new StandardMultiColumnRegionManager(createDefaultRegionManagerData(regionParent, parentFileManager, regionKey, rootElement, errorManager), pluginSettings);
     }
 
     public updateSettings(newSettings: MCM_Settings) {
@@ -126,7 +127,7 @@ export class RegionManagerContainer {
     }
 }
 
-function createDefaultRegionManagerData(regionParent: HTMLElement, fileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement): RegionManagerData {
+function createDefaultRegionManagerData(regionParent: HTMLElement, fileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement, errorManager: RegionErrorManager): RegionManagerData {
 
     return {
         domList: [],
@@ -135,7 +136,8 @@ function createDefaultRegionManagerData(regionParent: HTMLElement, fileManager: 
         fileManager: fileManager,
         regionalSettings: getDefaultMultiColumnSettings(),
         regionKey: regionKey,
-        rootElement: rootElement
+        rootElement: rootElement,
+        errorManager: errorManager
     };
 }
 
@@ -149,4 +151,5 @@ export type RegionManagerData = {
 
     regionKey: string;
     rootElement: HTMLElement;
+    errorManager: RegionErrorManager;
 };

@@ -15,6 +15,7 @@ import { RegionManagerData } from './regionManagerContainer';
 import { searchChildrenForNodeType } from 'src/utilities/utils';
 import { HTMLSizing } from 'src/utilities/interfaces';
 import { MCM_Settings, DEFAULT_SETTINGS } from '../../pluginSettings';
+import { RegionErrorManager } from '../regionErrorManager';
 
 export type MultiColumnRenderData = { 
     parentRenderElement: HTMLElement, 
@@ -43,6 +44,7 @@ export abstract class RegionManager {
     protected regionalSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
 
     protected regionKey: string;
+    protected errorManager: RegionErrorManager
 
     constructor(data: RegionManagerData, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
         this.pluginSettings = pluginSettings;
@@ -54,6 +56,7 @@ export abstract class RegionManager {
         this.regionalSettings = data.regionalSettings;
 
         this.regionKey = data.regionKey;
+        this.errorManager = data.errorManager
     }
 
     public updateSettings(newSettings: MCM_Settings) {
@@ -71,7 +74,8 @@ export abstract class RegionManager {
             regionalSettings: this.regionalSettings,
 
             regionKey: this.regionKey,
-            rootElement: null
+            rootElement: null,
+            errorManager: this.errorManager
         };
     }
 
