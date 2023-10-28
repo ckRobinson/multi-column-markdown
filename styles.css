@@ -81,9 +81,12 @@
 }
 
 .mcm-column-error-message {
-    margin-bottom: 10px;
     color: var(--text-error);
-    text-align: center;
+    font-size: small;
+}
+
+.mcm-column-error-padding {
+    padding: 10px;
 }
 
 .mcm-error-message-color {
