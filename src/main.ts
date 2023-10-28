@@ -584,7 +584,7 @@ ${editor.getDoc().getSelection()}`
             if(regionalManagerContainer !== null) {
         
                 let regionalManager = regionalManagerContainer.setRegionSettings(source);
-                regionalManager.regionParent = el;
+                regionalManager.regionParent = renderColumnRegion;
             }
         })
     }
