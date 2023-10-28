@@ -97,9 +97,7 @@ export class FileDOMManager {
 
     createRegionalManager(regionKey: string, rootElement: HTMLElement, errorManager: RegionErrorManager, renderRegionElement: HTMLElement): RegionManager {
 
-        //TODO: Use the error element whenever there is an error.
-
-        let regonalContainer = new RegionManagerContainer(this, regionKey, rootElement, renderRegionElement, this.pluginSettings);
+        let regonalContainer = new RegionManagerContainer(this, regionKey, rootElement, renderRegionElement, errorManager, this.pluginSettings);
         this.regionMap.set(regionKey, regonalContainer);
         return regonalContainer.getRegion();
     }
