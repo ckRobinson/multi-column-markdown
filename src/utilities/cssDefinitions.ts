@@ -29,6 +29,8 @@ export enum MultiColumnLayoutCSS {
 
     ReflowContainerDiv = "mcm-doc-reflow-container",
 
+    ErrorRegionPadding = "mcm-column-error-padding",
+
     // ------------------------------------------------------ //
 
     SingleColumnSmall = "mcm-single-column-small",
