@@ -580,10 +580,19 @@ These syntax options are currently still supported but are being depreciated for
 # Change Log
 
 ### **0.9.0**
+#### **Additions**
+- Added settings page.
+    - Add checkbox setting for enable/disabling mobile rendering (only visible when on the mobile application).
+    - Setting how many auto layout iterations to perform per render loop. 
+- Added action to settings page that modifies all relavent notes to update depreciated syntax to the currently supported syntax.
+- Added action to settings page that modifies all relavent notes to fix missing column IDs by appending a randomized ID.
+
 ##### **Improvements**
 - Updated Live Preview rendering to be more cross compatiable with other plugins.
-- Added Rendering cache to live preview regions.
+- Added rendering cache to live preview regions to improve performace when editing documents.
+
 ##### **Bug Fixes**
+- Fixed issue with document viewport jumping around when moving cursor, this requires a syntax update to all affected files, see [here]().
 - Fixed cross compatibility of clicking checkboxes when using the Dataview and Tasks plugins in reading mode.
 
 ---
