@@ -9,6 +9,7 @@
 import { RegionManager } from "./regional_managers/regionManager";
 import { RegionManagerContainer } from "./regional_managers/regionManagerContainer";
 import { MCM_Settings, DEFAULT_SETTINGS } from '../pluginSettings';
+import { RegionErrorManager } from "./regionErrorManager";
 
 /**
  * This class handles the global managers keeping track of all open files that
@@ -94,7 +95,7 @@ export class FileDOMManager {
         }
     }
 
-    createRegionalManager(regionKey: string, rootElement: HTMLElement, errorElement: HTMLElement, renderRegionElement: HTMLElement): RegionManager {
+    createRegionalManager(regionKey: string, rootElement: HTMLElement, errorManager: RegionErrorManager, renderRegionElement: HTMLElement): RegionManager {
 
         //TODO: Use the error element whenever there is an error.
 
