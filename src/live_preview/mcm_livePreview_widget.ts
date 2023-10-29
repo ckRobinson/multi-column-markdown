@@ -19,6 +19,7 @@ import { SingleColumnRegionManager } from "../dom_manager/regional_managers/sing
 import { AutoLayoutRegionManager } from "../dom_manager/regional_managers/autoLayoutRegionManager";
 import { MultiColumnStyleCSS } from "src/utilities/cssDefinitions";
 import { isTasksPlugin } from "src/utilities/elementRenderTypeParser";
+import { RegionErrorManager } from "src/dom_manager/regionErrorManager";
 
 const CACHE_MAX_DELTA_TIME_MS = 2 * 60 * 1000; // 2m
 
@@ -91,6 +92,8 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         let elementMarkdownRenderer = new MarkdownRenderChild(this.tempParent);
         MarkdownRenderer.renderMarkdown(this.contentData, this.tempParent, this.sourcePath, elementMarkdownRenderer);
 
+        let errorManager = new RegionErrorManager(createDiv());
+
         // take all elements, in order, and create our DOM list.
         let arr = Array.from(this.tempParent.children);
         for (let i = 0; i < arr.length; i++) {
@@ -107,7 +110,8 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             fileManager: null,
             regionalSettings: this.regionSettings,
             regionKey: getUID(),
-            rootElement: createDiv()
+            rootElement: createDiv(),
+            errorManager: errorManager
         };
 
         // Finally setup the type of region manager required.
@@ -162,13 +166,16 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
         if (this.regionManager) {
 
+            this.regionManager.getRegionData().errorManager.setRegionRootElement(el)
+            let contentElement = el.createDiv()
+
             let requireUnload = false
             if (leaf && this.regionManager instanceof AutoLayoutRegionManager) {
                 leaf.view.containerEl.appendChild(el);
                 requireUnload = true
             }
 
-            this.regionManager.renderRegionElementsToLivePreview(el);
+            this.regionManager.renderRegionElementsToLivePreview(contentElement);
 
             if (requireUnload) {
                 leaf.view.containerEl.removeChild(el);
