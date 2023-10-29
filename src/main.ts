@@ -328,7 +328,6 @@ ${editor.getDoc().getSelection()}`
              */
             let relativeTexts: ElementRelativeLocationData = extractElementRelativeLocationData(docLines, info);
 
-            //#region Depreciated Start Tag
             /**
              * If the current line is a start tag we want to set up the
              * region manager. The regional manager takes care
@@ -338,10 +337,9 @@ ${editor.getDoc().getSelection()}`
              */
             if(multiColumnParser.containsStartTag(relativeTexts.textOfElement)) {
                 
-                createDepreciatedStartElement(el, relativeTexts.linesOfElement, ctx, fileDOMManager, docString);
+                createStartElement(el, relativeTexts.linesOfElement, ctx, fileDOMManager, docString);
                 return;
             }
-            //#endregion Depreciated Start Tag
 
             // Pandoc Start Region Tag.
             if(containsPandoc.containsPandocStartTag(relativeTexts.textOfElement)) {
@@ -943,7 +941,7 @@ function extractElementRelativeLocationData(docLines: string[], info: MarkdownSe
     };
 }
 
-function createDepreciatedStartElement(el: HTMLElement, linesOfElement: string[], ctx: MarkdownPostProcessorContext, fileDOMManager: FileDOMManager, docString: string) {
+function createStartElement(el: HTMLElement, linesOfElement: string[], ctx: MarkdownPostProcessorContext, fileDOMManager: FileDOMManager, docString: string) {
 
     el.children[0].detach();
 
