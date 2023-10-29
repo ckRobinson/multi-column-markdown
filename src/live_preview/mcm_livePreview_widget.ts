@@ -94,7 +94,10 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         MarkdownRenderer.renderMarkdown(this.contentData, this.tempParent, this.sourcePath, elementMarkdownRenderer);
 
         let errorManager = new RegionErrorManager(createDiv());
-
+        if(regionType === "CODEBLOCK") {
+            errorManager.addErrorMessage("The codeblock region start syntax has been depreciated. Please update to the current syntax in the ReadMe or use the Update Depreciated Syntax command in the plugin settings. You must reload the file for changes to take effect.")
+        }
+        
         // take all elements, in order, and create our DOM list.
         let arr = Array.from(this.tempParent.children);
         for (let i = 0; i < arr.length; i++) {
