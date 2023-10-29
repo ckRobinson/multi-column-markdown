@@ -136,7 +136,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 							startIndex,
 							endIndex,
 							Decoration.replace({
-								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText, userSettings, editorInfo.file, settingsText),
+								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText, userSettings, editorInfo.file, settingsText, regionData.regionType),
 							})
 						);
 					}

@@ -20,6 +20,7 @@ import { AutoLayoutRegionManager } from "../dom_manager/regional_managers/autoLa
 import { MultiColumnStyleCSS } from "src/utilities/cssDefinitions";
 import { isTasksPlugin } from "src/utilities/elementRenderTypeParser";
 import { RegionErrorManager } from "src/dom_manager/regionErrorManager";
+import { RegionType } from "src/utilities/interfaces";
 
 const CACHE_MAX_DELTA_TIME_MS = 2 * 60 * 1000; // 2m
 
@@ -71,7 +72,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     sourcePath: string = "";
     elementCacheID: string;
 
-    constructor(contentData: string, userSettings: MultiColumnSettings, sourceFile: TFile, settingsText: string = "") {
+    constructor(contentData: string, userSettings: MultiColumnSettings, sourceFile: TFile, settingsText: string = "", regionType: RegionType) {
         super();
         this.contentData = contentData;
         this.settingsText = settingsText;
