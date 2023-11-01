@@ -44,7 +44,13 @@ export abstract class RegionManager {
     protected regionalSettings: MultiColumnSettings = getDefaultMultiColumnSettings();
 
     protected regionKey: string;
-    protected errorManager: RegionErrorManager
+    private _errorManager: RegionErrorManager;
+    public get errorManager(): RegionErrorManager {
+        return this._errorManager;
+    }
+    protected set errorManager(value: RegionErrorManager) {
+        this._errorManager = value;
+    }
 
     constructor(data: RegionManagerData, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
         this.pluginSettings = pluginSettings;
