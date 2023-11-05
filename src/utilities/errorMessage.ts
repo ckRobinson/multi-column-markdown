@@ -19,7 +19,6 @@ export function createColBreakWarning(type: ElementColumnBreakType, errorManager
 
 export interface ColBreakTypeInfo {
     lineAbove: string;
-    lineOfElement: string;
     lineBelow: string;
     objectTag: DOMObjectTag;
     colBreakType: ElementColumnBreakType

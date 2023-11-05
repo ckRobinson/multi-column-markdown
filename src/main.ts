@@ -453,7 +453,6 @@ ${editor.getDoc().getSelection()}`
 
         parseColBreakErrorType({
             lineAbove: linesAboveArray.last(),
-            lineOfElement: linesOfElement[0],
             lineBelow: linesBelowArray.first(),
             objectTag: currentObject.tag,
             colBreakType: currentObject.elementIsColumnBreak
