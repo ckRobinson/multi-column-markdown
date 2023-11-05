@@ -16,7 +16,6 @@ import { RegionManagerContainer } from "./dom_manager/regional_managers/regionMa
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObject';
 import { fileStillInView, getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
-import { ElementRenderType } from './utilities/elementRenderTypeParser';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
 import { parseColumnSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
 import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
@@ -25,6 +24,7 @@ import { HTMLSizing } from './utilities/interfaces';
 import MultiColumnSettingsView from './settings/MultiColumnSettingsView';
 import { MCM_Settings, DEFAULT_SETTINGS } from './pluginSettings';
 import { RegionErrorManager } from './dom_manager/regionErrorManager';
+import { parseColBreakErrorType } from './utilities/errorMessage';
 
 const CODEBLOCK_START_STRS = [
     "start-multi-column",
@@ -450,6 +450,14 @@ ${editor.getDoc().getSelection()}`
             regionalManager.updateElementTag(currentObject.UID, DOMObjectTag.regionSettings);
         }
         setElementCSS(currentObject, el);
+
+        parseColBreakErrorType({
+            lineAbove: linesAboveArray.last(),
+            lineOfElement: linesOfElement[0],
+            lineBelow: linesBelowArray.first(),
+            objectTag: currentObject.tag,
+            colBreakType: currentObject.elementIsColumnBreak
+        }, regionalManager.errorManager)
 
         regionalManager.renderRegionElementsToScreen();
         return regionalManager;
