@@ -13,7 +13,7 @@ import { parseSingleColumnSettings } from "../utilities/settingsParser";
 import { StandardMultiColumnRegionManager } from "../dom_manager/regional_managers/standardMultiColumnRegionManager";
 import { RegionManagerData } from "../dom_manager/regional_managers/regionManagerContainer";
 import { getUID } from "../utilities/utils";
-import { DOMObject } from "../dom_manager/domObject";
+import { DOMObject, DOMObjectTag, ElementColumnBreakType } from "../dom_manager/domObject";
 import { RegionManager } from "../dom_manager/regional_managers/regionManager";
 import { SingleColumnRegionManager } from "../dom_manager/regional_managers/singleColumnRegionManager";
 import { AutoLayoutRegionManager } from "../dom_manager/regional_managers/autoLayoutRegionManager";
@@ -21,6 +21,8 @@ import { MultiColumnStyleCSS } from "src/utilities/cssDefinitions";
 import { isTasksPlugin } from "src/utilities/elementRenderTypeParser";
 import { RegionErrorManager } from "src/dom_manager/regionErrorManager";
 import { RegionType } from "src/utilities/interfaces";
+import { parseColBreakErrorType } from "src/utilities/errorMessage";
+import { checkForParagraphInnerColEndTag, containsColEndTag } from "src/utilities/textParser";
 
 const CACHE_MAX_DELTA_TIME_MS = 2 * 60 * 1000; // 2m
 
@@ -98,12 +100,17 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             errorManager.addErrorMessage("The codeblock region start syntax has been depreciated. Please update to the current syntax in the ReadMe or use the Update Depreciated Syntax command in the plugin settings. You must reload the file for changes to take effect.")
         }
         
+        let workingText = contentData;
         // take all elements, in order, and create our DOM list.
         let arr = Array.from(this.tempParent.children);
         for (let i = 0; i < arr.length; i++) {
 
             let el = this.fixElementRender(arr[i]);
-            this.domList.push(new DOMObject(el as HTMLElement, [""]));
+
+            let domObject = new DOMObject(el as HTMLElement, [""])
+            this.domList.push(domObject);
+
+            workingText = checkForColumnBreakErrors(domObject, workingText, errorManager)
         }
 
         // Set up the region manager data before then creating our region manager.
@@ -462,4 +469,77 @@ function fixUnSupportedRender(el: Element): Element {
     }
 
     return el;
+}
+
+function checkForColumnBreakErrors(domObject: DOMObject, workingText: string,
+                                   errorManager: RegionErrorManager): string {
+
+    if(domObject.tag !== DOMObjectTag.columnBreak &&
+        domObject.elementIsColumnBreak === ElementColumnBreakType.none) {
+        return workingText;
+    }
+
+    let nextColBreak = checkForParagraphInnerColEndTag(workingText)
+    if(nextColBreak === null) {
+        console.error("Error. Something went wrong parsing column break out of text.")
+        return workingText;
+    }
+
+    let startIndex = nextColBreak.index
+    let matchLength = nextColBreak[0].length
+    let endIndex = startIndex + matchLength
+    let matchText = nextColBreak[0].trim();
+
+    let newWorkingText = workingText.slice(endIndex)
+
+    // Already parsed column break warning.
+    if(domObject.elementIsColumnBreak !== ElementColumnBreakType.none) {
+
+        parseColBreakErrorType({
+            lineAbove: "",
+            lineBelow: "",
+            objectTag: DOMObjectTag.none,
+            colBreakType: domObject.elementIsColumnBreak
+        }, errorManager)
+
+        return newWorkingText;
+    }
+
+    // Now we have a standard column break but due to changes in obsidian parsing may still 
+    // require displaying an error message.
+    let endTagText = domObject.originalElement.innerText
+
+    // make sure the element text is a column break just to be sure. This really should never fail.
+    if(containsColEndTag(endTagText) === false) {
+        // If something went wrong here we can not proceed with the next regex unless this passes.
+        console.error("Error parsing column-break tag back out of element text.", endTagText)
+        return newWorkingText;
+    }
+
+    // make sure the text of the element matche the syntax of what we parsed from the text.
+    if(matchText !== endTagText) {
+        console.error("Error matching next col-break to current element. Can not continue.")
+        return newWorkingText;
+    }
+
+    // Slice out the 20 characters before and after the column break and then get just
+    // the one line before and after to check if error message required.
+    let startIndexOffset = Math.clamp(startIndex - 20, 0, startIndex);
+    let endIndexOffset = Math.clamp(endIndex + 20, endIndex, workingText.length - 1);
+    
+    let additionalText = workingText.slice(startIndexOffset, endIndexOffset);
+    let textBefore = additionalText.slice(0, 20);
+    let textAfter = additionalText.slice(20 + matchLength)
+
+    let lineAbove = textBefore.split("\n").last()
+    let lineBelow = textAfter.split("\n").first()
+
+    parseColBreakErrorType({
+        lineAbove: lineAbove,
+        lineBelow: lineBelow,
+        objectTag: DOMObjectTag.columnBreak,
+        colBreakType: ElementColumnBreakType.none
+    }, errorManager)
+
+    return newWorkingText
 }
