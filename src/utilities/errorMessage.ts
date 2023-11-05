@@ -27,7 +27,6 @@ export function parseColBreakErrorType(elementInfo: ColBreakTypeInfo, errorManag
 
     if(elementInfo.objectTag !== DOMObjectTag.columnBreak &&
        elementInfo.colBreakType === ElementColumnBreakType.none) {
-        console.log("Not a break tag, skipping.")
         return;
     }
 
@@ -36,7 +35,6 @@ export function parseColBreakErrorType(elementInfo: ColBreakTypeInfo, errorManag
 
         if(elementInfo.lineAbove === "" &&
            elementInfo.lineBelow === "") {
-            console.log("Valid tag, skipping.")
             return;
         }
 
@@ -52,6 +50,5 @@ export function parseColBreakErrorType(elementInfo: ColBreakTypeInfo, errorManag
             errorType = ElementColumnBreakType.midBreak
         }
     }
-    console.log("Creating warning.")
     createColBreakWarning(errorType, errorManager)
 }
