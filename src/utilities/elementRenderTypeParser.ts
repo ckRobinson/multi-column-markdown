@@ -240,7 +240,7 @@ export function getHeadingCollapseElement(element: HTMLElement): Element | null 
         return childElements[0];
     }
     if(childElements.length > 1) {
-        console.debug("Found multiple heading collapse indicators in element.")
+        // console.debug("Found multiple heading collapse indicators in element.")
     }
     return null;
 }

@@ -327,7 +327,7 @@ async function updateFileSyntax() {
             app.vault.modify(mdFile, updatedFileContent)
         }
         else {
-            console.debug("No changes, not updating file.")
+            // console.debug("No changes, not updating file.")
         }
     }
 

@@ -216,7 +216,7 @@ export class DOMObject {
 
             // console.debug("Checking where column break is", startIndex, endIndex, text.length);
             if(startIndex === 0) {
-                // console.debug("column break at start of element.")
+                // console.debug("Column break at begining of element.")
                 this.elementIsColumnBreak = ElementColumnBreakType.preBreak;
             }
             else if(endIndex === text.length) {

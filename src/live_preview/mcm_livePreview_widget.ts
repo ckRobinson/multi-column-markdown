@@ -38,7 +38,7 @@ async function clearCache(skipKey: string = "") {
         index++
 
         if(key === skipKey) {
-            console.debug(`Element: ${index} | Skipping key: ${key.split(" : ")[0]}`)
+            // console.debug(`Element: ${index} | Skipping key: ${key.split(" : ")[0]}`)
             continue;
         }
 
@@ -50,12 +50,12 @@ async function clearCache(skipKey: string = "") {
 
         let deltaTimeMS = Date.now() - val.timestamp
         if((val.element.parentNode === null || val.element.parentNode.parentNode === null) && deltaTimeMS > CACHE_MAX_DELTA_TIME_MS) {
-            console.debug(`cache delta: ${deltaTimeMS} > ${CACHE_MAX_DELTA_TIME_MS} or 2 minutes.`)
+            // console.debug(`cache delta: ${deltaTimeMS} > ${CACHE_MAX_DELTA_TIME_MS} or 2 minutes.`)
             livePreviewElementCache.delete(key)
         }
         else if(val.element.parentNode == null || val.element.parentNode.parentNode === null) {
             
-            console.debug(`Element ${index} null but not removing from cache yet. \nElement file path: ${key.split(" : ")[0]} \nPath Elapsed time: ${Math.floor(deltaTimeMS / 1000)}`)
+            // console.debug(`Element ${index} null but not removing from cache yet. \nElement file path: ${key.split(" : ")[0]} \nPath Elapsed time: ${Math.floor(deltaTimeMS / 1000)}`)
         }
     }
 }
