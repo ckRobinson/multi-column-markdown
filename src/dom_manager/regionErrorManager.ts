@@ -2,7 +2,10 @@ import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from "src/utilities/cssDefi
 
 export class RegionErrorManager {
 
+    //TODO: Add warnings
+
     errorParentElement: HTMLElement;
+    contentEl: HTMLElement;
     errorMessages: string[];
     constructor(rootElement: HTMLElement, initialErrorMessages: string[] = []) {
         
@@ -20,38 +23,30 @@ export class RegionErrorManager {
         this.errorParentElement = rootElement.createDiv({
             cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv} ${MultiColumnStyleCSS.RegionErrorMessage}`,
         });
+        this.contentEl = this.errorParentElement.createDiv()
         this.updateErrorView()
     }
 
-    private updateErrorView() {
+    public updateErrorView() {
 
-        if(this.errorParentElement === null) {
-            return;
-        }
+        this.resetErrorView()
+        this.appendContentToEl()
+    }
 
-        this.errorParentElement.removeClass(MultiColumnLayoutCSS.ErrorRegionPadding);
-        this.errorParentElement.removeClass(MultiColumnStyleCSS.ColumnBorder);
+    private renderSingleErrorMessage() {
+        this.contentEl.createSpan({
+            text: this.errorMessages[0]
+        })
+    }
 
-        if(this.errorMessages.length === 0) {
-            return;
-        }
-        
-        let children = this.errorParentElement.childNodes;
-        children.forEach(child => {
-            if(child !== null && child.parentElement === this.errorParentElement) {
-                this.errorParentElement.removeChild(child);
-            }
-        });
-
-        this.errorParentElement.addClass(MultiColumnStyleCSS.ColumnBorder);
-
+    private appendContentToEl() {
         if(this.errorMessages.length === 1) {
-            this.errorParentElement.addClass(MultiColumnLayoutCSS.ErrorRegionPadding);
+            this.contentEl.addClass(MultiColumnLayoutCSS.ErrorRegionPadding);
             this.renderSingleErrorMessage()
             return
         }
 
-        let listEl = this.errorParentElement.createEl("ul")
+        let listEl = this.contentEl.createEl("ul")
         for(let i = 0; i < this.errorMessages.length; i++) {
 
             listEl.createEl("li", {
@@ -60,9 +55,25 @@ export class RegionErrorManager {
         }
     }
 
-    private renderSingleErrorMessage() {
-        this.errorParentElement.createSpan({
-            text: this.errorMessages[0]
-        })
+    private resetErrorView() {
+        if(this.contentEl === null) {
+            return;
+        }
+
+        this.contentEl.removeClass(MultiColumnLayoutCSS.ErrorRegionPadding);
+        this.contentEl.removeClass(MultiColumnStyleCSS.ColumnBorder);
+
+        if(this.errorMessages.length === 0) {
+            return;
+        }
+        
+        let children = this.contentEl.childNodes;
+        children.forEach(child => {
+            if(child !== null && child.parentElement === this.contentEl) {
+                this.contentEl.removeChild(child);
+            }
+        });
+
+        this.contentEl.addClass(MultiColumnStyleCSS.ColumnBorder);
     }
 }
