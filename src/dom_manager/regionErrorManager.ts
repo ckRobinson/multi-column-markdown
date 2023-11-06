@@ -48,6 +48,7 @@ export class RegionErrorManager {
             if(this.errorMessages.length > 1) {
                 text = text + "s"
             }
+            text = text + " in region"
 
             this.titleRegion.createSpan({
                 attr: {"style": "color: var(--text-error); padding: 5px;"},
@@ -58,12 +59,19 @@ export class RegionErrorManager {
             })
         }
 
+        if(this.errorMessages.length > 0 && this.warningMessages.length > 0) {
+            this.titleRegion.createSpan({
+                text: ` and `
+            })
+        }
+
         if(this.warningMessages.length > 0) {
 
             let text = "Warning"
             if(this.warningMessages.length > 1) {
                 text = text + "s"
             }
+            text = text + " in region"
 
             this.titleRegion.createSpan({
                 attr: {"style": "color: var(--color-yellow); padding: 5px;"},
