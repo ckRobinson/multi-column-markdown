@@ -80,19 +80,6 @@
     box-shadow: 0 0.2rem 0.5rem var(--background-modifier-box-shadow);
 }
 
-.mcm-column-error-message {
-    color: var(--text-error);
-    font-size: small;
-}
-
-.mcm-column-error-padding {
-    padding: 10px;
-}
-
-.mcm-error-message-color {
-    color: var(--text-error);
-}
-
 .mcm-column-root-container {
     margin: 1.5625em 0;
 }
@@ -193,4 +180,46 @@
 
 .mcm-small-font-message {
     font-size: small
+}
+
+/* ----------------------------------- */
+
+.mcm-message-region {
+    max-height: 0;
+    overflow: hidden;
+    font-size: small;
+    transition: max-height 0.2s ease-out;
+}
+
+.mcm-column-error-message {
+    color: var(--text-error);
+}
+
+.mcm-column-error-padding {
+    padding: 0 10px;
+}
+
+.mcm-error-heading {
+    background-color: var(--background-secondary);
+    user-select: none;
+}
+
+.mcm-error-heading:after {
+    content: '\002B';
+    color: white;
+    font-weight: bold;
+    float: right;
+    margin-left: 5px;
+}
+
+.mcm-error-heading:hover {
+    background-color: var(--interactive-hover);
+}
+
+.mcm-error-heading-open:after {
+    content: "\2212";
+}
+
+.mcm-error-message-color {
+    color: var(--text-error);
 }
