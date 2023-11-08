@@ -27,6 +27,11 @@ export class RegionErrorManager {
         this.updateErrorView()
     }
 
+    public addWarningMessage(warningString: string) {
+        this.warningMessages.push(warningString);
+        this.updateErrorView()
+    }
+
     public setRegionRootElement(rootElement: HTMLElement) {
         rootElement.addClass(MultiColumnStyleCSS.ColumnBorder)
 
