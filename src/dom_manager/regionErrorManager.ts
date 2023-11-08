@@ -53,7 +53,6 @@ export class RegionErrorManager {
             if(this.errorMessages.length > 1) {
                 text = text + "s"
             }
-            text = text + " in region"
 
             this.titleRegion.createSpan({
                 attr: {"style": "color: var(--text-error); padding: 5px;"},
@@ -76,7 +75,6 @@ export class RegionErrorManager {
             if(this.warningMessages.length > 1) {
                 text = text + "s"
             }
-            text = text + " in region"
 
             this.titleRegion.createSpan({
                 attr: {"style": "color: var(--color-yellow); padding: 5px;"},
@@ -86,7 +84,10 @@ export class RegionErrorManager {
                 text: `${this.warningMessages.length} ${text}`
             })
         }
-        
+        this.titleRegion.createSpan({
+            text: ` in region`
+        })
+
         let regionOpened = false;
         this.titleRegion.addEventListener("click", (ev) => {
             this.titleRegion.classList.toggle("mcm-error-heading-open");
