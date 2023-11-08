@@ -14,7 +14,7 @@ export function createColBreakWarning(type: ElementColumnBreakType, errorManager
         typeErrorStr = "in the middle of two elements"
     }
 
-    errorManager.addErrorMessage(`Detected a column break tag ${typeErrorStr}. Please make sure to surround column breaks with empty lines on both sides, or render issues may occur.`)
+    errorManager.addWarningMessage(`Detected a column break tag ${typeErrorStr}. Please make sure to surround column breaks with empty lines on both sides, or render issues may occur.`)
 }
 
 export interface ColBreakTypeInfo {
