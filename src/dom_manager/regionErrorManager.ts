@@ -42,7 +42,7 @@ export class RegionErrorManager {
             cls: `${MultiColumnLayoutCSS.ErrorRegionPadding} mcm-error-heading` //TODO: move to const.
         })
         this.contentEl = this.errorParentElement.createDiv({
-            cls: `${MultiColumnStyleCSS.RegionErrorMessage} mcm-message-region`
+            cls: `${MultiColumnLayoutCSS.ErrorRegionPadding} mcm-message-region`
         })
         this.updateErrorView()
     }
@@ -111,25 +111,19 @@ export class RegionErrorManager {
         this.appendContentToEl()
     }
 
-    private renderSingleErrorMessage() {
-        this.contentEl.createEl("p", {
-            text: this.errorMessages[0]
-        })
-    }
 
     private appendContentToEl() {
-        if(this.errorMessages.length === 1) {
-            this.contentEl.addClass(MultiColumnLayoutCSS.ErrorRegionPadding);
-            this.renderSingleErrorMessage()
-            return
-        }
 
-        let listEl = this.contentEl.createEl("ul")
         for(let i = 0; i < this.errorMessages.length; i++) {
 
-            listEl.createEl("li", {
-                text: this.errorMessages[i]
-            })
+            let p = this.contentEl.createEl("p")
+            p.innerHTML = `<span class="mcm-error-icon">\u2A02</span>${this.errorMessages[0]}`
+        }
+
+        for(let i = 0; i < this.warningMessages.length; i++) {
+
+            let p = this.contentEl.createEl("p")
+            p.innerHTML = `<span class="mcm-warning-icon">\u26A0</span>${this.warningMessages[0]}`
         }
     }
 
@@ -138,7 +132,6 @@ export class RegionErrorManager {
             return;
         }
 
-        this.contentEl.removeClass(MultiColumnLayoutCSS.ErrorRegionPadding);
         if(this.errorMessages.length === 0) {
             return;
         }

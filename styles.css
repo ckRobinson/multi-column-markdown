@@ -223,3 +223,15 @@
 .mcm-error-message-color {
     color: var(--text-error);
 }
+
+.mcm-error-icon {
+    font-size: large;
+    margin-inline-end: 5px;
+    color: var(--text-error);
+}
+
+.mcm-warning-icon {
+    font-size: large;
+    margin-inline-end: 5px;
+    color: var(--color-yellow)
+}
