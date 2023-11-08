@@ -39,7 +39,7 @@ export class RegionErrorManager {
             cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv}`,
         });
         this.titleRegion = this.errorParentElement.createDiv({
-            cls: `${MultiColumnLayoutCSS.ErrorRegionPadding} mcm-error-heading` //TODO: move to const.
+            cls: `${MultiColumnLayoutCSS.ErrorRegionPadding}`
         })
         this.contentEl = this.errorParentElement.createDiv({
             cls: `${MultiColumnLayoutCSS.ErrorRegionPadding} mcm-message-region`
@@ -107,6 +107,7 @@ export class RegionErrorManager {
         if(this.totalNumMessages === 0) {
             return;
         }
+        this.titleRegion.addClass(`mcm-error-heading`) //TODO: move to const.
 
         this.setupErrorHeader()
         this.appendContentToEl()
@@ -147,5 +148,6 @@ export class RegionErrorManager {
         this.titleRegion.childNodes.forEach(child => {
             child.detach()
         })
+        this.titleRegion.removeClass(`mcm-error-heading`) //TODO: move to const.
     }
 }
