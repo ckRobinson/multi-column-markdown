@@ -121,6 +121,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 						let foundSettings = getSettingsData(regionData);
 						let userSettings = null;
 						let settingsText = ""
+						let originalText = elementText
 						if(foundSettings !== null) {
 							
 							elementText = foundSettings.contentData;
@@ -136,7 +137,7 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 							startIndex,
 							endIndex,
 							Decoration.replace({
-								widget: new MultiColumnMarkdown_LivePreview_Widget(elementText, userSettings, editorInfo.file, settingsText, regionData.regionType),
+								widget: new MultiColumnMarkdown_LivePreview_Widget(originalText, elementText, userSettings, editorInfo.file, settingsText, regionData.regionType),
 							})
 						);
 					}

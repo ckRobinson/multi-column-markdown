@@ -74,7 +74,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     sourcePath: string = "";
     elementCacheID: string;
 
-    constructor(contentData: string, userSettings: MultiColumnSettings, sourceFile: TFile, settingsText: string = "", regionType: RegionType) {
+    constructor(originalText: string, contentData: string, userSettings: MultiColumnSettings, sourceFile: TFile, settingsText: string = "", regionType: RegionType) {
         super();
         this.contentData = contentData;
         this.settingsText = settingsText;
