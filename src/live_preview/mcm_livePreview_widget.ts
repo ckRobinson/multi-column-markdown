@@ -100,7 +100,8 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             errorManager.addErrorMessage("The codeblock region start syntax has been depreciated. Please update to the current syntax in the ReadMe or use the Update Depreciated Syntax command in the plugin settings. You must reload the file for changes to take effect.")
         }
         
-        let workingText = contentData;
+        let previousText = "";
+        let workingText = originalText;
         // take all elements, in order, and create our DOM list.
         let arr = Array.from(this.tempParent.children);
         for (let i = 0; i < arr.length; i++) {
@@ -109,6 +110,10 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
             let domObject = new DOMObject(el as HTMLElement, [""])
             this.domList.push(domObject);
+            let newData = sliceWorkingTextToEl(domObject, previousText, workingText)
+            previousText = newData.previousText;
+            workingText = newData.workingText;
+
 
             workingText = checkForColumnBreakErrors(domObject, workingText, errorManager)
         }
@@ -513,13 +518,13 @@ function checkForColumnBreakErrors(domObject: DOMObject, workingText: string,
     if(containsColEndTag(endTagText) === false) {
         // If something went wrong here we can not proceed with the next regex unless this passes.
         console.error("Error parsing column-break tag back out of element text.", endTagText)
-        return newWorkingText;
+        return workingText;
     }
 
     // make sure the text of the element matche the syntax of what we parsed from the text.
     if(matchText !== endTagText) {
         console.error("Error matching next col-break to current element. Can not continue.")
-        return newWorkingText;
+        return workingText;
     }
 
     // Slice out the 20 characters before and after the column break and then get just
@@ -543,3 +548,78 @@ function checkForColumnBreakErrors(domObject: DOMObject, workingText: string,
 
     return newWorkingText
 }
+
+function sliceWorkingTextToEl(domObject: DOMObject, previousText: string, workingText: string): {previousText: string, workingText: string} {
+
+    function processParagraph() {
+        let regex = new RegExp(`^ *${escapeRegExp(domObject.originalElement.textContent)} *$`, "m")
+        let result = regex.exec(workingText)
+        if(result) {
+            console.groupCollapsed()
+            console.log(regex)
+            console.log(result)
+            console.groupEnd()
+    
+
+            let updatedPrevious = previousText + workingText.slice(0, result.index);
+            let updatedItemText = workingText.slice(result.index, result.index + result[0].length)
+            let updatedWorkingText = workingText.slice(result.index)
+            return { 
+                previousText: updatedPrevious,
+                workingText: updatedWorkingText
+            };
+        }
+        return { 
+            previousText: previousText,
+            workingText: workingText
+        };
+    }
+
+    function processHeader() {
+        let count = parseInt(domObject.originalElement.tagName.slice(1))
+        let text = '#'.repeat(count);
+
+        let regex = new RegExp(`^${text} +${escapeRegExp(domObject.originalElement.textContent)} *$`, "m")
+
+        let result = regex.exec(workingText)
+        if(result) {
+            console.groupCollapsed()    
+            console.log(result)
+            console.groupEnd()
+    
+            let updatedPrevious = previousText + workingText.slice(0, result.index);
+            let updatedItemText = workingText.slice(result.index, result.index + result[0].length)
+            let updatedWorkingText = workingText.slice(result.index)
+            return { 
+                previousText: updatedPrevious,
+                workingText: updatedWorkingText
+            };
+        }
+        return { 
+            previousText: previousText,
+            workingText: workingText
+        };
+    }
+
+    if(domObject.originalElement.tagName === "P") {
+        return processParagraph();
+    }
+
+    if(domObject.originalElement.tagName === "H1" ||
+       domObject.originalElement.tagName === "H2" ||
+       domObject.originalElement.tagName === "H3" ||
+       domObject.originalElement.tagName === "H4" ||
+       domObject.originalElement.tagName === "H5") {
+        return processHeader();
+    }
+
+    return {
+        previousText: previousText,
+        workingText: workingText
+    }
+}
+
+function escapeRegExp(str: string) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
