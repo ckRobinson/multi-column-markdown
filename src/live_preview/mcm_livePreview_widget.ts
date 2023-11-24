@@ -110,10 +110,14 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
             let domObject = new DOMObject(el as HTMLElement, [""])
             this.domList.push(domObject);
+
             let newData = sliceWorkingTextToEl(domObject, previousText, workingText)
             previousText = newData.previousText;
             workingText = newData.workingText;
 
+            newData = attemptToFixCheckboxes(domObject, previousText, workingText, sourceFile, this.elementCacheID)
+            previousText = newData.previousText;
+            workingText = newData.workingText;
 
             workingText = checkForColumnBreakErrors(domObject, workingText, errorManager)
         }
@@ -555,12 +559,6 @@ function sliceWorkingTextToEl(domObject: DOMObject, previousText: string, workin
         let regex = new RegExp(`^ *${escapeRegExp(domObject.originalElement.textContent)} *$`, "m")
         let result = regex.exec(workingText)
         if(result) {
-            console.groupCollapsed()
-            console.log(regex)
-            console.log(result)
-            console.groupEnd()
-    
-
             let updatedPrevious = previousText + workingText.slice(0, result.index);
             let updatedItemText = workingText.slice(result.index, result.index + result[0].length)
             let updatedWorkingText = workingText.slice(result.index)
@@ -583,10 +581,6 @@ function sliceWorkingTextToEl(domObject: DOMObject, previousText: string, workin
 
         let result = regex.exec(workingText)
         if(result) {
-            console.groupCollapsed()    
-            console.log(result)
-            console.groupEnd()
-    
             let updatedPrevious = previousText + workingText.slice(0, result.index);
             let updatedItemText = workingText.slice(result.index, result.index + result[0].length)
             let updatedWorkingText = workingText.slice(result.index)
@@ -619,7 +613,120 @@ function sliceWorkingTextToEl(domObject: DOMObject, previousText: string, workin
     }
 }
 
+function attemptToFixCheckboxes(domObject: DOMObject, textBeforeElement: string, textOfElementAndAfter: string, sourceFile: TFile, cacheID: string) {
+
+    if(domObject.originalElement.tagName !== "UL") {
+        return {
+            previousText: textBeforeElement,
+            workingText: textOfElementAndAfter
+        }
+    }
+    if(domObject.originalElement.hasClass("contains-task-list") === false) {
+        return {
+            previousText: textBeforeElement,
+            workingText: textOfElementAndAfter
+        }
+    }
+
+    let listItems = Array.from(domObject.originalElement.getElementsByTagName("li")).filter((item) => {
+        return item.hasClass("task-list-item")
+    })
+
+    let workingTextBefore = textBeforeElement;
+    let workingText = textOfElementAndAfter;
+    for(let listElement of listItems) {
+
+        let possibleCheckbox = listElement.getElementsByTagName("input");
+        if(possibleCheckbox.length !== 1) {
+            console.error("Error: Could not get input for task item.")
+            continue;
+        }
+
+        let checkbox = possibleCheckbox[0];
+        if(checkbox.getAttr("type") !== "checkbox") {
+            console.error("Error: Checkbox not of proper type");
+            continue;
+        }
+
+        if(checkbox.hasClass("task-list-item-checkbox") === false) {
+            console.error("Error: Checkbox is missing proper class.")
+            continue;
+        }
+
+        if(checkbox.onclick !== null) {
+            console.error("Error: OnClick aready defined, not overwriting method.");
+            continue;
+        }
+
+        let checkboxIsChecked = listElement.getAttr("data-task") === "x" || listElement.getAttr("data-task") === "X"
+
+        let checkboxTextRegexSearch = RegExp(`^( *)-( +)\\[${checkboxIsChecked ? "[xX]" : " *"}\\]( +)${escapeRegExp(listElement.innerText)}( *)$`, "m");
+        let checkboxTextRegexResult = checkboxTextRegexSearch.exec(workingText);
+        if(checkboxTextRegexResult === null) {
+            console.error("Could not find text in provided document.");
+            continue;
+        }
+
+        let startOfElementIndex = checkboxTextRegexResult.index
+        let endOfElementIndex = startOfElementIndex + checkboxTextRegexResult[0].length
+        let newTextAfter = workingText.slice(endOfElementIndex);
+        let onClickNewTextAfter = newTextAfter;
+
+        workingTextBefore = workingTextBefore + workingText.slice(0, startOfElementIndex);
+        let onClickNewTextBefore = workingTextBefore;
+
+        workingText = workingText.slice(startOfElementIndex)
+        let onClickNewWorkingText = workingText;
+
+        let spaceBeforeDash = checkboxTextRegexResult[1]
+        let spaceAfterDash = checkboxTextRegexResult[2]
+        let spaceAfterCheck = checkboxTextRegexResult[3]
+        let spaceAfterContent = checkboxTextRegexResult[4]
+
+        let currentCacheID = cacheID
+        let sourceFilePath = sourceFile.path
+        checkbox.onclick = () => {
+
+            let replacementLine = `${spaceBeforeDash}-${spaceAfterDash}[${checkboxIsChecked ? " " : "X"}]${spaceAfterCheck}${listElement.innerText}${spaceAfterContent}`
+
+            let originalTextToReplace = onClickNewTextBefore + onClickNewWorkingText
+            let newReplacementText = onClickNewTextBefore + replacementLine + onClickNewTextAfter
+
+            if(livePreviewElementCache.has(currentCacheID)) {
+                let newCacheID = `${sourceFilePath} : ${newReplacementText}`;
+                let currentData = livePreviewElementCache.get(currentCacheID);
+                livePreviewElementCache.set(newCacheID, currentData)
+                currentCacheID = newCacheID
+            }
+
+            (async () => {
+                let fileText = await sourceFile.vault.read(sourceFile);
+                if(fileText.contains(originalTextToReplace) === false) {
+                    console.error("Could not update file. File does not contain region text.")
+                    return;
+                }
+
+                let newFileText = fileText.replace(originalTextToReplace, newReplacementText)
+                sourceFile.vault.modify(sourceFile, newFileText)
+            })();
+
+            listElement.classList.toggle("is-checked")
+            if(checkboxIsChecked) {
+                listElement.removeAttribute("data-task")
+            }
+            else {
+                listElement.setAttribute("data-task", "x")
+            }
+            checkboxIsChecked = !checkboxIsChecked
+        }
+    }
+
+    return {
+        previousText: workingTextBefore,
+        workingText: workingText
+    }
+}
+
 function escapeRegExp(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
-

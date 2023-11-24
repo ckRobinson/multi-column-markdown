@@ -313,16 +313,16 @@ function findNextRegion(workingFileText: string): { dataType: RegionType, data: 
 	// If there are multiple kinds of start blocks, the old way of parsing would cause issues.
 	// Now search for both kinds and determine what to do after search.
 	let startTagData_codeblockStart: { dataType: RegionType, data: StartTagRegexMatch } = {dataType: "CODEBLOCK", data: findStartCodeblock(workingFileText) };
-	let startTagData_depreciatedStart: { dataType: RegionType, data: StartTagRegexMatch } = {dataType: "ORIGINAL", data: findStartTag(workingFileText) };
+	let startTagData_originalStart: { dataType: RegionType, data: StartTagRegexMatch } = {dataType: "ORIGINAL", data: findStartTag(workingFileText) };
 	let pandocData: { dataType: RegionType, data: PandocRegexData } = {dataType: "PADOC", data: findPandoc(workingFileText) }
 
 	if(startTagData_codeblockStart.data.found === false && 
-	   startTagData_depreciatedStart.data.found === false &&
+	   startTagData_originalStart.data.found === false &&
 	   pandocData.data.found === false) {
 		return null;
 	}
 
-	let regionsFound = [startTagData_codeblockStart, startTagData_depreciatedStart, pandocData].filter((val) => { return val.data.found === true });
+	let regionsFound = [startTagData_codeblockStart, startTagData_originalStart, pandocData].filter((val) => { return val.data.found === true });
 	if(regionsFound.length > 1) {
 
 		let sorted = regionsFound.sort((a, b) => {
@@ -335,8 +335,8 @@ function findNextRegion(workingFileText: string): { dataType: RegionType, data: 
 		return startTagData_codeblockStart;
 	}
 	
-	if(startTagData_depreciatedStart.data.found === true){
-		return startTagData_depreciatedStart;
+	if(startTagData_originalStart.data.found === true){
+		return startTagData_originalStart;
 	}
 	
 	if(pandocData.data.found === true) {
