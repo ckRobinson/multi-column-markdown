@@ -87,34 +87,34 @@ export const multiColumnMarkdown_StateField = StateField.define<DecorationSet>({
 					let cursorInRegion = checkCursorInRegion(startIndex, endIndex, ranges);
 					if(cursorInRegion === true) {
 						
-						// If the cursor is within the region we then need to know if
-						// it is within our settings block (if it exists.)
-						let settingsStartData = findStartCodeblock(elementText);
-						if(settingsStartData.found === false) {
-							settingsStartData = findSettingsCodeblock(elementText);
-						}
+						// // If the cursor is within the region we then need to know if
+						// // it is within our settings block (if it exists.)
+						// let settingsStartData = findStartCodeblock(elementText);
+						// if(settingsStartData.found === false) {
+						// 	settingsStartData = findSettingsCodeblock(elementText);
+						// }
 
-						if(settingsStartData.found === true) {
+						// if(settingsStartData.found === true) {
 
-							// Since the settings block exists check if the cursor is within that region.
-							let codeblockStartIndex = startIndex + settingsStartData.startPosition;
-							let codeblockEndIndex = startIndex + settingsStartData.endPosition;
-							let settingsText = docText.slice(codeblockStartIndex, codeblockEndIndex )
+						// 	// Since the settings block exists check if the cursor is within that region.
+						// 	let codeblockStartIndex = startIndex + settingsStartData.startPosition;
+						// 	let codeblockEndIndex = startIndex + settingsStartData.endPosition;
+						// 	let settingsText = docText.slice(codeblockStartIndex, codeblockEndIndex )
 
-							let cursorInCodeblock = checkCursorInRegion(codeblockStartIndex, codeblockEndIndex, ranges);
-							if(cursorInCodeblock === false) {
+						// 	let cursorInCodeblock = checkCursorInRegion(codeblockStartIndex, codeblockEndIndex, ranges);
+						// 	if(cursorInCodeblock === false) {
 	
-								// If the cursor is not within the region we pass the data to the
-								// settings view so it can be displayed in the region.
-								builder.add(
-									codeblockStartIndex,
-									codeblockEndIndex,
-									Decoration.replace({
-										widget: new MultiColumnMarkdown_DefinedSettings_LivePreview_Widget(settingsText),
-									})
-								);
-							}
-						}						
+						// 		// If the cursor is not within the region we pass the data to the
+						// 		// settings view so it can be displayed in the region.
+						// 		builder.add(
+						// 			codeblockStartIndex,
+						// 			codeblockEndIndex,
+						// 			Decoration.replace({
+						// 				widget: new MultiColumnMarkdown_DefinedSettings_LivePreview_Widget(settingsText),
+						// 			})
+						// 		);
+						// 	}
+						// }						
 					}
 					else {
 
