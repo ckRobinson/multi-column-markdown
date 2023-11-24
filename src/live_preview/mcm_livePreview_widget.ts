@@ -28,7 +28,9 @@ const CACHE_MAX_DELTA_TIME_MS = 2 * 60 * 1000; // 2m
 
 interface cacheData {
     timestamp: number,
-    element: HTMLElement
+    element: HTMLElement,
+    regionManager: RegionManager,
+    errorRootEl: HTMLDivElement
 }
 
 let livePreviewElementCache: Map<string, cacheData> = new Map()
@@ -73,7 +75,8 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
     sourceFile: TFile;
     sourcePath: string = "";
     elementCacheID: string;
-
+    errorRootEl: HTMLDivElement;
+    
     constructor(originalText: string, contentData: string, userSettings: MultiColumnSettings, sourceFile: TFile, settingsText: string = "", regionType: RegionType) {
         super();
         this.contentData = contentData;
@@ -186,8 +189,9 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
         if (this.regionManager) {
 
-            this.regionManager.getRegionData().errorManager.setRegionRootElement(el)
+            this.errorRootEl = el.createDiv()
             let contentElement = el.createDiv()
+            this.regionManager.getRegionData().errorManager.setRegionRootElement(this.errorRootEl)
 
             let requireUnload = false
             if (leaf && this.regionManager instanceof AutoLayoutRegionManager) {
@@ -206,7 +210,9 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
         livePreviewElementCache.set(this.elementCacheID, {
             timestamp: Date.now(),
-            element: el
+            element: el,
+            regionManager: this.regionManager,
+            errorRootEl: this.errorRootEl
         })
 
         return el;
