@@ -101,9 +101,14 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         if(livePreviewElementCache.has(this.elementCacheID)) {
             let cache = livePreviewElementCache.get(this.elementCacheID)
             let regionManager = cache.regionManager
-            regionManager.updateErrorManager(errorManager, cache.errorRootEl);
-            console.log("Changing error managers.")
-            return;
+            if(regionManager) {
+                regionManager.updateErrorManager(errorManager, cache.errorRootEl);
+                console.log("Changing error managers.")
+                return;
+            }
+            else {
+                livePreviewElementCache.delete(this.elementCacheID);
+            }
         }
 
         // Render the markdown content to our temp parent element.
