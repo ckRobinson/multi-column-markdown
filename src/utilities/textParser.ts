@@ -98,6 +98,31 @@ export function findEndTag(text: string): TagPositioningData {
 
     return lastValidData;
 }
+
+export function findEndTagClosestToEnd(text: string): TagPositioningData {
+
+    let workingText = text;
+    let offset = 0;
+
+    let lastValidData = getEndTagData(workingText);
+    while(lastValidData.found) {
+
+        workingText = workingText.slice(lastValidData.endPosition);
+        let newData = getEndTagData(workingText);
+        if(newData.found === false) {
+            break;
+        }
+        offset += lastValidData.endPosition;
+        lastValidData = newData;
+    }
+
+    return {
+        found: lastValidData.found,
+        startPosition: lastValidData.startPosition + offset,
+        endPosition: lastValidData.endPosition + offset,
+        matchLength: lastValidData.matchLength
+    };
+}
 export function containsEndTag(text: string): boolean {
     return findEndTag(text).found
 }
