@@ -51,6 +51,15 @@ export abstract class RegionManager {
     protected set errorManager(value: RegionErrorManager) {
         this._errorManager = value;
     }
+    public updateErrorManager(newManager: RegionErrorManager, rootElement: HTMLDivElement) {
+        while(rootElement.children.length > 0) {
+            rootElement.childNodes.forEach(child => {
+                rootElement.removeChild(child)
+            })
+        }
+        this._errorManager = newManager;
+        this._errorManager.setRegionRootElement(rootElement)
+    }
 
     constructor(data: RegionManagerData, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
         this.pluginSettings = pluginSettings;
