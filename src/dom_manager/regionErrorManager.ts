@@ -33,7 +33,6 @@ export class RegionErrorManager {
     }
 
     public setRegionRootElement(rootElement: HTMLElement) {
-        rootElement.addClass(MultiColumnStyleCSS.ColumnBorder)
 
         this.errorParentElement = rootElement.createDiv({
             cls: `${MultiColumnLayoutCSS.RegionErrorContainerDiv}`,
@@ -108,7 +107,7 @@ export class RegionErrorManager {
             return;
         }
         this.titleRegion.addClass(`mcm-error-heading`) //TODO: move to const.
-
+        this.errorParentElement.classList.add(MultiColumnStyleCSS.ColumnBorder)
         this.setupErrorHeader()
         this.appendContentToEl()
     }
@@ -130,24 +129,25 @@ export class RegionErrorManager {
     }
 
     private resetErrorView() {
+
+        this.errorParentElement.classList.remove(MultiColumnStyleCSS.ColumnBorder)
+        this.titleRegion.removeClass(`mcm-error-heading`) //TODO: move to const.
+
+        while(this.titleRegion.children.length > 0) {
+            this.titleRegion.childNodes.forEach(child => {
+                this.titleRegion.removeChild(child)
+            })
+        }
+
         if(this.contentEl === null) {
             return;
         }
 
-        if(this.errorMessages.length === 0) {
-            return;
-        }
-        
-        let children = this.contentEl.childNodes;
+        let children = this.contentEl?.childNodes;
         children.forEach(child => {
             if(child !== null && child.parentElement === this.contentEl) {
                 this.contentEl.removeChild(child);
             }
         });
-
-        this.titleRegion.childNodes.forEach(child => {
-            child.detach()
-        })
-        this.titleRegion.removeClass(`mcm-error-heading`) //TODO: move to const.
     }
 }
