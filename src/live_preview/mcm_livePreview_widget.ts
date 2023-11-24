@@ -93,16 +93,24 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             this.regionSettings = userSettings;
         }
 
+        let errorManager = new RegionErrorManager(createDiv());
+        if(regionType === "CODEBLOCK") {
+            errorManager.addErrorMessage("The codeblock region start syntax has been depreciated. Please update to the current syntax in the ReadMe or use the Update Depreciated Syntax command in the plugin settings. You must reload the file for changes to take effect.")
+        }
+
+        if(livePreviewElementCache.has(this.elementCacheID)) {
+            let cache = livePreviewElementCache.get(this.elementCacheID)
+            let regionManager = cache.regionManager
+            regionManager.updateErrorManager(errorManager, cache.errorRootEl);
+            console.log("Changing error managers.")
+            return;
+        }
+
         // Render the markdown content to our temp parent element.
         this.tempParent = createDiv();
         let elementMarkdownRenderer = new MarkdownRenderChild(this.tempParent);
         MarkdownRenderer.renderMarkdown(this.contentData, this.tempParent, this.sourcePath, elementMarkdownRenderer);
 
-        let errorManager = new RegionErrorManager(createDiv());
-        if(regionType === "CODEBLOCK") {
-            errorManager.addErrorMessage("The codeblock region start syntax has been depreciated. Please update to the current syntax in the ReadMe or use the Update Depreciated Syntax command in the plugin settings. You must reload the file for changes to take effect.")
-        }
-        
         let previousText = "";
         let workingText = originalText;
         // take all elements, in order, and create our DOM list.
