@@ -6,7 +6,7 @@
  * Copyright (c) 2022 Cameron Robinson
  */
 
-import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext, MarkdownSectionInformation, parseFrontMatterEntry, Workspace, WorkspaceLeaf } from 'obsidian';
+import { Notice, Plugin,  MarkdownRenderChild, MarkdownRenderer, TFile, Platform, MarkdownPostProcessorContext, MarkdownSectionInformation, parseFrontMatterEntry, Workspace, WorkspaceLeaf, EditorPosition } from 'obsidian';
 import * as multiColumnParser from './utilities/textParser';
 import * as containsPandoc from "./utilities/pandocParser";
 import { FileDOMManager, GlobalDOMManager } from './dom_manager/domManager';
@@ -25,6 +25,7 @@ import MultiColumnSettingsView from './settings/MultiColumnSettingsView';
 import { MCM_Settings, DEFAULT_SETTINGS } from './pluginSettings';
 import { RegionErrorManager } from './dom_manager/regionErrorManager';
 import { parseColBreakErrorType } from './utilities/errorMessage';
+import { updateAllSyntax } from './utilities/syntaxUpdate';
 
 const CODEBLOCK_START_STRS = [
     "start-multi-column",
@@ -224,7 +225,36 @@ ${editor.getDoc().getSelection()}`
                 });
             }
         });
+        this.addCommand({            
+            id: `fix-file-multi-column-syntax`,
+            name: `Fix Multi-Column syntax in file.`,
+            editorCallback: (editor, view) => {
 
+                try {
+                    let fromPosition: EditorPosition = { line: 0, ch: 0 }
+                    let toPosition: EditorPosition = { line: editor.getDoc().lineCount(), ch: 0}
+
+                    let docText = editor.getRange(fromPosition, toPosition);
+                    let result = updateAllSyntax(docText);
+                    let regionStartCount = result.regionStartCount;
+                    let columnBreakCount = result.columnBreakCount;
+                    let columnEndCount = result.columnEndCount;
+                    let updatedFileContent = result.updatedFileContent;
+
+                    if(result.fileWasUpdated) {
+                        editor.replaceRange(updatedFileContent, fromPosition, toPosition)
+                        new Notice(`Finished updating:\n${regionStartCount} start syntaxes,\n${columnBreakCount} column breaks, and\n${columnEndCount} column end tags.`)
+                    }
+                    else {
+                        new Notice(`Found no region syntax to update.`)
+                    }
+                } catch (e) {
+                    new Notice(
+                        "Encountered an error fixing multi-column region syntax. Please try again later."
+                    );
+                }
+            }
+        });
         this.registerInterval(window.setInterval(() => {
             
             this.UpdateOpenFilePreviews();
