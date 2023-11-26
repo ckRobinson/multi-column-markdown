@@ -22,7 +22,7 @@ import { isTasksPlugin } from "src/utilities/elementRenderTypeParser";
 import { RegionErrorManager } from "src/dom_manager/regionErrorManager";
 import { RegionType } from "src/utilities/interfaces";
 import { parseColBreakErrorType } from "src/utilities/errorMessage";
-import { checkForParagraphInnerColEndTag, containsColEndTag } from "src/utilities/textParser";
+import { checkForParagraphInnerColEndTag, containsColEndTag, findEndTagClosestToEnd } from "src/utilities/textParser";
 
 const CACHE_MAX_DELTA_TIME_MS = 2 * 60 * 1000; // 2m
 
@@ -97,6 +97,48 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         if(regionType === "CODEBLOCK") {
             errorManager.addErrorMessage("The codeblock region start syntax has been depreciated. Please update to the current syntax in the ReadMe or use the Update Depreciated Syntax command in the plugin settings. You must reload the file for changes to take effect.")
         }
+
+        (async () => {
+            function hasBadContentBetween(contentBetween: string): boolean {
+
+                let regexResult = new RegExp("((?: *\n){6,})").exec(contentBetween)
+                if(regexResult !== null) {
+                    console.log("Found at least 6 empty lines.")
+                    return false;
+                }
+
+                regexResult = /^(?:(?! *$)(?! *--- *$)).+$/mg.exec(contentBetween);
+                if(regexResult !== null) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            let fileText = await sourceFile.vault.cachedRead(sourceFile);
+            fileText = fileText.replace(originalText, "###--START_HERE--###")
+
+            let regexResult = new RegExp("###--START_HERE--###").exec(fileText)
+            if(regexResult === null) {
+                return;
+            }
+
+            fileText = fileText.slice(0, regexResult.index);
+
+            let nextStartTag = findEndTagClosestToEnd(fileText);
+            if(nextStartTag.found === false) {
+                return;
+            }
+
+            let errorString = hasBadContentBetween(fileText.slice(nextStartTag.endPosition))
+            if(errorString === false) {
+                return;
+            }
+
+            errorManager.addWarningMessage("Detected possible issue with the content between this region and the column region above. \
+            If you experience page jumping when clicking within this document, please make sure there are at least 6 blank \
+            lines or some text content between regions. This is a known issue that is still under investigation.")
+        })();
 
         if(livePreviewElementCache.has(this.elementCacheID)) {
             let cache = livePreviewElementCache.get(this.elementCacheID)
