@@ -135,9 +135,9 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
                 return;
             }
 
-            errorManager.addWarningMessage("Detected possible issue with the content between this region and the column region above. \
+            errorManager.addWarningMessage("Detected possible issue with the content between this region and the region above. \
             If you experience page jumping when clicking within this document, please make sure there are at least 6 blank \
-            lines or some text content between regions. This is a known issue that is still under investigation.")
+            lines or some form of text content between the two regions. This is a known issue that is under investigation. Sorry for the inconvenience.")
         })();
 
         if(livePreviewElementCache.has(this.elementCacheID)) {
