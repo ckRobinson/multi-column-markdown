@@ -3,6 +3,7 @@ import MultiColumnMarkdown from "src/main";
 import * as multiColumnParser from '../utilities/textParser';
 import { getUID } from "src/utilities/utils";
 import { updateAllSyntax } from "src/utilities/syntaxUpdate";
+import { MCM_SettingsManager } from "src/pluginSettings";
 
 export default class MultiColumnSettingsView extends PluginSettingTab {
 
@@ -21,10 +22,10 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             .setDesc("The maximum number of times Auto-Layout will try to balance elements between all of the columns. Setting this too high may cause Obsidian to slow down during loading and refreshing of Auto-Layout columns.")
             .addSlider((slider) => {
                 slider.setLimits(1, 15, 2)
-                slider.setValue(this.plugin.settings.autoLayoutBalanceIterations)
+                slider.setValue(MCM_SettingsManager.shared().settings.autoLayoutBalanceIterations)
                 slider.setDynamicTooltip()
                 slider.onChange((val) => {
-                    this.plugin.settings.autoLayoutBalanceIterations = val;
+                    MCM_SettingsManager.shared().settings.autoLayoutBalanceIterations = val;
                     this.plugin.settingsUpdated()
                 })
             })
@@ -33,8 +34,8 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             new Setting(settingsContainerEl)
                 .setName("Render Column Regions on Mobile Devices")
                 .addToggle((t) =>
-                    t.setValue(this.plugin.settings.renderOnMobile).onChange((v) => {
-                        this.plugin.settings.renderOnMobile = v
+                    t.setValue(MCM_SettingsManager.shared().settings.renderOnMobile).onChange((v) => {
+                        MCM_SettingsManager.shared().settings.renderOnMobile = v
                         this.plugin.saveSettings()
                     }
                 ));

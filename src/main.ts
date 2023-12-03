@@ -22,7 +22,7 @@ import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_o
 import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSettings';
 import { HTMLSizing } from './utilities/interfaces';
 import MultiColumnSettingsView from './settings/MultiColumnSettingsView';
-import { MCM_Settings, DEFAULT_SETTINGS } from './pluginSettings';
+import { DEFAULT_SETTINGS, MCM_SettingsManager } from './pluginSettings';
 import { RegionErrorManager } from './dom_manager/regionErrorManager';
 import { parseColBreakErrorType } from './utilities/errorMessage';
 import { updateAllSyntax } from './utilities/syntaxUpdate';
@@ -34,7 +34,7 @@ const CODEBLOCK_START_STRS = [
 ]
 export default class MultiColumnMarkdown extends Plugin {
 
-    settings: MCM_Settings = DEFAULT_SETTINGS;
+    settingsManager: MCM_SettingsManager = MCM_SettingsManager.shared();
     globalManager: GlobalDOMManager = new GlobalDOMManager();
 
 	async onload() {
@@ -62,10 +62,10 @@ export default class MultiColumnMarkdown extends Plugin {
             name: `Toggle Mobile Rendering - Multi-Column Markdown`,
             callback: async () => {
 
-                this.settings.renderOnMobile = !this.settings.renderOnMobile; 
+                this.settingsManager.settings.renderOnMobile = !this.settingsManager.settings.renderOnMobile;
                 await this.saveSettings();
 
-                let noticeString = `Toggled mobile rendering ${this.settings.renderOnMobile ? "on" : "off"}.`
+                let noticeString = `Toggled mobile rendering ${this.settingsManager.settings.renderOnMobile ? "on" : "off"}.`
                 if(Platform.isMobile === true) {
                     noticeString += ` Please reload any open files for change to take effect.`
                 }
@@ -264,7 +264,7 @@ ${editor.getDoc().getSelection()}`
 
     public settingsUpdated() {
         for(let manager of this.globalManager.managers.values()) {
-            manager.updateSettings(this.settings)
+            manager.updateSettings(this.settingsManager.settings)
         }
         this.saveSettings();
     }
@@ -285,7 +285,7 @@ ${editor.getDoc().getSelection()}`
     setupMarkdownPostProcessor() {
         this.registerMarkdownPostProcessor(async (el, ctx) => {
 
-            if(this.settings.renderOnMobile === false &&
+            if(this.settingsManager.settings.renderOnMobile === false &&
                Platform.isMobile === true) {
                 return;
             }
@@ -497,7 +497,7 @@ ${editor.getDoc().getSelection()}`
 
         this.registerMarkdownCodeBlockProcessor(startStr, (source, el, ctx) => {
 
-            if(this.settings.renderOnMobile === false &&
+            if(this.settingsManager.settings.renderOnMobile === false &&
                 Platform.isMobile === true) {
  
                  return;
@@ -627,11 +627,11 @@ ${editor.getDoc().getSelection()}`
 
     async loadSettings() {
 
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settingsManager.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
 	async saveSettings() {
-		await this.saveData(this.settings);
+		await this.saveData(this.settingsManager.settings);
 	}
 
     renderDocReflow(el: HTMLElement, ctx: MarkdownPostProcessorContext, sourcePath: string, fileDOMManager: FileDOMManager, docString: string, info: MarkdownSectionInformation) {
