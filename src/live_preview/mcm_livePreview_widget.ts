@@ -234,11 +234,11 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
          * can briefly append our element, check any data if required, and then
          * remove it.
          */
-        let leaf: WorkspaceLeaf = null;
+        let autolayoutLeaf: WorkspaceLeaf = null;
         if (app) {
             let leaves = app.workspace.getLeavesOfType("markdown");
             if (leaves.length > 0) {
-                leaf = leaves[0];
+                autolayoutLeaf = leaves[0];
             }
         }
 
@@ -249,15 +249,15 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             this.regionManager.getRegionData().errorManager.setRegionRootElement(this.errorRootEl)
 
             let requireUnload = false
-            if (leaf && this.regionManager instanceof AutoLayoutRegionManager) {
-                leaf.view.containerEl.appendChild(el);
+            if (autolayoutLeaf && this.regionManager instanceof AutoLayoutRegionManager) {
+                autolayoutLeaf.view.containerEl.appendChild(el);
                 requireUnload = true
             }
 
             this.regionManager.renderRegionElementsToLivePreview(contentElement);
 
             if (requireUnload) {
-                leaf.view.containerEl.removeChild(el);
+                autolayoutLeaf.view.containerEl.removeChild(el);
             }
         }
 
