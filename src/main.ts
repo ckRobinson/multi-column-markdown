@@ -26,6 +26,7 @@ import { MCM_Settings, DEFAULT_SETTINGS } from './pluginSettings';
 import { RegionErrorManager } from './dom_manager/regionErrorManager';
 import { parseColBreakErrorType } from './utilities/errorMessage';
 import { updateAllSyntax } from './utilities/syntaxUpdate';
+import { getLeafFromFilePath } from './utilities/obsiUtils';
 
 const CODEBLOCK_START_STRS = [
     "start-multi-column",
@@ -1160,59 +1161,6 @@ function parseFrontmatterSettings(frontmatterReflowData: any[]): MultiColumnSett
     let settings = parseColumnSettings(str);
 
     return settings;
-}
-
-function getLeafFromFilePath(workspace: Workspace, filePath: string): WorkspaceLeaf | null {
-
-    function checkState(state: any) {
-
-        if(state["type"] === undefined ||
-           state["type"] !== "markdown") {
-            return false;
-        }
-
-        if(state["state"] === undefined) {
-            return false
-        }
-
-        if(state["state"]["file"] === undefined) {
-            return false;
-        }
-
-        let stateFilePath = state["state"]["file"];
-        return stateFilePath === filePath;
-    }
-
-    let entries = Object.entries(workspace.getLayout());
-    let items = Array.from(entries).map((val) => {
-        return val[1]
-    })
-    while(items.length > 0) {
-
-        let entryObj = items.shift() as any;
-        if(entryObj["id"] !== undefined && entryObj["type"] !== undefined) {
-
-            if(entryObj["type"] === "split" ||
-               entryObj["type"] === "tabs" ) {
-                items = items.concat(entryObj['children']);
-                continue;
-            }
-
-            if(entryObj["type"] === "leaf" && 
-               entryObj["id"] !== undefined &&
-               entryObj["state"] !== undefined) {
-
-                let id = entryObj["id"];
-                let state = entryObj["state"];
-
-                let valid = checkState(state);
-                if(valid) {
-                    return workspace.getLeafById(id);
-                }
-            }
-        }
-    }
-    return null;
 }
 
 function getContentHeightFromLeaf(leaf: WorkspaceLeaf): number {
