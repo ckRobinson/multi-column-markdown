@@ -83,6 +83,9 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         this.settingsText = settingsText;
         this.sourceFile = sourceFile;
 
+        if(this.sourceFile === null) {
+            return
+        }
         this.elementCacheID = `${this.sourceFile.path} : ${this.contentData}`;
 
         if(this.sourceFile) {
