@@ -23,6 +23,8 @@ import { RegionErrorManager } from "src/dom_manager/regionErrorManager";
 import { RegionType } from "src/utilities/interfaces";
 import { parseColBreakErrorType } from "src/utilities/errorMessage";
 import { checkForParagraphInnerColEndTag, containsColEndTag, findEndTagClosestToEnd } from "src/utilities/textParser";
+import { getPreviewLeafFromFilePath } from "src/utilities/obsiUtils";
+import { MCM_SettingsManager } from "src/pluginSettings";
 
 const CACHE_MAX_DELTA_TIME_MS = 2 * 60 * 1000; // 2m
 
@@ -222,7 +224,11 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
     toDOM() {
 
-        if(livePreviewElementCache.has(this.elementCacheID)) {
+        let useLivePreviewCache = MCM_SettingsManager.shared().settings.useLivePreviewCache;
+        let fileLeaf = getPreviewLeafFromFilePath(app.workspace, this.sourceFile.path)
+        if(useLivePreviewCache && 
+            livePreviewElementCache.has(this.elementCacheID) &&
+            fileLeaf === null) {
             return livePreviewElementCache.get(this.elementCacheID).element
         }
 
