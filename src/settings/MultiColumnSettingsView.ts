@@ -18,7 +18,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         const settingsContainerEl = this.containerEl.createDiv();
 
         new Setting(settingsContainerEl)
-            .setName("Number of Auto-Layout balance iterations.")
+            .setName("Number of Auto-Layout Balance Iterations")
             .setDesc("The maximum number of times Auto-Layout will try to balance elements between all of the columns. Setting this too high may cause Obsidian to slow down during loading and refreshing of Auto-Layout columns.")
             .addSlider((slider) => {
                 slider.setLimits(1, 15, 2)
@@ -30,6 +30,17 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
                 })
             })
 
+        new Setting(settingsContainerEl)
+        .setName("Use Live Preview Render Cache")
+        .setDesc(this.buildRenderCacheDocFrag())
+        .addToggle((t) =>
+            t.setValue(MCM_SettingsManager.shared().settings.useLivePreviewCache)
+            .onChange((v) => {
+                MCM_SettingsManager.shared().settings.useLivePreviewCache = v
+                this.plugin.saveSettings()
+            })
+        )
+
         if(Platform.isMobile === true) {
             new Setting(settingsContainerEl)
                 .setName("Render Column Regions on Mobile Devices")
@@ -37,8 +48,8 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
                     t.setValue(MCM_SettingsManager.shared().settings.renderOnMobile).onChange((v) => {
                         MCM_SettingsManager.shared().settings.renderOnMobile = v
                         this.plugin.saveSettings()
-                    }
-                ));
+                    })
+                );
         }
 
         this.containerEl.createEl("h5", { attr: {"style": "color: var(--text-error); margin-bottom: 0px;"}, text: "DANGER ZONE" });
@@ -66,6 +77,35 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
                 }
             })
         })
+    }
+
+    private buildRenderCacheDocFrag(): DocumentFragment {
+        let docFrag = new DocumentFragment();
+        docFrag.createDiv({}, div => {
+            div.createSpan({}, span => {
+                span.innerText = "Caches rendered content in Live Preview to reduce render cycles and element flashing on note interaction.";
+            });
+            div.createEl("br");
+            div.createEl("br");
+            div.createSpan({}, span => {
+                span.innerText = "Only uses cache when a file Live Preview tab is open. If both reading view and Live Preview are opened this feature is disabled.";
+            });
+            div.createEl("br");
+            div.createEl("br");
+            div.createEl("h5", {}, span => {
+                span.setAttr("style", "color: var(--text-error); margin-bottom: 0px; margin-top: 3px;");
+                span.innerText = "EXPERIMENTAL:";
+            });
+            div.createSpan({}, span => {
+                span.setAttr("style", "color: var(--text-error);");
+                span.innerText = "This feature is experimental only and has intermittently caused notes to erase column content during development. A fix has been implemented \
+                but due to the potential data loss you must opt-in to using this feature. If content is erased you can use Undo to restore the file data. \
+                Please make backups and disable if you experience any data loss.";
+            });
+
+
+        })
+        return docFrag;
     }
 
     private buildUpdateDepreciated(dangerZoneContainerEl: HTMLDivElement) {
