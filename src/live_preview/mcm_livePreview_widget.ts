@@ -150,8 +150,12 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             let regionManager = cache.regionManager
             if(regionManager) {
                 regionManager.updateErrorManager(errorManager, cache.errorRootEl);
-                console.log("Changing error managers.")
-                return;
+
+                let useLivePreviewCache = MCM_SettingsManager.shared().settings.useLivePreviewCache;
+                let fileLeaf = getPreviewLeafFromFilePath(app.workspace, this.sourceFile.path)
+                if(useLivePreviewCache && fileLeaf === null) {
+                    return
+                }
             }
             else {
                 livePreviewElementCache.delete(this.elementCacheID);
