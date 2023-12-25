@@ -164,13 +164,25 @@
 .mcm-content-alignment-left {
     text-align: left;
 }
+.mcm-table-alignment.mcm-content-alignment-left table {
+    margin-right: auto;
+    margin-left: 0px;
+}
 
 .mcm-content-alignment-center {
     text-align: center;
 }
+.mcm-table-alignment.mcm-content-alignment-center table {
+    margin-right: auto;
+    margin-left: auto;
+}
 
 .mcm-content-alignment-right {
     text-align: right;
+}
+.mcm-table-alignment.mcm-content-alignment-right table {
+    margin-right: 0px;
+    margin-left: auto;
 }
 
 .mcm-span-content-alignment-center {

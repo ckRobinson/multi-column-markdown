@@ -25,6 +25,8 @@ export enum MultiColumnLayoutCSS {
     AlignmentCenter = "mcm-content-alignment-center",
     AlignmentRight = "mcm-content-alignment-right",
 
+    TableAlignment = "mcm-table-alignment",
+
     NoFlexShrink = "mcm-no-flex-shrink",
 
     ReflowContainerDiv = "mcm-doc-reflow-container",
