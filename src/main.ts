@@ -34,7 +34,7 @@ const CODEBLOCK_START_STRS = [
 ]
 export default class MultiColumnMarkdown extends Plugin {
 
-    settingsManager: MCM_SettingsManager = MCM_SettingsManager.shared();
+    settingsManager: MCM_SettingsManager = MCM_SettingsManager.shared;
     globalManager: GlobalDOMManager = new GlobalDOMManager();
 
 	async onload() {

@@ -151,7 +151,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             if(regionManager) {
                 regionManager.updateErrorManager(errorManager, cache.errorRootEl);
 
-                let useLivePreviewCache = MCM_SettingsManager.shared().settings.useLivePreviewCache;
+                let useLivePreviewCache = MCM_SettingsManager.shared.settings.useLivePreviewCache;
                 let fileLeaf = getPreviewLeafFromFilePath(app.workspace, this.sourceFile.path)
                 if(useLivePreviewCache && fileLeaf === null) {
                     return
@@ -228,7 +228,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
     toDOM() {
 
-        let useLivePreviewCache = MCM_SettingsManager.shared().settings.useLivePreviewCache;
+        let useLivePreviewCache = MCM_SettingsManager.shared.settings.useLivePreviewCache;
         let fileLeaf = getPreviewLeafFromFilePath(app.workspace, this.sourceFile.path)
         if(useLivePreviewCache && 
             livePreviewElementCache.has(this.elementCacheID) &&

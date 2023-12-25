@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS: MCM_Settings = {
 export class MCM_SettingsManager {
 
     private static local: MCM_SettingsManager | null = null;
-    public static shared(): MCM_SettingsManager {
+    public static get shared(): MCM_SettingsManager {
         if(MCM_SettingsManager.local === null) {
             MCM_SettingsManager.local = new MCM_SettingsManager()
         }
