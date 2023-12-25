@@ -11,6 +11,7 @@ import { AlignmentType, ContentOverflowType, MultiColumnSettings, columnAlignmen
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { RegionManager } from './regionManager';
 import { getHeadingCollapseElement, hasHeader } from 'src/utilities/elementRenderTypeParser';
+import { MCM_SettingsManager } from 'src/pluginSettings';
 
 export class ReflowRegionManager extends RegionManager {
 
@@ -141,6 +142,9 @@ export class ReflowRegionManager extends RegionManager {
                 }
                 else {
                     element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
+                }
+                if(MCM_SettingsManager.shared.settings.alignTablesToContentAlignment === true) {
+                    element.addClass(MultiColumnLayoutCSS.TableAlignment)
                 }
 
                 let clonedElement = regionElements[i].clonedElement;

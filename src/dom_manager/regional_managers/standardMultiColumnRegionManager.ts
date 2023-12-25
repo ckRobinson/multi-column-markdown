@@ -12,6 +12,7 @@ import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDe
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
 import { getHeadingCollapseElement } from 'src/utilities/elementRenderTypeParser';
+import { MCM_SettingsManager } from 'src/pluginSettings';
 
 export class StandardMultiColumnRegionManager extends RegionManager {
 
@@ -125,6 +126,9 @@ export class StandardMultiColumnRegionManager extends RegionManager {
                 }
                 else {
                     element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
+                }
+                if(MCM_SettingsManager.shared.settings.alignTablesToContentAlignment === true) {
+                    element.addClass(MultiColumnLayoutCSS.TableAlignment)
                 }
 
                 regionElements[i].elementContainer = element;

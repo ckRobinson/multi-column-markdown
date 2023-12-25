@@ -12,6 +12,7 @@ import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDe
 import { RegionManager } from './regionManager';
 import { getHeadingCollapseElement, hasHeader } from 'src/utilities/elementRenderTypeParser';
 import { RegionManagerData } from './regionManagerContainer';
+import { MCM_SettingsManager } from 'src/pluginSettings';
 
 export class AutoLayoutRegionManager extends RegionManager {
 
@@ -189,6 +190,9 @@ export class AutoLayoutRegionManager extends RegionManager {
                     }
                     else {
                         element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
+                    }
+                    if(MCM_SettingsManager.shared.settings.alignTablesToContentAlignment === true) {
+                        element.addClass(MultiColumnLayoutCSS.TableAlignment)
                     }
 
                     let elementToAppend: HTMLElement = regionElements[i].originalElement;
