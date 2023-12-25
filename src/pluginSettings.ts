@@ -1,12 +1,14 @@
 export interface MCM_Settings {
     renderOnMobile: boolean;
     autoLayoutBalanceIterations: number;
-    useLivePreviewCache: boolean
+    useLivePreviewCache: boolean;
+    alignTablesToContentAlignment: boolean;
 }
 export const DEFAULT_SETTINGS: MCM_Settings = {
     renderOnMobile: true,
     autoLayoutBalanceIterations: 5,
-    useLivePreviewCache: false
+    useLivePreviewCache: false,
+    alignTablesToContentAlignment: true
 };
 
 export class MCM_SettingsManager {
