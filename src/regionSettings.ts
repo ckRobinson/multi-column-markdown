@@ -87,6 +87,46 @@ export type MultiColumnSettings = {
     columnHeight: HTMLSizing | null,
     fullDocReflow: boolean
 }
+export function MCSettings_isEqual(settingsA: MultiColumnSettings, settingsB: MultiColumnSettings): boolean {
+
+    if(settingsA.columnID !== settingsB.columnID) {
+        return false
+    }
+    if(settingsA.numberOfColumns !== settingsB.numberOfColumns) {
+        return false
+    }
+    if(JSON.stringify(settingsA.drawBorder) !== JSON.stringify(settingsB.drawBorder)) {
+        return false
+    }
+    if(settingsA.drawShadow !== settingsB.drawShadow) {
+        return false
+    }
+    if(settingsA.autoLayout !== settingsB.autoLayout) {
+        return false
+    }
+    if(JSON.stringify(settingsA.columnSize) !== JSON.stringify(settingsB.columnSize)) {
+        return false
+    }
+    if(settingsA.columnPosition !== settingsB.columnPosition) {
+        return false
+    }
+    if(JSON.stringify(settingsA.columnSpacing) !== JSON.stringify(settingsB.columnSpacing)) {
+        return false
+    }
+    if(JSON.stringify(settingsA.contentOverflow) !== JSON.stringify(settingsB.contentOverflow)) {
+        return false
+    }
+    if(JSON.stringify(settingsA.alignment) !== JSON.stringify(settingsB.alignment)) {
+        return false
+    }
+    if(settingsA.columnHeight !== settingsB.columnHeight) {
+        return false
+    }
+    if(settingsA.fullDocReflow !== settingsB.fullDocReflow) {
+        return false
+    }
+    return true
+}
 
 export function getDefaultMultiColumnSettings(): MultiColumnSettings {
 
