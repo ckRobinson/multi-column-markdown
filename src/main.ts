@@ -62,10 +62,10 @@ export default class MultiColumnMarkdown extends Plugin {
             name: `Toggle Mobile Rendering - Multi-Column Markdown`,
             callback: async () => {
 
-                this.settingsManager.settings.renderOnMobile = !this.settingsManager.settings.renderOnMobile;
+                this.settingsManager.renderOnMobile = !this.settingsManager.renderOnMobile;
                 await this.saveSettings();
 
-                let noticeString = `Toggled mobile rendering ${this.settingsManager.settings.renderOnMobile ? "on" : "off"}.`
+                let noticeString = `Toggled mobile rendering ${this.settingsManager.renderOnMobile ? "on" : "off"}.`
                 if(Platform.isMobile === true) {
                     noticeString += ` Please reload any open files for change to take effect.`
                 }
@@ -262,13 +262,6 @@ ${editor.getDoc().getSelection()}`
         }, 500));
     }
 
-    public settingsUpdated() {
-        for(let manager of this.globalManager.managers.values()) {
-            manager.updateSettings(this.settingsManager.settings)
-        }
-        this.saveSettings();
-    }
-
     UpdateOpenFilePreviews() {
 
         let fileManagers = this.globalManager.getAllFileManagers();
@@ -285,7 +278,7 @@ ${editor.getDoc().getSelection()}`
     setupMarkdownPostProcessor() {
         this.registerMarkdownPostProcessor(async (el, ctx) => {
 
-            if(this.settingsManager.settings.renderOnMobile === false &&
+            if(this.settingsManager.renderOnMobile === false &&
                Platform.isMobile === true) {
                 return;
             }
@@ -497,7 +490,7 @@ ${editor.getDoc().getSelection()}`
 
         this.registerMarkdownCodeBlockProcessor(startStr, (source, el, ctx) => {
 
-            if(this.settingsManager.settings.renderOnMobile === false &&
+            if(this.settingsManager.renderOnMobile === false &&
                 Platform.isMobile === true) {
  
                  return;

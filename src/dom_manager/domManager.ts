@@ -8,7 +8,6 @@
 
 import { RegionManager } from "./regional_managers/regionManager";
 import { RegionManagerContainer } from "./regional_managers/regionManagerContainer";
-import { MCM_Settings, DEFAULT_SETTINGS } from '../pluginSettings';
 import { RegionErrorManager } from "./regionErrorManager";
 
 /**
@@ -17,18 +16,9 @@ import { RegionErrorManager } from "./regionErrorManager";
  */
 export class GlobalDOMManager {
     managers: Map<string, FileDOMManager>;
-    pluginSettings: MCM_Settings;
 
-    constructor(pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
+    constructor() {
         this.managers = new Map();
-        this.pluginSettings = pluginSettings;
-    }
-
-    public updatedPluginSettings(newSettings: MCM_Settings) {
-        this.pluginSettings = newSettings;
-        for(let file of this.managers.values()) {
-            file.updateSettings(newSettings);
-        }
     }
 
     public removeFileManagerCallback(key: string) {
@@ -44,7 +34,7 @@ export class GlobalDOMManager {
             fileManager = this.managers.get(key);
         }
         else {
-            fileManager = new FileDOMManager(this, key, this.pluginSettings);
+            fileManager = new FileDOMManager(this, key);
             this.managers.set(key, fileManager);
         }
 
@@ -61,21 +51,12 @@ export class FileDOMManager {
     hasStartTag: boolean;
     fileKey: string;
     parentManager: GlobalDOMManager;
-    pluginSettings: MCM_Settings;
 
-    constructor(parentManager: GlobalDOMManager, fileKey: string, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
+    constructor(parentManager: GlobalDOMManager, fileKey: string) {
         this.regionMap = new Map();
         this.hasStartTag = false;
         this.parentManager = parentManager;
         this.fileKey = fileKey;
-        this.pluginSettings = pluginSettings;
-    }
-
-    public updateSettings(newSettings: MCM_Settings) {
-        this.pluginSettings = newSettings;
-        for(let region of this.regionMap.values()) {
-            region.updateSettings(newSettings);
-        }
     }
 
     removeRegion(regionKey: string): void {
@@ -97,7 +78,7 @@ export class FileDOMManager {
 
     createRegionalManager(regionKey: string, rootElement: HTMLElement, errorManager: RegionErrorManager, renderRegionElement: HTMLElement): RegionManager {
 
-        let regonalContainer = new RegionManagerContainer(this, regionKey, rootElement, renderRegionElement, errorManager, this.pluginSettings);
+        let regonalContainer = new RegionManagerContainer(this, regionKey, rootElement, renderRegionElement, errorManager);
         this.regionMap.set(regionKey, regonalContainer);
         return regonalContainer.getRegion();
     }

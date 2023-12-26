@@ -25,16 +25,9 @@ import { RegionErrorManager } from "../regionErrorManager";
 export class RegionManagerContainer {
 
     protected region: RegionManager;
-    protected pluginSettings: MCM_Settings;
 
-    constructor(parentFileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement, regionParent: HTMLElement, errorManager: RegionErrorManager, pluginSettings: MCM_Settings = DEFAULT_SETTINGS) {
-        this.pluginSettings = pluginSettings;
-        this.region = new StandardMultiColumnRegionManager(createDefaultRegionManagerData(regionParent, parentFileManager, regionKey, rootElement, errorManager), pluginSettings);
-    }
-
-    public updateSettings(newSettings: MCM_Settings) {
-        this.pluginSettings = newSettings;
-        this.region.updateSettings(newSettings)
+    constructor(parentFileManager: FileDOMManager, regionKey: string, rootElement: HTMLElement, regionParent: HTMLElement, errorManager: RegionErrorManager) {
+        this.region = new StandardMultiColumnRegionManager(createDefaultRegionManagerData(regionParent, parentFileManager, regionKey, rootElement, errorManager));
     }
     
     public getRegion(): RegionManager {
@@ -94,7 +87,6 @@ export class RegionManagerContainer {
 
         let data = this.region.getRegionData();
         this.region = new SingleColumnRegionManager(data);
-        this.region.updateSettings(this.pluginSettings);
 
         return this.region as SingleColumnRegionManager;
     }
@@ -103,7 +95,6 @@ export class RegionManagerContainer {
 
         let data = this.region.getRegionData();
         this.region = new StandardMultiColumnRegionManager(data);
-        this.region.updateSettings(this.pluginSettings);
 
         return this.region as StandardMultiColumnRegionManager;
     }
@@ -112,7 +103,6 @@ export class RegionManagerContainer {
 
         let data = this.region.getRegionData();
         this.region = new AutoLayoutRegionManager(data);
-        this.region.updateSettings(this.pluginSettings);
 
         return this.region as AutoLayoutRegionManager;
     }
@@ -121,7 +111,6 @@ export class RegionManagerContainer {
 
         let data = this.region.getRegionData();
         this.region = new ReflowRegionManager(data);
-        this.region.updateSettings(this.pluginSettings);
 
         return this.region as ReflowRegionManager;
     }

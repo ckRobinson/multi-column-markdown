@@ -143,7 +143,7 @@ export class ReflowRegionManager extends RegionManager {
                 else {
                     element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
                 }
-                if(MCM_SettingsManager.shared.settings.alignTablesToContentAlignment === true) {
+                if(MCM_SettingsManager.shared.alignTablesToContentAlignment === true) {
                     element.addClass(MultiColumnLayoutCSS.TableAlignment)
                 }
 

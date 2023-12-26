@@ -191,7 +191,7 @@ export class AutoLayoutRegionManager extends RegionManager {
                     else {
                         element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
                     }
-                    if(MCM_SettingsManager.shared.settings.alignTablesToContentAlignment === true) {
+                    if(MCM_SettingsManager.shared.alignTablesToContentAlignment === true) {
                         element.addClass(MultiColumnLayoutCSS.TableAlignment)
                     }
 
@@ -259,7 +259,7 @@ export class AutoLayoutRegionManager extends RegionManager {
 
         let autoLayoutBalanceIterations = 1;
         if(this.isLivePreview === false) {
-            autoLayoutBalanceIterations = this.pluginSettings.autoLayoutBalanceIterations
+            autoLayoutBalanceIterations = MCM_SettingsManager.shared.autoLayoutBalanceIterations
         }
         for(let i = 0; i < autoLayoutBalanceIterations; i++) {
             
