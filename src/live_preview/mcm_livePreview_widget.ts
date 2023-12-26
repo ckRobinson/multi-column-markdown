@@ -8,7 +8,7 @@
 
 import { MarkdownRenderChild, MarkdownRenderer, TFile, WorkspaceLeaf } from "obsidian";
 import { WidgetType } from "@codemirror/view";
-import { getDefaultMultiColumnSettings, MultiColumnSettings } from "../regionSettings";
+import { getDefaultMultiColumnSettings, MCSettings_isEqual, MultiColumnSettings } from "../regionSettings";
 import { parseSingleColumnSettings } from "../utilities/settingsParser";
 import { StandardMultiColumnRegionManager } from "../dom_manager/regional_managers/standardMultiColumnRegionManager";
 import { RegionManagerData } from "../dom_manager/regional_managers/regionManagerContainer";
@@ -32,7 +32,9 @@ interface cacheData {
     timestamp: number,
     element: HTMLElement,
     regionManager: RegionManager,
-    errorRootEl: HTMLDivElement
+    errorRootEl: HTMLDivElement,
+    cacheSettings: MultiColumnSettings,
+    pluginSettingsUpdateTimestamp: number
 }
 
 let livePreviewElementCache: Map<string, cacheData> = new Map()
@@ -148,7 +150,9 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         if(livePreviewElementCache.has(this.elementCacheID)) {
             let cache = livePreviewElementCache.get(this.elementCacheID)
             let regionManager = cache.regionManager
-            if(regionManager) {
+            let regionSettingsEqual = MCSettings_isEqual(userSettings, cache.cacheSettings)
+            let pluginSettingsUpdated = MCM_SettingsManager.shared.lastUpdateTimestamp > cache.pluginSettingsUpdateTimestamp
+            if(regionManager && regionSettingsEqual === true && pluginSettingsUpdated === false) {
                 regionManager.updateErrorManager(errorManager, cache.errorRootEl);
 
                 let useLivePreviewCache = MCM_SettingsManager.shared.useLivePreviewCache;
@@ -280,7 +284,9 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             timestamp: Date.now(),
             element: el,
             regionManager: this.regionManager,
-            errorRootEl: this.errorRootEl
+            errorRootEl: this.errorRootEl,
+            cacheSettings: this.regionSettings,
+            pluginSettingsUpdateTimestamp: MCM_SettingsManager.shared.lastUpdateTimestamp
         })
 
         return el;
