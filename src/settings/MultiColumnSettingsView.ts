@@ -26,9 +26,20 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
                 slider.setDynamicTooltip()
                 slider.onChange((val) => {
                     MCM_SettingsManager.shared.autoLayoutBalanceIterations = val;
-                    this.plugin.settingsUpdated()
+                    this.plugin.saveSettings()
                 })
             })
+
+        new Setting(settingsContainerEl)
+        .setName("Align Tables with Column Alignment")
+        .setDesc(this.buildTableAlignDocFrag())
+        .addToggle((t) =>
+            t.setValue(MCM_SettingsManager.shared.alignTablesToContentAlignment)
+            .onChange((v) => {
+                MCM_SettingsManager.shared.alignTablesToContentAlignment = v
+                this.plugin.saveSettings()
+            })
+        )
 
         new Setting(settingsContainerEl)
         .setName("Use Live Preview Render Cache")
@@ -104,6 +115,16 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             });
 
 
+        })
+        return docFrag;
+    }
+
+    private buildTableAlignDocFrag(): DocumentFragment {
+        let docFrag = new DocumentFragment();
+        docFrag.createDiv({}, div => {
+            div.createSpan({}, span => {
+                span.innerText = "Uses region defined column alignment to align tables within columns.";
+            });
         })
         return docFrag;
     }
