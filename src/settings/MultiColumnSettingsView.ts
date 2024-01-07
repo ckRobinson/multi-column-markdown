@@ -31,7 +31,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             })
 
         new Setting(settingsContainerEl)
-        .setName("Align Tables with Column Alignment")
+        .setName("Align Tables with Column Alignment by Default")
         .setDesc(this.buildTableAlignDocFrag())
         .addToggle((t) =>
             t.setValue(MCM_SettingsManager.shared.alignTablesToContentAlignment)
@@ -67,7 +67,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         this.containerEl.createEl("hr", { attr: {"style": "margin-top: 1px; margin-bottom: 0.75em;"} })
         const dangerZoneContainerEl = this.containerEl.createDiv();
 
-        this.buildUpdateDepreciated(dangerZoneContainerEl);
+        this.buildUpdateDepricated(dangerZoneContainerEl);
         this.buildFixMissingIDs(dangerZoneContainerEl);
 
         this.containerEl.createEl("br")
@@ -123,13 +123,15 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         let docFrag = new DocumentFragment();
         docFrag.createDiv({}, div => {
             div.createSpan({}, span => {
-                span.innerText = "Uses region defined column alignment to align tables within columns.";
+                span.innerText = "Sets the defalut behavior when determining whether to align table to text alignment.";
             });
+            div.createEl("br");
+            div.createEl("ul").createEl("li", { text: "This value is overwritten when defining the column setting: 'Align Tables to Text Alignment: true/false'" })
         })
         return docFrag;
     }
 
-    private buildUpdateDepreciated(dangerZoneContainerEl: HTMLDivElement) {
+    private buildUpdateDepricated(dangerZoneContainerEl: HTMLDivElement) {
 
         let docFrag = new DocumentFragment();
         docFrag.createDiv({}, div => {
@@ -144,7 +146,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             });
             div.createSpan({}, span => {
                 span.setAttr("style", "color: var(--text-error);");
-                span.innerText = "This action modifies any note file with depreciated syntax and could lead to corrupted file text.";
+                span.innerText = "This action modifies any note file with depricated syntax and could lead to corrupted file text.";
             });
             div.createEl("br");
             div.createSpan({}, span => {
@@ -158,7 +160,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             div.createSpan({ text: "Please confirm you have backed up your vault." });
         });
         new Setting(dangerZoneContainerEl)
-            .setName("Update ALL depreciated Multi-Column syntax.")
+            .setName("Update ALL depricated Multi-Column syntax.")
             .setDesc(docFrag)
             .addButton((b) => b.setButtonText("Update Syntax").onClick(() => {
                 const modal = ConfirmModal.confirmModalWithElement(this.app, modalDescriptionEl, { primary: "Confirm", secondary: "Cancel" });
@@ -179,7 +181,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         let docFrag = new DocumentFragment();
         docFrag.createDiv({}, div => {
             div.createSpan({}, span => {
-                span.innerText = "This will only modify column regions without a pre-defined ID, and which use the up to date core syntax. Will not modify depreciated syntax or fenced-divs.";
+                span.innerText = "This will only modify column regions without a pre-defined ID, and which use the up to date core syntax. Will not modify depricated syntax or fenced-divs.";
             });
             div.createEl("br");
             div.createEl("br");

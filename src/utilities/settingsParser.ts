@@ -7,7 +7,7 @@
  */
 
 import { HTMLSizing } from "src/utilities/interfaces";
-import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType, AlignmentType, isColumnLayout, validateColumnLayout } from "../regionSettings";
+import { MultiColumnSettings, ColumnLayout, BorderOption, ShadowOption, getDefaultMultiColumnSettings, SingleColumnSize, ContentOverflowType, AlignmentType, isColumnLayout, validateColumnLayout, TableAlignOption, TableAlignment } from "../regionSettings";
 
 /**
  * Here we define all of the valid settings strings that the user can enter for each setting type.
@@ -117,6 +117,12 @@ const ALIGNMENT_REGEX_ARR: RegExp[] = [
     return new RegExp(convertStringToSettingsRegex(value), "i");
 });
 
+const TABLE_ALIGNMENT_REGEX_ARR: RegExp[] = [
+    "align tables to text alignment"
+].map((value) => {
+    return new RegExp(convertStringToSettingsRegex(value), "i");
+});
+
 /**
  * This function searches the settings string through each regex option. If one of the regex
  * values match, it returns the first group found by the regex. This is depended on proper
@@ -183,6 +189,7 @@ export function parseColumnSettings(settingsStr: string): MultiColumnSettings {
         checkSettingIsContentOverflow(settingsLine, parsedSettings);
         checkSettingIsColumnAlignment(settingsLine, parsedSettings);
         checkSettingIsColumnHeight(settingsLine, parsedSettings);
+        checkSettingIsTableAlignment(settingsLine, parsedSettings);
     }
 
     return parsedSettings;
@@ -419,6 +426,30 @@ function checkSettingIsColumnAlignment(settingsLine: string, parsedSettings: Mul
         alignments.push(alignmentType);
     }
     parsedSettings.alignment = alignments;
+}
+
+function checkSettingIsTableAlignment(settingsLine: string, parsedSettings: MultiColumnSettings) {
+    
+    let settingsData = getSettingsDataFromKeys(settingsLine, TABLE_ALIGNMENT_REGEX_ARR);
+    if (settingsData === null) {
+        return;
+    }
+
+    let settingValues = parseForMultiSettings(settingsData);
+    settingsData = settingValues[0];
+
+    let tableAlignment: TableAlignOption = (<any>TableAlignOption)[settingsData];
+    if (tableAlignment !== undefined) {
+        switch (tableAlignment) {
+            case (TableAlignOption.disabled):
+            case (TableAlignOption.off):
+            case (TableAlignOption.false):
+                parsedSettings.alignTablesToAlignment = TableAlignment.noAlign;
+                break;
+            default:
+                parsedSettings.alignTablesToAlignment = TableAlignment.align;
+        }
+    }
 }
 
 function checkSettingIsColumnHeight(settingsLine: string, parsedSettings: MultiColumnSettings) {

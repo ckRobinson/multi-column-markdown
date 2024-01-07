@@ -7,7 +7,7 @@
  */
 
 import { DOMObject, DOMObjectTag, ElementColumnBreakType, TaskListDOMObject } from '../domObject';
-import { MultiColumnSettings, ContentOverflowType, AlignmentType, shouldDrawColumnBorder, columnOverflowState, columnAlignmentState } from "../../regionSettings";
+import { MultiColumnSettings, ContentOverflowType, AlignmentType, shouldDrawColumnBorder, columnOverflowState, columnAlignmentState, TableAlignment } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { MarkdownRenderChild } from 'obsidian';
 import { RegionManager } from './regionManager';
@@ -127,7 +127,12 @@ export class StandardMultiColumnRegionManager extends RegionManager {
                 else {
                     element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
                 }
-                if(MCM_SettingsManager.shared.alignTablesToContentAlignment === true) {
+
+                let tableAlignment = MCM_SettingsManager.shared.alignTablesToContentAlignment;
+                if(settings.alignTablesToAlignment !== TableAlignment.useSettingsDefault) {
+                    tableAlignment = settings.alignTablesToAlignment === TableAlignment.align
+                }
+                if(tableAlignment) {
                     element.addClass(MultiColumnLayoutCSS.TableAlignment)
                 }
 

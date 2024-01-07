@@ -102,7 +102,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
         let errorManager = new RegionErrorManager(createDiv());
         if(regionType === "CODEBLOCK") {
-            errorManager.addErrorMessage("The codeblock region start syntax has been depreciated. Please update to the current syntax in the ReadMe or use the Update Depreciated Syntax command in the plugin settings. You must reload the file for changes to take effect.")
+            errorManager.addErrorMessage("The codeblock region start syntax has been depricated. Please update to the current syntax in the ReadMe or use the Update Depricated Syntax command in the plugin settings. You must reload the file for changes to take effect.")
         }
 
         (async () => {
@@ -549,12 +549,16 @@ function isMDExtension(extension: string): boolean {
 function fixUnSupportedRender(el: Element): Element {
 
     if(isTasksPlugin(el as HTMLElement)) {
-        let fixedEl = createDiv()
-        let paragraph = fixedEl.createEl("p", {
-            "cls": `${MultiColumnStyleCSS.RegionErrorMessage} ${MultiColumnStyleCSS.SmallFont}`
-        });
-        paragraph.innerText = "The Tasks plugin is not supported in Live Preview.\nPlease use reading mode."
-        return fixedEl;
+
+        if(MCM_SettingsManager.shared.renderInlineElErrors === true) {
+            let fixedEl = createDiv()
+            let paragraph = fixedEl.createEl("p", {
+                "cls": `${MultiColumnStyleCSS.RegionErrorMessage} ${MultiColumnStyleCSS.SmallFont}`
+            });
+            paragraph.innerText = "The Tasks plugin is not supported in Live Preview.\nPlease use reading mode."
+            return fixedEl;
+        }
+        return el;
     }
 
     return el;

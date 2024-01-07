@@ -3,12 +3,14 @@ export interface MCM_Settings {
     autoLayoutBalanceIterations: number;
     useLivePreviewCache: boolean;
     alignTablesToContentAlignment: boolean;
+    renderInlineElErrors: boolean;
 }
 export const DEFAULT_SETTINGS: MCM_Settings = {
     renderOnMobile: true,
     autoLayoutBalanceIterations: 5,
     useLivePreviewCache: false,
-    alignTablesToContentAlignment: true
+    alignTablesToContentAlignment: true,
+    renderInlineElErrors: true
 };
 
 export class MCM_SettingsManager {
@@ -38,6 +40,7 @@ export class MCM_SettingsManager {
     public get autoLayoutBalanceIterations(): number { return this._settings.autoLayoutBalanceIterations }
     public get useLivePreviewCache(): boolean { return this._settings.useLivePreviewCache }
     public get alignTablesToContentAlignment(): boolean { return this._settings.alignTablesToContentAlignment }
+    public get renderInlineElErrors(): boolean { return this._settings.renderInlineElErrors }
 
     public set renderOnMobile(newVal: boolean) {
         this.updateTimestamp()
@@ -54,5 +57,9 @@ export class MCM_SettingsManager {
     public set alignTablesToContentAlignment(newVal: boolean) {
         this.updateTimestamp()
         this._settings.alignTablesToContentAlignment = newVal
+    }
+    public set renderInlineElErrors(newVal: boolean) {
+        this.updateTimestamp()
+        this._settings.renderInlineElErrors = newVal
     }
 }

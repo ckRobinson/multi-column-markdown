@@ -7,7 +7,7 @@
  */
 
 import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
-import { AlignmentType, ContentOverflowType, MultiColumnSettings, columnAlignmentState, columnOverflowState, shouldDrawColumnBorder } from "../../regionSettings";
+import { AlignmentType, ContentOverflowType, MultiColumnSettings, TableAlignment, columnAlignmentState, columnOverflowState, shouldDrawColumnBorder } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { RegionManager } from './regionManager';
 import { getHeadingCollapseElement, hasHeader } from 'src/utilities/elementRenderTypeParser';
@@ -191,7 +191,12 @@ export class AutoLayoutRegionManager extends RegionManager {
                     else {
                         element.addClass(MultiColumnLayoutCSS.AlignmentLeft)
                     }
-                    if(MCM_SettingsManager.shared.alignTablesToContentAlignment === true) {
+
+                    let tableAlignment = MCM_SettingsManager.shared.alignTablesToContentAlignment;
+                    if(settings.alignTablesToAlignment !== TableAlignment.useSettingsDefault) {
+                        tableAlignment = settings.alignTablesToAlignment === TableAlignment.align
+                    }
+                    if(tableAlignment) {
                         element.addClass(MultiColumnLayoutCSS.TableAlignment)
                     }
 

@@ -26,6 +26,15 @@ export enum ShadowOption {
     false
 }
 
+export enum TableAlignOption {
+    enabled,
+    on,
+    true,
+    disabled,
+    off,
+    false
+}
+
 const ALL_LAYOUTS = [
     "standard",
     "left", 
@@ -73,6 +82,12 @@ export enum AlignmentType {
     right
 }
 
+export enum TableAlignment {
+    useSettingsDefault,
+    align,
+    noAlign
+}
+
 export type MultiColumnSettings = {
     columnID: string,
     numberOfColumns: number,
@@ -85,7 +100,8 @@ export type MultiColumnSettings = {
     contentOverflow: ContentOverflowType[],
     alignment: AlignmentType[],
     columnHeight: HTMLSizing | null,
-    fullDocReflow: boolean
+    fullDocReflow: boolean,
+    alignTablesToAlignment: TableAlignment
 }
 export function MCSettings_isEqual(settingsA: MultiColumnSettings, settingsB: MultiColumnSettings): boolean {
 
@@ -125,6 +141,9 @@ export function MCSettings_isEqual(settingsA: MultiColumnSettings, settingsB: Mu
     if(settingsA.fullDocReflow !== settingsB.fullDocReflow) {
         return false
     }
+    if(settingsA.alignTablesToAlignment !== settingsB.alignTablesToAlignment) {
+        return false
+    }
     return true
 }
 
@@ -142,7 +161,8 @@ export function getDefaultMultiColumnSettings(): MultiColumnSettings {
         contentOverflow: [ContentOverflowType.scroll],
         alignment: [AlignmentType.left],
         columnHeight: null,
-        fullDocReflow: false
+        fullDocReflow: false,
+        alignTablesToAlignment: TableAlignment.useSettingsDefault
     }
 }
 
