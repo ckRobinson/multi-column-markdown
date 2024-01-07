@@ -102,7 +102,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
         let errorManager = new RegionErrorManager(createDiv());
         if(regionType === "CODEBLOCK") {
-            errorManager.addErrorMessage("The codeblock region start syntax has been depricated. Please update to the current syntax in the ReadMe or use the Update Depricated Syntax command in the plugin settings. You must reload the file for changes to take effect.")
+            errorManager.addErrorMessage("The codeblock region start syntax has been depricated. Please manually update to the current syntax defined in the ReadMe, run the \"Fix Multi-Column Syntax in Current File\" from the Command Palette, or use the \"Update Depricated Syntax\" command found in the plugin settings window. You must reload the file for changes to take effect.")
         }
 
         (async () => {

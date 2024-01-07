@@ -18,8 +18,8 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         const settingsContainerEl = this.containerEl.createDiv();
 
         new Setting(settingsContainerEl)
-            .setName("Number of Auto-Layout Balance Iterations")
-            .setDesc("The maximum number of times Auto-Layout will try to balance elements between all of the columns. Setting this too high may cause Obsidian to slow down during loading and refreshing of Auto-Layout columns.")
+            .setName("Number of auto-layout balance iterations")
+            .setDesc("The maximum number of times auto-layout will try to balance elements between all of the columns. Setting this too high may cause Obsidian to slow down during loading and refreshing of Auto-Layout columns.")
             .addSlider((slider) => {
                 slider.setLimits(1, 15, 2)
                 slider.setValue(MCM_SettingsManager.shared.autoLayoutBalanceIterations)
@@ -31,7 +31,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
             })
 
         new Setting(settingsContainerEl)
-        .setName("Align Tables with Column Alignment by Default")
+        .setName("Align tables with text alignment by default")
         .setDesc(this.buildTableAlignDocFrag())
         .addToggle((t) =>
             t.setValue(MCM_SettingsManager.shared.alignTablesToContentAlignment)
@@ -42,7 +42,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
         )
 
         new Setting(settingsContainerEl)
-        .setName("Use Live Preview Render Cache")
+        .setName("Use Live Preview render cache")
         .setDesc(this.buildRenderCacheDocFrag())
         .addToggle((t) =>
             t.setValue(MCM_SettingsManager.shared.useLivePreviewCache)
@@ -54,7 +54,7 @@ export default class MultiColumnSettingsView extends PluginSettingTab {
 
         if(Platform.isMobile === true) {
             new Setting(settingsContainerEl)
-                .setName("Render Column Regions on Mobile Devices")
+                .setName("Render column regions on mobile devices")
                 .addToggle((t) =>
                     t.setValue(MCM_SettingsManager.shared.renderOnMobile).onChange((v) => {
                         MCM_SettingsManager.shared.renderOnMobile = v

@@ -227,8 +227,8 @@ ${editor.getDoc().getSelection()}`
             }
         });
         this.addCommand({            
-            id: `fix-file-multi-column-syntax`,
-            name: `Fix Multi-Column Syntax in File.`,
+            id: `mcm-fix-file-multi-column-syntax`,
+            name: `Fix Multi-Column Syntax in Current File.`,
             editorCallback: (editor, view) => {
 
                 try {
@@ -550,7 +550,7 @@ ${editor.getDoc().getSelection()}`
              */
             el.classList.add(MultiColumnLayoutCSS.RegionRootContainerDiv)
 
-            let errorManager = new RegionErrorManager(el, ["The codeblock region start syntax has been depricated. Please update to the current syntax in the ReadMe or use the Update Depricated Syntax command in the plugin settings. You must reload the file for changes to take effect."]);
+            let errorManager = new RegionErrorManager(el, ["The codeblock region start syntax has been depricated. Please manually update to the current syntax defined in the ReadMe, run the \"Fix Multi-Column Syntax in Current File\" from the Command Palette, or use the \"Update Depricated Syntax\" command found in the plugin settings window. You must reload the file for changes to take effect."]);
             let renderColumnRegion = el.createDiv({
                 cls: MultiColumnLayoutCSS.RegionContentContainerDiv
             })
