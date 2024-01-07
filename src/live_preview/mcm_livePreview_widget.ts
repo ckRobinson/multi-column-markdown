@@ -17,7 +17,7 @@ import { DOMObject, DOMObjectTag, ElementColumnBreakType } from "../dom_manager/
 import { RegionManager } from "../dom_manager/regional_managers/regionManager";
 import { SingleColumnRegionManager } from "../dom_manager/regional_managers/singleColumnRegionManager";
 import { AutoLayoutRegionManager } from "../dom_manager/regional_managers/autoLayoutRegionManager";
-import { MultiColumnStyleCSS } from "src/utilities/cssDefinitions";
+import { MultiColumnStyleCSS, ObsidianStyleCSS } from "src/utilities/cssDefinitions";
 import { isTasksPlugin } from "src/utilities/elementRenderTypeParser";
 import { RegionErrorManager } from "src/dom_manager/regionErrorManager";
 import { RegionType } from "src/utilities/interfaces";
@@ -272,6 +272,9 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             }
 
             this.regionManager.renderRegionElementsToLivePreview(contentElement);
+            for(let domObj of this.regionManager.getRegionData().domList) {
+                fixListCSS(domObj.originalElement)
+            }
 
             if (requireUnload) {
                 autolayoutLeaf.view.containerEl.removeChild(el);
@@ -290,6 +293,10 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         })
 
         return el;
+    }
+
+    fixElementCSS(domObject: DOMObject) {
+        fixListCSS(domObject.originalElement);
     }
 }
 
@@ -544,6 +551,14 @@ function isPDFExtension(extension: string): boolean {
 
 function isMDExtension(extension: string): boolean {
     return extension.toLowerCase() === "md";
+}
+
+function fixListCSS(el: Element): Element {
+    if(el.tagName !== "UL" && el.tagName !== "OL") {
+        return el
+    }
+    el.parentElement?.addClass(ObsidianStyleCSS.RenderedMarkdown)
+    return el;
 }
 
 function fixUnSupportedRender(el: Element): Element {

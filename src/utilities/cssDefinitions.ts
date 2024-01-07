@@ -72,3 +72,7 @@ export enum MultiColumnStyleCSS {
     ColumnContent = "mcm-column-div",
     SmallFont = "mcm-small-font-message"
 }
+
+export enum ObsidianStyleCSS {
+    RenderedMarkdown = "markdown-rendered"
+}
