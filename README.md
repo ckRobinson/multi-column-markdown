@@ -57,8 +57,8 @@ You create a multi-column region by defining the start, settings, column-end, an
 
 Text displayed above.
 
-\```start-multi-column\
-ID: ExampleRegion1\
+--- start-multi-column: ExampleRegion1\
+\```column-settings\
 number of columns: 2\
 largest column: left\
 \```
@@ -84,18 +84,14 @@ Text displayed below.
 
 # Syntax Reference
 
-### **Region Start Tag:**
+### **Start Multi-Column Region:**
 Each multi-column region must start with either:
 
-> \```start-multi-column \
-> ID: A_unique_region_ID\
-> \```
+> --- start-multi-column: A_unique_region_ID\
 
 or
 
-> \```multi-column-start \
-> ID: A_unique_region_ID_1\
-> \```
+> --- multi-column-start: A_unique_region_ID_1\
 
 or
 
@@ -118,15 +114,13 @@ You can also use the "Fix Missing IDs" command which will search the currently o
 
 Each tag type can be defined with the following options:
 
-#### **Start Multi-Column Region:**
-> \```start-multi-column\
-> ID: A_unique_region_ID\
-> *Any Additional Setting flags (see below)*\
+#### **Region Settings:**
+> \```column-settings\
+> *Any Setting flags (see below)*\
 > \```
 
-> \```multi-column-start\
-> ID: A_unique_region_ID_2\
-> *Any Additional Setting flags (see below)*\
+> \```column-settings\
+> *Any Setting flags (see below)*\
 > \```
 
 > ::::: {.columns id=A_unique_region_ID_2 *Any Additional Setting flags (see below)*}
@@ -195,25 +189,6 @@ All other settings can be defined within the attributes using the same setting f
 
 <br>
 
-## **Region Settings:**
-
-#### **ID:**
-- **Setting Flags**:
-    - ID:
-- **Valid Selections**:
-    - Any string of characters.
-
-_Example:_
-> \```start-multi-column\
-> ID: Random_ID_String\
-> \```
-
-- The ID is used to differentiate between different regions if there are multiple in the same document.
-- Each ID must be unique within the same document or unexpected render issues may occur. An ID may be used across multiple documents so that, for example, you can use the ID "dailynote" in the template used for your Periodic Notes.
-- Can be ommitted if there will only ever be a single column region in the document.
-
-<br>
-
 #### **Number of Columns:**
 - **Setting Flags**:
     - Number of Columns:
@@ -223,7 +198,7 @@ _Example:_
     - Any digit.
 
 _Example:_
-> \```start-multi-column\
+> \```column-settings\
 > Number of Columns: 2\
 > \```
 
@@ -258,7 +233,7 @@ _Can define on a per column basis with array syntax: EG: [25%, 75%]_
     - Allows *most* CSS unit lengths (px, pt, %, etc).
 
 _Example:_
-> \```start-multi-column\
+> \```column-settings\
 > Column Size: standard \
 > ( **OR** )\
 > Column Size: [25%, 75%]\
@@ -279,7 +254,7 @@ _Can define on a per column basis with array syntax: EG: [off, on, off]_
     - false
 
 _Example:_
-> \```start-multi-column\
+> \```column-settings\
 > Border: disabled \
 > ( **OR** )\
 > Border: [off, on]\
@@ -299,7 +274,7 @@ On by default, can be removed with:
     - false
 
 _Example:_
-> \```start-multi-column\
+> \```column-settings\
 > Shadow: off \
 > \```
 
@@ -320,7 +295,7 @@ Only used with the single column option.
     - Middle
 
 _Example:_
-> \```start-multi-column\
+> \```column-settings\
 > Number of Columns: 1\
 > Column Position: Left \
 > \```
@@ -338,7 +313,7 @@ _Can define on a per column basis with array syntax: EG: [5px, 10px]_
     - A number alone without a defined unit type defaults to pt unit.
 
 _Example:_
-> \```start-multi-column\
+> \```column-settings\
 > Column Spacing: 5px \
 > ( **OR** )\
 > Column Spacing: [5px, 10px]\
@@ -358,7 +333,7 @@ _Can define on a per column basis with array syntax: EG: [Scroll, Hidden]_
     - Hidden
 
 _Example:_
-> \```start-multi-column\
+> \```column-settings\
 > Overflow: Hidden \
 > ( **OR** )\
 > Overflow: [Scroll, Hidden]\
@@ -381,13 +356,37 @@ _Can define on a per column basis with array syntax: EG: [Left, Center]_
     - Right
 
 _Example:_
-> \```start-multi-column\
+> \```column-settings\
 > Alignment: Center \
 > ( **OR** )\
 > Alignment: [Left, Center]\
 > \```
 
 <br>
+
+#### **Align Tables to Text Alignment:**
+Define whether to align tables to the alignment of the text content, see above.<br>
+_This setting overrides the plugin level alignment definition._
+
+- **Setting Flags**:
+    - Align Tables to Text Alignment:
+- **Valid Selections**:
+    - true
+    - on 
+    - enabled
+    - disabled
+    - off
+    - false
+
+_Example:_
+> \```column-settings\
+> Align Tables to Text Alignment: true \
+> ( **OR** )\
+> Align Tables to Text Alignment: off\
+> \```
+
+<br>
+
 
 ####  **Auto Layout**
 - **Setting Flags**:
@@ -399,7 +398,7 @@ _Example:_
     - on
 
 _Example:_
-> \```start-multi-column\
+> \```column-settings\
 > Auto Layout: on \
 > \```
 
@@ -555,8 +554,19 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 <br><br>
 
-# Depreciated
-These syntax options are currently still supported but are being depreciated for the newer syntax above.
+# Depricated
+These syntax options are currently still supported but are being depricated for the newer syntax above.
+
+#### **Code-Block Start Tags**
+> \```start-multi-column\
+> \```
+
+and
+
+> \```multi-column-start\
+> \```
+
+This syntax has been entierly depricated due to many compounding issues caused by MCM conflicting with Obsidian syntax. Notes will display an error on each column region until the syntax is updated. You can use the global syntax update featuer within the settings window, or the note specific command "Fix Multi-Column Syntax in File" within the Command Pallete
 
 #### **Start Multi-Column Region:**
 - === start-multi-column: A_unique_region_ID_2
@@ -584,15 +594,24 @@ These syntax options are currently still supported but are being depreciated for
 - Added settings page.
     - Add checkbox setting for enable/disabling mobile rendering (only visible when on the mobile application).
     - Setting how many auto layout iterations to perform per render loop. 
-- Added action to settings page that modifies all relavent notes to update depreciated syntax to the currently supported syntax.
+- Added action to settings page that modifies all relavent notes to update depricated syntax to the currently supported syntax.
+- Added command to Command Pallete to modify the current note and update depricated syntax to the currently supported syntax. Use "Fix Multi-Column Syntax in File"
 - Added action to settings page that modifies all relavent notes to fix missing column IDs by appending a randomized ID.
+- Added error system to inform user of issues in their column regions.
+- Added option to align tables to column text alignment.
+    - Can set default alignment behavior in the settings pane.
+    - Columns will override plugin setting by defining: "Align Tables to Text Alignment: true/false"
 
 ##### **Improvements**
 - Updated Live Preview rendering to be more cross compatiable with other plugins.
 - Added rendering cache to live preview regions to improve performace when editing documents.
+    - **This feature is currently experimental only.**
+    - This feature intermittently caused notes to erase column content during development. A fix has been implemented but due to the **potential data loss** you must **opt-in** to using this feature within the **plugin settings**.
+    - If column content is erased you can use **undo** to restore the file data until the file is closed.
+    - **Please make backups of your vault** and disable this feature if you experience any data loss, I can not be held responsible for any data loss.
 
 ##### **Bug Fixes**
-- Fixed issue with document viewport jumping around when moving cursor, this requires a syntax update to all affected files, see [here]().
+- Fixed issue with document viewport jumping around when moving cursor, this requires a syntax update to all affected files.
 - Fixed cross compatibility of clicking checkboxes when using the Dataview and Tasks plugins in reading mode.
 
 ---

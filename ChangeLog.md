@@ -60,7 +60,7 @@
 
 - ## **New start region syntax**
     - You can now define the start of a multi-column region and it's settings as a single codeblock.
-    - The old start tag syntax will begin to be slowly depreciated by this new codeblock syntax.
+    - The old start tag syntax will begin to be slowly depricated by this new codeblock syntax.
 - ## **Other Changes and Bug Fixes**
     - Added option to define the spacing between the columns in a new setting option (per feature request.)
     - Added option to define if columns should cut off any overflowing content, set default to make overflow auto scroll.

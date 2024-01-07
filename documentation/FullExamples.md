@@ -1,8 +1,6 @@
 # **Full Examples:**
 
-\```start-multi-column\
-ID: ExampleRegion3\
-\```
+--- start-multi-column: ExampleRegion3
 
 \# Column 1
 
@@ -21,8 +19,8 @@ ID: ExampleRegion3\
 
 <br>
 
-\```start-multi-column\
-ID: ExampleRegion7\
+--- start-multi-column: ExampleRegion7\
+\```column-settings\
 number of columns: 2\
 Column Size: [25%, 75%]\
 column spacing: 0px\
@@ -45,9 +43,8 @@ column spacing: 0px\
 
 <br>
 
-
-\```start-multi-column\
-ID: ExampleRegion4\
+--- start-multi-column: ExampleRegion4\
+\```column-settings\
 number of columns: 3\
 border: off\
 \```
@@ -72,9 +69,8 @@ border: off\
 ---
 
 <br>
-
-\```start-multi-column\
-ID: ExampleRegion5\
+--- start-multi-column: ExampleRegion5\
+\```column-settings\
 number of columns: 3\
 largest column: center\
 \```
@@ -100,8 +96,8 @@ largest column: center\
 
 <br>
 
-\```start-multi-column\
-ID: ExampleRegion6\
+--- start-multi-column: ExampleRegion6\
+\```column-settings\
 number of columns: 1\
 column size: medium\
 column position: left\
