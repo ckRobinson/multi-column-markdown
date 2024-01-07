@@ -520,16 +520,10 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 
 - Any file interaction causes embeds to reload.
     - All issues of this kind are due to Obsidian redrawing the entire editor on every file interaction (click, keystroke, etc). The redraw causes all embeds to be re-loaded which makes them appear to flash on screen. There is currently no solution to this problem.
+    - An attempt to aliviate this has been added in 0.9.0 using the LivePreview Render Cache, however the feature is still experimental and you must enable it within the settings window.
 
 - Some cross compatibility with other plugins is not supported and will not render.
     - Most plugins that do not render are more advanced plugins that load their content over time rather than immediatly at render time.
-
-- Clicking within a document causes the document to flash before recentering on the cursor location.
-
-- Clicking outside of the editor and then back in may cause the viewport to jump to the bottom of the editor in certain circumstances.
-
-#### **Codeblock Start Tags**
-- Having an edit view and reading view of the same document open at the same time causes render issues when using codeblock start tags.
 
 #### **Minor Render Issues**
 
@@ -539,7 +533,7 @@ If this is your first Obsidian plugin close and reopen Obsidian and then open th
 <br>
 
 - When entering data into a multi-column region the data can sometimes be rendered a line above or below the intended location in the preview window. When the line is near the start or end of a column or region it may be rendered in the wrong column or outside of the region entirely.
-- Copy and pasting text into a new locations within a region may not update in preview view properly.
+- Copy and pasting text into a new location within a region may not update in preview view properly.
 - When swapping between auto layout or single column, regions may sometimes become stuck rendering an old layout.
 - Auto layout regions sometimes get stuck in a non-equal state.
     - Workaround:
@@ -595,7 +589,7 @@ This syntax has been entierly depricated due to many compounding issues caused b
     - Add checkbox setting for enable/disabling mobile rendering (only visible when on the mobile application).
     - Setting how many auto layout iterations to perform per render loop. 
 - Added action to settings page that modifies all relavent notes to update depricated syntax to the currently supported syntax.
-- Added command to Command Pallete to modify the current note and update depricated syntax to the currently supported syntax. Use "Fix Multi-Column Syntax in File"
+- Added command to Command Pallete to modify the current note and update depricated syntax to the currently supported syntax. Use "Fix Multi-Column Syntax in Current File"
 - Added action to settings page that modifies all relavent notes to fix missing column IDs by appending a randomized ID.
 - Added error system to inform user of issues in their column regions.
 - Added option to align tables to column text alignment.
@@ -613,6 +607,7 @@ This syntax has been entierly depricated due to many compounding issues caused b
 ##### **Bug Fixes**
 - Fixed issue with document viewport jumping around when moving cursor, this requires a syntax update to all affected files.
 - Fixed cross compatibility of clicking checkboxes when using the Dataview and Tasks plugins in reading mode.
+- Updated list CSS to more match reading mode.
 
 ---
 
