@@ -105,43 +105,43 @@ export type MultiColumnSettings = {
 }
 export function MCSettings_isEqual(settingsA: MultiColumnSettings, settingsB: MultiColumnSettings): boolean {
 
-    if(settingsA.columnID !== settingsB.columnID) {
+    if(settingsA?.columnID !== settingsB?.columnID) {
         return false
     }
-    if(settingsA.numberOfColumns !== settingsB.numberOfColumns) {
+    if(settingsA?.numberOfColumns !== settingsB?.numberOfColumns) {
         return false
     }
-    if(JSON.stringify(settingsA.drawBorder) !== JSON.stringify(settingsB.drawBorder)) {
+    if(JSON.stringify(settingsA?.drawBorder) !== JSON.stringify(settingsB?.drawBorder)) {
         return false
     }
-    if(settingsA.drawShadow !== settingsB.drawShadow) {
+    if(settingsA?.drawShadow !== settingsB?.drawShadow) {
         return false
     }
-    if(settingsA.autoLayout !== settingsB.autoLayout) {
+    if(settingsA?.autoLayout !== settingsB?.autoLayout) {
         return false
     }
-    if(JSON.stringify(settingsA.columnSize) !== JSON.stringify(settingsB.columnSize)) {
+    if(JSON.stringify(settingsA?.columnSize) !== JSON.stringify(settingsB?.columnSize)) {
         return false
     }
-    if(settingsA.columnPosition !== settingsB.columnPosition) {
+    if(settingsA?.columnPosition !== settingsB?.columnPosition) {
         return false
     }
-    if(JSON.stringify(settingsA.columnSpacing) !== JSON.stringify(settingsB.columnSpacing)) {
+    if(JSON.stringify(settingsA?.columnSpacing) !== JSON.stringify(settingsB?.columnSpacing)) {
         return false
     }
-    if(JSON.stringify(settingsA.contentOverflow) !== JSON.stringify(settingsB.contentOverflow)) {
+    if(JSON.stringify(settingsA?.contentOverflow) !== JSON.stringify(settingsB?.contentOverflow)) {
         return false
     }
-    if(JSON.stringify(settingsA.alignment) !== JSON.stringify(settingsB.alignment)) {
+    if(JSON.stringify(settingsA?.alignment) !== JSON.stringify(settingsB?.alignment)) {
         return false
     }
-    if(settingsA.columnHeight !== settingsB.columnHeight) {
+    if(settingsA?.columnHeight !== settingsB?.columnHeight) {
         return false
     }
-    if(settingsA.fullDocReflow !== settingsB.fullDocReflow) {
+    if(settingsA?.fullDocReflow !== settingsB?.fullDocReflow) {
         return false
     }
-    if(settingsA.alignTablesToAlignment !== settingsB.alignTablesToAlignment) {
+    if(settingsA?.alignTablesToAlignment !== settingsB?.alignTablesToAlignment) {
         return false
     }
     return true
