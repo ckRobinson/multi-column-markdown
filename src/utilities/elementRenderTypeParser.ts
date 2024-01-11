@@ -25,7 +25,8 @@ const ALL_ELEMENT_RENDER_TYPES = [
     "customFramePlugin",
     "iFrameEmbed",
     "tasksPlugin",
-    "unRendered"
+    "unRendered",
+    "pdfEmbed"
 ] as const;
 export type ElementRenderType = typeof ALL_ELEMENT_RENDER_TYPES[number];
 
@@ -50,7 +51,10 @@ export function getElementRenderType(element: HTMLElement): ElementRenderType {
      */
     if(hasDataview(element) === true) {
         return "dataviewPlugin"
-    } 
+    }
+    else if(isPDFEmbed(element)) {
+        return "pdfEmbed"
+    }
     else if(isInternalEmbed(element)) {
         return "internalEmbed"
     }
@@ -227,6 +231,11 @@ function hasDataviewJS(element: HTMLElement) {
 function isInternalEmbed(element: HTMLElement) {
     let isEmbed = element.getElementsByClassName("internal-embed").length !== 0;
     return isEmbed;
+}
+
+function isPDFEmbed(element: HTMLElement): boolean {
+    let isPDFEmbed = element.getElementsByClassName("pdf-embed").length !== 0;
+    return isPDFEmbed;
 }
 
 export function getHeadingCollapseElement(element: HTMLElement): Element | null {
