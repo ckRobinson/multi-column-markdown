@@ -368,30 +368,33 @@ function fixFileEmbed(el: Element, source: string): Element {
         return el;
     }
 
-    // If we found the resource path then we update the element to be a proper PDF render.
-    let fixedEl = createDiv({
+    return createLPErrorElement("File embeds are not supported in Live Preview.\nPlease use reading mode to view.", alt, src);
+}
+
+function createLPErrorElement(errorText: string, alt: string = "", src: string = ""): HTMLDivElement {
+    let errorEl = createDiv({
         cls: "internal-embed markdown-embed inline-embed is-loaded",
         attr: {
             "tabindex": "-1",
             "contenteditable": "false"
         }
     })
-    fixedEl.setAttr("alt", alt);
-    fixedEl.setAttr("src", `app://obsidian.md/${src}`)
-    fixedEl.appendChild(createDiv(
+    errorEl.setAttr("alt", alt);
+    errorEl.setAttr("src", `app://obsidian.md/${src}`)
+    errorEl.appendChild(createDiv(
         {
             "cls": "embed-title markdown-embed-title",
         }
     ));
-    let contentEl = fixedEl.createDiv({
+    let contentEl = errorEl.createDiv({
         "cls": `markdown-embed-content`,
     });
     let paragraph = contentEl.createEl("p", {
         "cls": `${MultiColumnStyleCSS.RegionErrorMessage}, ${MultiColumnStyleCSS.SmallFont}`
     });
-    paragraph.innerText = "File embeds are not supported in Live Preview.\nPlease use reading mode to view."
+    paragraph.innerText = errorText;
 
-    return fixedEl;
+    return errorEl
 }
 
 function fixPDFRender(el: Element, source: string): Element {
@@ -416,21 +419,7 @@ function fixPDFRender(el: Element, source: string): Element {
         return el;
     }
 
-    let resourcePath = app.vault.getResourcePath(file);
-
-    // If we found the resource path then we update the element to be a proper PDF render.
-    let fixedEl = createDiv({
-        cls: "internal-embed pdf-embed is-loaded",
-    })
-    fixedEl.setAttr("alt", alt);
-
-    let iframe = fixedEl.createEl("iframe", {
-        "attr": {
-            "style": "width: 100%; height: 100%;"
-        }
-    });
-    iframe.setAttr("src", resourcePath);
-    return fixedEl;
+    return createLPErrorElement("Due to an update to Obsidian's PDF viewer, PDF embeds are currently not supported.\nSorry for the inconvienence.", alt, src);
 }
 
 function fixImageRender(el: Element, source: string): Element {
