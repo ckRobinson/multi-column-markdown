@@ -86,16 +86,14 @@ export class DOMObject {
     }
 
     canvasReadyForUpdate(): boolean {
-
-        let deltaTime = Date.now() - this.canvasElementUpdateTime
-        if(deltaTime > UPDATE_TIMES[this.canvasTimerIndex]) {
-
-            this.canvasElementUpdateTime = Date.now();
-            this.canvasTimerIndex = Math.clamp(this.canvasTimerIndex + 1, 0, UPDATE_TIMES.length - 1);
-            return true;
+        var timingArray = UPDATE_TIMES
+        let {requiresUpdate, timerIndex, updateTime} = checkIfTimingIsReadyForUpdate(timingArray, this.canvasElementUpdateTime, this.canvasTimerIndex)
+        if(requiresUpdate === false){
+            return false
         }
-
-        return false;
+        this.canvasElementUpdateTime = updateTime;
+        this.canvasTimerIndex = timerIndex
+        return true
     }
 
     updateClonedElement(newClonedElement: HTMLElement) {
@@ -316,5 +314,24 @@ export class TaskListDOMObject extends DOMObject {
         }
         
         return el.children[0] as HTMLElement
+    }
+}
+
+function checkIfTimingIsReadyForUpdate(timingArray: number[], canvasElementUpdateTime: number, canvasTimerIndex: number) {
+    let deltaTime = Date.now() - canvasElementUpdateTime
+    if(deltaTime > timingArray[canvasTimerIndex]) {
+        canvasElementUpdateTime = Date.now();
+        canvasTimerIndex = Math.clamp(canvasTimerIndex + 1, 0, UPDATE_TIMES.length - 1);
+        return {
+            requiresUpdate: true,
+            updateTime: canvasElementUpdateTime,
+            timerIndex: canvasTimerIndex,
+        }
+    }
+
+    return {
+        requiresUpdate: false,
+        updateTime: canvasElementUpdateTime,
+        timerIndex: canvasTimerIndex
     }
 }
