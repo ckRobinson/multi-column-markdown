@@ -10,11 +10,10 @@ import { DOMObject, DOMObjectTag, TaskListDOMObject } from '../domObject';
 import { MultiColumnSettings, ColumnLayout, getDefaultMultiColumnSettings, columnSpacingState, getIndexedClampedArrayValue, isColumnLayout, validateColumnLayout } from "../../regionSettings";
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from '../../utilities/cssDefinitions';
 import { FileDOMManager } from '../domManager';
-import { ElementRenderType, getElementRenderType } from 'src/utilities/elementRenderTypeParser';
+import { getElementRenderType } from 'src/utilities/elementRenderTypeParser';
 import { RegionManagerData } from './regionManagerContainer';
-import { searchChildrenForNodeType } from 'src/utilities/utils';
+import { searchChildrenForNodeType, searchChildrenForNodesOfType } from 'src/utilities/utils';
 import { HTMLSizing } from 'src/utilities/interfaces';
-import { MCM_Settings, DEFAULT_SETTINGS } from '../../pluginSettings';
 import { RegionErrorManager } from '../regionErrorManager';
 
 export type MultiColumnRenderData = { 
@@ -322,6 +321,12 @@ export abstract class RegionManager {
                 continue;
             }
 
+            if(elementType === "pdfEmbed") {
+                this.domList[i].elementType = elementType;
+                this.setUpDualRender(this.domList[i]);
+                continue;
+            }
+
             if(elementType === "diceRoller" ||
                elementType === "admonitionFold" ||
                elementType === "calloutCopyButton" ||
@@ -451,6 +456,11 @@ export abstract class RegionManager {
         // it will have 0 height so we need to temporarily render it to get the height.
         let originalElementHeight = getElementClientHeight(originalElement, containerElement);
         let clonedElementHeight = getElementClientHeight(clonedElement, containerElement);
+
+        if(domElement.elementType === "pdfEmbed") {
+            updatePDFEmbed(domElement)
+            return
+        }
 
         /**
          * We only want to clone the element once to reduce GC. But if the cloned 
@@ -642,6 +652,21 @@ export abstract class RegionManager {
     public abstract renderRegionElementsToScreen(): void;
     public abstract exportRegionElementsToPDF(pdfParentElement: HTMLElement): void;
     public abstract renderRegionElementsToLivePreview(parentElement: HTMLElement): void
+}
+
+function updatePDFEmbed(domElement: DOMObject) {
+    
+    // if(domElement.canvasReadyForUpdate() === false) {
+    //     return
+    // }
+
+    let originalElement = domElement.originalElement;
+    let clonedElement = domElement.clonedElement;
+    let containerElement: HTMLDivElement = domElement.elementContainer;
+    for (let i = containerElement.children.length - 1; i >= 0; i--) {
+        containerElement.children[i].detach();
+    }
+    return
 }
 
 function calcColumnSizes(settings: MultiColumnSettings, columnSizes: HTMLSizing[]) {
