@@ -30,10 +30,8 @@ export function getUID(length: number = 10): string {
 export function searchChildrenForNodeType(root: HTMLElement, nodeTypeName: string): HTMLElement | null {
 
     nodeTypeName = nodeTypeName.toLowerCase();
-    
     let queue: HTMLElement[] = [root]
     while(queue.length > 0){
-        
         for(let i = 0; i < queue.length; i++) {
             
             let node = queue.shift()
@@ -49,6 +47,36 @@ export function searchChildrenForNodeType(root: HTMLElement, nodeTypeName: strin
         }
     }
 
+    return null;
+}
+
+export function searchChildrenForNodesOfType(root: HTMLElement, nodeTypeName: string, parentClass: string): HTMLElement[] | null {
+    let elFound = searchChildrenForNodeType(root, nodeTypeName)
+    if(elFound !== null) {
+
+        let currentParent = elFound.parentElement;
+        while(currentParent !== null) {
+            if(currentParent.hasClass(parentClass)) {
+                break;
+            }
+            currentParent = currentParent.parentElement
+        }
+        if(currentParent === null) {
+            return null
+        }
+
+        let canvases: HTMLElement[] = [];
+        for(let child of Array.from(currentParent.children)) {
+            
+            let canvas = searchChildrenForNodeType(child as HTMLElement, nodeTypeName)
+            if(canvas !== null) {
+                canvases.push(canvas)
+            }
+        }
+        if(canvases.length > 0) {
+            return canvases
+        }
+    }
     return null;
 }
 
