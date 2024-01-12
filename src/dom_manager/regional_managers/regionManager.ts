@@ -654,6 +654,32 @@ export abstract class RegionManager {
     public abstract renderRegionElementsToLivePreview(parentElement: HTMLElement): void
 }
 
+function createErrorElement(errorText: string, alt: string = "", src: string = ""): HTMLDivElement {
+    let errorEl = createDiv({
+        cls: "internal-embed markdown-embed inline-embed is-loaded",
+        attr: {
+            "tabindex": "-1",
+            "contenteditable": "false"
+        }
+    })
+    errorEl.setAttr("alt", alt);
+    errorEl.setAttr("src", `app://obsidian.md/${src}`)
+    errorEl.appendChild(createDiv(
+        {
+            "cls": "embed-title markdown-embed-title",
+        }
+    ));
+    let contentEl = errorEl.createDiv({
+        "cls": `markdown-embed-content`,
+    });
+    let paragraph = contentEl.createEl("p", {
+        "cls": `${MultiColumnStyleCSS.RegionErrorMessage}, ${MultiColumnStyleCSS.SmallFont}`
+    });
+    paragraph.innerText = errorText;
+
+    return errorEl
+}
+
 function updatePDFEmbed(domElement: DOMObject) {
     
     // if(domElement.canvasReadyForUpdate() === false) {
@@ -663,9 +689,10 @@ function updatePDFEmbed(domElement: DOMObject) {
     let originalElement = domElement.originalElement;
     let clonedElement = domElement.clonedElement;
     let containerElement: HTMLDivElement = domElement.elementContainer;
-    for (let i = containerElement.children.length - 1; i >= 0; i--) {
-        containerElement.children[i].detach();
+    for (let i = clonedElement.children.length - 1; i >= 0; i--) {
+        clonedElement.children[i].detach();
     }
+    clonedElement.appendChild(createErrorElement("Due to an update to Obsidian's PDF viewer, PDF embeds are currently not supported.\nSorry for the inconvienence."))
     return
 }
 
