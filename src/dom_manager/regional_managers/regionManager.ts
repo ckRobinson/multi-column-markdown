@@ -461,6 +461,10 @@ export abstract class RegionManager {
             updatePDFEmbed(domElement)
             return
         }
+        if(domElement.elementType === "dataviewJSCanvasEmbed") {
+            reRenderDataviewJS(domElement)
+            return
+        }
 
         /**
          * We only want to clone the element once to reduce GC. But if the cloned 
@@ -471,63 +475,11 @@ export abstract class RegionManager {
          */
         if((clonedElement === null  || 
            Math.abs(clonedElementHeight - originalElementHeight) > 10 ||
-           domElement.clonedElementReadyForUpdate() === true) &&
-           domElement.elementType !== "dataviewJSCanvasEmbed") {
+           domElement.clonedElementReadyForUpdate() === true)) {
             
             // console.log("Updating Cloned Element.", ElementRenderType[domElement.elementType], clonedElementHeight, originalElementHeight)
             // Update clone and reference.
             cloneElement(domElement);
-        }
-
-        if(domElement.elementType === "dataviewJSCanvasEmbed" && 
-           domElement.canvasReadyForUpdate()) {
-
-            // console.log("Updating canvas re-render")
-            containerElement.appendChild(originalElement);
-            if(clonedElement !== null && clonedElement.parentElement === containerElement) {
-                containerElement.removeChild(clonedElement);
-            }
-
-            function cloneCanvas(originalCanvas: HTMLCanvasElement): HTMLCanvasElement {
-
-                //create a new canvas
-                let clonedCanvas: HTMLCanvasElement = originalCanvas.cloneNode(true) as HTMLCanvasElement;
-                let context: CanvasRenderingContext2D = clonedCanvas.getContext('2d');
-            
-                //set dimensions
-                clonedCanvas.width = originalCanvas.width;
-                clonedCanvas.height = originalCanvas.height;
-
-                if(clonedCanvas.width === 0 || clonedCanvas.height === 0){
-                    // Dont want to render if the width is 0 as it throws an error
-                    // would happen if the old canvas hasnt been rendered yet.
-                    return clonedCanvas;
-                } 
-
-                //apply the old canvas to the new one
-                context.drawImage(originalCanvas, 0, 0);
-            
-                //return the new canvas
-                return clonedCanvas;
-            }
-
-            let canvas = searchChildrenForNodeType(originalElement, "canvas");
-            if(canvas !== null) {
-                
-                domElement.updateClonedElement(originalElement.cloneNode(true) as HTMLDivElement);
-                clonedElement = domElement.clonedElement;
-                clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
-                clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
-                containerElement.appendChild(clonedElement);
-
-                for (let i = clonedElement.children.length - 1; i >= 0; i--) {
-                    clonedElement.children[i].detach();
-                }
-                clonedElement.appendChild(cloneCanvas(canvas as HTMLCanvasElement))
-            }
-
-            containerElement.removeChild(originalElement);
-            containerElement.appendChild(clonedElement);
         }
         
         /** 
@@ -539,7 +491,6 @@ export abstract class RegionManager {
         if(domElement.elementContainer.children.length < 2 && 
            domElement.elementType !== "dataviewPlugin" &&
            domElement.elementType !== "internalEmbed" &&
-           domElement.elementType !== "dataviewJSCanvasEmbed" &&
            domElement.elementType !== "dataviewJSEmbed") {
 
             // console.log("Updating dual rendering.", domElement, domElement.originalElement.parentElement, domElement.originalElement.parentElement?.childElementCount);
@@ -694,6 +645,62 @@ function updatePDFEmbed(domElement: DOMObject) {
     }
     clonedElement.appendChild(createErrorElement("Due to an update to Obsidian's PDF viewer, PDF embeds are currently not supported.\nSorry for the inconvienence."))
     return
+}
+
+function reRenderDataviewJS(domElement: DOMObject) {
+    if(domElement.canvasReadyForUpdate() === false) {
+        return
+    }
+
+    let originalElement = domElement.originalElement;
+    let clonedElement = domElement.clonedElement;
+    let containerElement: HTMLDivElement = domElement.elementContainer;
+
+    containerElement.appendChild(originalElement);
+    if(clonedElement !== null && clonedElement.parentElement === containerElement) {
+        containerElement.removeChild(clonedElement);
+    }
+
+    function cloneCanvas(originalCanvas: HTMLCanvasElement): HTMLCanvasElement {
+
+        //create a new canvas
+        let clonedCanvas: HTMLCanvasElement = originalCanvas.cloneNode(true) as HTMLCanvasElement;
+        let context: CanvasRenderingContext2D = clonedCanvas.getContext('2d');
+    
+        //set dimensions
+        clonedCanvas.width = originalCanvas.width;
+        clonedCanvas.height = originalCanvas.height;
+
+        if(clonedCanvas.width === 0 || clonedCanvas.height === 0){
+            // Dont want to render if the width is 0 as it throws an error
+            // would happen if the old canvas hasnt been rendered yet.
+            return clonedCanvas;
+        } 
+
+        //apply the old canvas to the new one
+        context.drawImage(originalCanvas, 0, 0);
+    
+        //return the new canvas
+        return clonedCanvas;
+    }
+
+    let canvas = searchChildrenForNodeType(originalElement, "canvas");
+    if(canvas !== null) {
+        
+        domElement.updateClonedElement(originalElement.cloneNode(true) as HTMLDivElement);
+        clonedElement = domElement.clonedElement;
+        clonedElement.addClass(MultiColumnLayoutCSS.ClonedElementType);
+        clonedElement.removeClasses([MultiColumnStyleCSS.RegionContent, MultiColumnLayoutCSS.OriginalElementType]);
+        containerElement.appendChild(clonedElement);
+
+        for (let i = clonedElement.children.length - 1; i >= 0; i--) {
+            clonedElement.children[i].detach();
+        }
+        clonedElement.appendChild(cloneCanvas(canvas as HTMLCanvasElement))
+    }
+
+    containerElement.removeChild(originalElement);
+    containerElement.appendChild(clonedElement);
 }
 
 function calcColumnSizes(settings: MultiColumnSettings, columnSizes: HTMLSizing[]) {
