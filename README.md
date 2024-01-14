@@ -84,7 +84,7 @@ Text displayed below.
 
 # Syntax Reference
 
-### **Start Multi-Column Region:**
+#### **Start a Multi-Column Region:**
 Each multi-column region must start with either:
 
 > --- start-multi-column: A_unique_region_ID\
@@ -107,12 +107,6 @@ By using the "Insert Multi-Column Region" command (more below) the start ID will
 You can also use the "Fix Missing IDs" command which will search the currently open document and append random IDs to all regions that are missing one.
 
 <br>
-
-### **Valid Syntax Tags:**
-
-<br>
-
-Each tag type can be defined with the following options:
 
 #### **Region Settings:**
 > \```column-settings\
@@ -584,6 +578,10 @@ This syntax has been entierly depricated due to many compounding issues caused b
 # Change Log
 
 ### **0.9.0**
+#### **Major Changes**
+**Code-Block start regions have been depricated**
+Due to a combination of issues, this syntax form has had to be entierly depricated. To make the transition away from that syntax as smooth as possible a command has been added to the Command Pallete "Fix Multi-Column Syntax in Current File" which will update the opened file to the current syntax. A global syntax update command has also been added to the settings pannel. Please make sure to create backups of your vault before using the global updater. 
+
 #### **Additions**
 - Added settings page.
     - Add checkbox setting for enable/disabling mobile rendering (only visible when on the mobile application).
@@ -607,7 +605,10 @@ This syntax has been entierly depricated due to many compounding issues caused b
 ##### **Bug Fixes**
 - Fixed issue with document viewport jumping around when moving cursor, this requires a syntax update to all affected files.
 - Fixed cross compatibility of clicking checkboxes when using the Dataview and Tasks plugins in reading mode.
-- Updated list CSS to more match reading mode.
+- Updated list CSS to better match reading mode.
+
+##### **Known Issues**
+- PDF Embeds are currently unsupported due to the update to Obsidian's PDF renderer.
 
 ---
 
