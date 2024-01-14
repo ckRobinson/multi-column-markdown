@@ -579,24 +579,24 @@ This syntax has been entierly depricated due to many compounding issues caused b
 
 ### **0.9.0**
 #### **Major Changes**
-**Code-Block start regions have been depricated**
-Due to a combination of issues, this syntax form has had to be entierly depricated. To make the transition away from that syntax as smooth as possible a command has been added to the Command Pallete "Fix Multi-Column Syntax in Current File" which will update the opened file to the current syntax. A global syntax update command has also been added to the settings pannel. Please make sure to create backups of your vault before using the global updater. 
+**Code-Block start regions have been deprecated**
+Due to a combination of issues, this syntax form has had to be entirely deprecated. To make the transition away from that syntax as smooth as possible a command has been added to the Command Pallete "Fix Multi-Column Syntax in Current File" which will update the opened file to the current syntax. A global syntax update command has also been added to the settings panel. Please make sure to create backups of your vault before using the global updater. 
 
 #### **Additions**
 - Added settings page.
     - Add checkbox setting for enable/disabling mobile rendering (only visible when on the mobile application).
     - Setting how many auto layout iterations to perform per render loop. 
-- Added action to settings page that modifies all relavent notes to update depricated syntax to the currently supported syntax.
-- Added command to Command Pallete to modify the current note and update depricated syntax to the currently supported syntax. Use "Fix Multi-Column Syntax in Current File"
-- Added action to settings page that modifies all relavent notes to fix missing column IDs by appending a randomized ID.
+- Added action to settings page that modifies all relevant notes to update deprecated syntax to the currently supported syntax.
+- Added command to Command Pallete to modify the current note and update deprecated syntax to the currently supported syntax. Use "Fix Multi-Column Syntax in Current File"
+- Added action to settings page that modifies all relevant notes to fix missing column IDs by appending a randomized ID.
 - Added error system to inform user of issues in their column regions.
 - Added option to align tables to column text alignment.
     - Can set default alignment behavior in the settings pane.
     - Columns will override plugin setting by defining: "Align Tables to Text Alignment: true/false"
 
 ##### **Improvements**
-- Updated Live Preview rendering to be more cross compatiable with other plugins.
-- Added rendering cache to live preview regions to improve performace when editing documents.
+- Updated Live Preview rendering to be more cross compatible with other plugins.
+- Added rendering cache to live preview regions to improve performance when editing documents.
     - **This feature is currently experimental only.**
     - This feature intermittently caused notes to erase column content during development. A fix has been implemented but due to the **potential data loss** you must **opt-in** to using this feature within the **plugin settings**.
     - If column content is erased you can use **undo** to restore the file data until the file is closed.
@@ -604,7 +604,7 @@ Due to a combination of issues, this syntax form has had to be entierly depricat
 
 ##### **Bug Fixes**
 - Fixed issue with document viewport jumping around when moving cursor, this requires a syntax update to all affected files.
-- Fixed cross compatibility of clicking checkboxes when using the Dataview and Tasks plugins in reading mode.
+- Fixed cross compatibility of clicking check boxes when using the Dataview and Tasks plugins in reading mode.
 - Updated list CSS to better match reading mode.
 
 ##### **Known Issues**
