@@ -110,7 +110,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
 
                 let regexResult = new RegExp("((?: *\n){6,})").exec(contentBetween)
                 if(regexResult !== null) {
-                    console.log("Found at least 6 empty lines.")
+                    // console.log("Found at least 6 empty lines.")
                     return false;
                 }
 
