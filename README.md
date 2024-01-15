@@ -577,6 +577,10 @@ This syntax has been entierly depricated due to many compounding issues caused b
 
 # Change Log
 
+### **0.9.1**
+##### **Bug Fixes**
+- Fixed false positive warning on column break syntax.
+
 ### **0.9.0**
 #### **Major Changes**
 **Code-Block start regions have been deprecated**
