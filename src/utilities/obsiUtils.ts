@@ -21,6 +21,10 @@ export function getLeafFromFilePath(workspace: Workspace, filePath: string): Wor
         return stateFilePath === filePath;
     }
 
+    if(workspace === null) {
+        return null;
+    }
+
     let entries = Object.entries(workspace.getLayout());
     let items = Array.from(entries).map((val) => {
         return val[1]
