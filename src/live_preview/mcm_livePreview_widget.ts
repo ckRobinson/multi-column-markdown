@@ -190,7 +190,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
             previousText = newData.previousText;
             workingText = newData.workingText;
 
-            workingText = checkForColumnBreakErrors(domObject, workingText, errorManager)
+            workingText = checkForColumnBreakErrors(domObject, previousText, workingText, errorManager)
         }
 
         // Set up the region manager data before then creating our region manager.
@@ -568,7 +568,9 @@ function fixUnSupportedRender(el: Element): Element {
     return el;
 }
 
-function checkForColumnBreakErrors(domObject: DOMObject, workingText: string,
+function checkForColumnBreakErrors(domObject: DOMObject,
+                                   previousText: string,
+                                   workingText: string,
                                    errorManager: RegionErrorManager): string {
 
     if(domObject.tag !== DOMObjectTag.columnBreak &&
@@ -576,7 +578,13 @@ function checkForColumnBreakErrors(domObject: DOMObject, workingText: string,
         return workingText;
     }
 
-    let nextColBreak = checkForParagraphInnerColEndTag(workingText)
+    let prevLine = previousText.split("\n").slice(-2).join("\n")
+    let checkText = workingText;
+    if(checkForParagraphInnerColEndTag(prevLine)) {
+        checkText = prevLine + workingText
+    }
+
+    let nextColBreak = checkForParagraphInnerColEndTag(checkText)
     if(nextColBreak === null) {
         console.error("Error. Something went wrong parsing column break out of text.")
         return workingText;
@@ -587,7 +595,7 @@ function checkForColumnBreakErrors(domObject: DOMObject, workingText: string,
     let endIndex = startIndex + matchLength
     let matchText = nextColBreak[0].trim();
 
-    let newWorkingText = workingText.slice(endIndex)
+    let newWorkingText = checkText.slice(endIndex)
 
     // Already parsed column break warning.
     if(domObject.elementIsColumnBreak !== ElementColumnBreakType.none) {
@@ -622,15 +630,25 @@ function checkForColumnBreakErrors(domObject: DOMObject, workingText: string,
     // Slice out the 20 characters before and after the column break and then get just
     // the one line before and after to check if error message required.
     let startIndexOffset = Math.clamp(startIndex - 20, 0, startIndex);
-    let endIndexOffset = Math.clamp(endIndex + 20, endIndex, workingText.length - 1);
+    let endIndexOffset = Math.clamp(endIndex + 20, endIndex, checkText.length - 1);
     
-    let additionalText = workingText.slice(startIndexOffset, endIndexOffset);
+    let additionalText = checkText.slice(startIndexOffset, endIndexOffset);
     let textBefore = additionalText.slice(0, 20);
     let textAfter = additionalText.slice(20 + matchLength)
+    textBefore = textBefore.replace(endTagText, "")
 
-    let lineAbove = textBefore.split("\n").last()
-    let lineBelow = textAfter.split("\n").first()
+    let linesAbove = textBefore.split("\n").filter((val) => {
+        return val !== ""
+    })
+    let linesBelow = textAfter.split("\n").filter((val) => {
+        return val !== ""
+    })
+    if(linesAbove.length === 0 && linesBelow.length === 0) {
+        return workingText
+    }
 
+    let lineAbove = linesAbove.last()
+    let lineBelow = linesBelow.first()
     parseColBreakErrorType({
         lineAbove: lineAbove,
         lineBelow: lineBelow,
