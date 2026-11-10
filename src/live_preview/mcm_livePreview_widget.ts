@@ -7,7 +7,8 @@
  */
 
 import { MarkdownRenderChild, MarkdownRenderer, TFile, WorkspaceLeaf } from "obsidian";
-import { WidgetType } from "@codemirror/view";
+import { EditorView, WidgetType } from "@codemirror/view";
+import { attachClickToEdit } from "./mcm_livePreview_clickToEdit";
 import { getDefaultMultiColumnSettings, MCSettings_isEqual, MultiColumnSettings } from "../regionSettings";
 import { parseSingleColumnSettings } from "../utilities/settingsParser";
 import { StandardMultiColumnRegionManager } from "../dom_manager/regional_managers/standardMultiColumnRegionManager";
@@ -38,6 +39,9 @@ interface cacheData {
 }
 
 let livePreviewElementCache: Map<string, cacheData> = new Map()
+export function clearLivePreviewCache() {
+    clearCache();
+}
 async function clearCache(skipKey: string = "") {
 
     let index = -1;
@@ -230,14 +234,16 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         return fixedEl;
     }
 
-    toDOM() {
+    toDOM(view: EditorView) {
 
         let useLivePreviewCache = MCM_SettingsManager.shared.useLivePreviewCache;
         let fileLeaf = getPreviewLeafFromFilePath(app.workspace, this.sourceFile.path)
         if(useLivePreviewCache && 
             livePreviewElementCache.has(this.elementCacheID) &&
             fileLeaf === null) {
-            return livePreviewElementCache.get(this.elementCacheID).element
+            let cachedEl = livePreviewElementCache.get(this.elementCacheID).element
+            attachClickToEdit(cachedEl, view)
+            return cachedEl
         }
 
         // Create our element to hold all of the live preview elements.
@@ -282,6 +288,7 @@ export class MultiColumnMarkdown_LivePreview_Widget extends WidgetType {
         }
 
         fixExternalLinks(el)
+        attachClickToEdit(el, view)
 
         livePreviewElementCache.set(this.elementCacheID, {
             timestamp: Date.now(),
