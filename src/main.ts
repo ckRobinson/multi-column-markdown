@@ -17,6 +17,7 @@ import { DOMObject, DOMObjectTag, TaskListDOMObject } from './dom_manager/domObj
 import { fileStillInView, getUID } from './utilities/utils';
 import { MultiColumnLayoutCSS, MultiColumnStyleCSS } from './utilities/cssDefinitions';
 import { multiColumnMarkdown_StateField } from './live_preview/cm6_livePreview';
+import { clearLivePreviewCache } from './live_preview/mcm_livePreview_widget';
 import { parseColumnSettings, parseStartRegionCodeBlockID } from './utilities/settingsParser';
 import { MultiColumnMarkdown_OnClickFix } from './live_preview/cm6_livePreivew_onClickFix';
 import { MultiColumnSettings, getDefaultMultiColumnSettings } from './regionSettings';
@@ -56,6 +57,14 @@ export default class MultiColumnMarkdown extends Plugin {
         this.setupMarkdownPostProcessor();
 
         this.addSettingTab(new MultiColumnSettingsView(this.app, this))
+
+        this.addCommand({
+            id: `clear-lp-cache-mcm`,
+            name: `Clear Live Preview Cache - Multi-Column Markdown`,
+            callback: async () => {
+                clearLivePreviewCache();
+            }
+        });
 
         this.addCommand({            
             id: `toggle-mobile-rendering-mcm`,
